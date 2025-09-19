@@ -1,0 +1,16 @@
+server:
+  port: 9090
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://${blog.db.host}:3306/cloud_blog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: ${blog.db.pw}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**.xml
+
+
