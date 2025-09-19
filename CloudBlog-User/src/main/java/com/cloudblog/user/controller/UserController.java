@@ -2,6 +2,7 @@ package com.cloudblog.user.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.user.mapper.UserMapper;
+import com.cloudblog.user.pojo.dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,11 @@ public class UserController {
 
     @GetMapping("/getUser")
     public String getUser() {
-        return userMapper.queryUserByNumber("0001").toString();
+        User result = userMapper.queryUserByNumber("0001");
+        if (result != null){
+            return result.toString();
+        }else {
+            return "用户不存在";
+        }
     }
 }
