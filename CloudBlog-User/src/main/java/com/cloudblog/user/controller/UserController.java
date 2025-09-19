@@ -1,6 +1,7 @@
 package com.cloudblog.user.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.pojo.dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,8 @@ public class UserController {
     private UserMapper userMapper;
 
     @GetMapping("/hello")
-    public String hello() {
-        return "hello world";
+    public AjaxResult hello() {
+        return AjaxResult.success("hello");
     }
 
     @GetMapping("/getUser")
