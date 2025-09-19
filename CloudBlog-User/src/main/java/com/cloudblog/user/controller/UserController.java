@@ -30,4 +30,11 @@ public class UserController {
             return "用户不存在";
         }
     }
+
+    @GetMapping("/getUserList")
+    public AjaxResult getUserList() {
+        Page<User> page = new Page<>(1, 10);
+        Page<User> result = userMapper.selectPage(page, null);
+        return AjaxResult.success(result);
+    }
 }
