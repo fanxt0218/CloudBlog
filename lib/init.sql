@@ -163,6 +163,7 @@ create table comments (
     user_id bigint comment '用户id',
     parent_id bigint default 0 comment '父级评论id',
     create_time datetime comment '创建时间',
+    type tinyint default 0 comment '评论类型(0：文章，1：动态)',
     status tinyint default 0 comment '状态,0:正常 1:删除',
     user_name varchar(32) comment '用户名(冗余)',
     user_image varchar(255) comment '用户头像(冗余)',
@@ -188,6 +189,7 @@ create table browse (
     post_id bigint comment '文章id',
     user_id bigint comment '用户id',
     create_time datetime comment '浏览时间',
+    type tinyint comment '类型(0:文章 1:动态)',
 
     index idx_post_id (post_id),
     index idx_user_id (user_id),
@@ -199,7 +201,7 @@ create table likes (
     id bigint primary key auto_increment comment '主键',
     target_id bigint comment '目标id',
     user_id bigint comment '用户id',
-    type tinyint comment '目标类型,0:文章 1:评论',
+    type tinyint comment '目标类型,0:文章 1:评论 2:动态',
     create_time datetime comment '点赞时间',
     status tinyint default 0 comment '点赞状态,0:正常 1:取消',
 
@@ -221,3 +223,52 @@ create table collect (
     index idx_user_id (user_id),
     index idx_status (status)
 )comment '收藏记录表';
+
+drop table if exists notification;
+create table notification (
+    id bigint primary key auto_increment comment '主键',
+    recipient_id bigint comment '接收者id',
+    sender_id bigint comment '发送者id',
+    type tinyint comment '通知类型,0:点赞 1:收藏 2:评论 3:关注',
+    object_type tinyint comment '对象类型,0:文章 1:动态 2:其他',
+    object_id bigint comment '关联对象id',
+    content text comment '通知内容',
+    is_read tinyint default 0 comment '是否已读,0:未读 1:已读',
+    is_aggregated tinyint default 0 comment '是否已聚合,0:否 1:是',
+    aggregated_count int comment '聚合数量',
+    expires_time datetime comment '过期时间',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+    user_name varchar(32) comment '用户名(冗余)',
+    user_image varchar(255) comment '用户头像(冗余)',
+
+    KEY idx_recipient_id (recipient_id),
+    KEY idx_recipient_read (recipient_id, is_read),
+    KEY idx_create_time (create_time),
+    KEY idx_object (object_type, object_id)
+)comment '通知表';
+
+drop table if exists notification_type;
+create table notification_type (
+    id tinyint primary key comment '主键',
+    type_name varchar(32) comment '类型名称',
+    type_code varchar(32) comment '类型编码',
+    template varchar(255) comment '通知类型模板',
+    description varchar(64) comment '类型描述',
+    is_active tinyint default 1 comment '是否启用,0:否 1:是',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间'
+)comment '通知类型表';
+
+drop table if exists share;
+create table share (
+    id bigint primary key auto_increment comment '主键',
+    author_id bigint comment '作者id',
+    content text comment '动态内容',
+    content_type tinyint comment '内容类型,0:纯文本 1:Markdown 2:HTML',
+    status tinyint default 0 comment '状态',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    index idx_post_id (author_id)
+)
