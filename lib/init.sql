@@ -7,9 +7,12 @@ drop table if exists user;
 create table user (
     id bigint primary key auto_increment comment '用户id',
     user_account varchar(32) comment '用户账号',
+    phone varchar(32) comment '手机号',
+    email varchar(64) comment '邮箱',
     password varchar(255) comment '用户密码',
     status tinyint default 0 comment '用户状态,0:正常 1：失效',
     last_login_time datetime comment '最后登录时间',
+    permission_id int comment '权限id',
     create_time datetime comment '创建时间',
 
     index idx_status (status),
@@ -27,8 +30,6 @@ create table user_info (
     region varchar(64) comment '所在地区',
     birth_date date comment '生日',
     profession varchar(64) comment '职业',
-    phone varchar(32) comment '手机号',
-    email varchar(64) comment '邮箱',
     is_vip tinyint default 0 comment '是否是会员,0:不是 1:是',
     exp int default 0 comment '经验值',
     create_time datetime comment '创建时间',

@@ -1,33 +1,27 @@
 package com.cloudblog.user.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.mapper.UserMapper;
-import com.cloudblog.user.pojo.dto.User;
+import com.cloudblog.common.pojo.Dto.User;
+import com.cloudblog.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserService userService;
 
-    @GetMapping("/hello")
-    public AjaxResult hello() {
-        return AjaxResult.success("hello");
+    /**
+     * 注册用户
+     */
+    @PostMapping("/register")
+    public AjaxResult register(@RequestBody UserRegisterPo userPo) {
+        return userService.register(userPo);
     }
 
-    @GetMapping("/getUser")
-    public String getUser() {
-        User result = userMapper.queryUserByNumber("0001");
-        if (result != null){
-            return result.toString();
-        }else {
-            return "用户不存在";
-        }
-    }
+
 }
