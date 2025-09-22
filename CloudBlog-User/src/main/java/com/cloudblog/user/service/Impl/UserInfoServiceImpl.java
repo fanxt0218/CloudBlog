@@ -13,6 +13,8 @@ import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -73,12 +75,34 @@ public class UserInfoServiceImpl implements UserInfoService {
         Integer commentCount = commentMapper.getUserCommentCount(userId);
         //TODO 博客排名 后续做定时任务周期计算
         Integer blogRank = 1;
+        // 创作历程
+        List<UserAchievementVo.CreativeProcess> userCreativeProcess = getUserCreativeProcess(userId);
 
         UserAchievementVo userAchievementVo = new UserAchievementVo();
         userAchievementVo.setLikeCount(likeCount);
         userAchievementVo.setCollectCount(collectCount);
         userAchievementVo.setCommentCount(commentCount);
         userAchievementVo.setRank(blogRank);
+        userAchievementVo.setCreativeProcessList(userCreativeProcess);
         return AjaxResult.success(userAchievementVo);
+    }
+
+    /**
+     * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
+     * @param userId
+     * @return
+     */
+    public List<UserAchievementVo.CreativeProcess> getUserCreativeProcess(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        //计算某个用户每年的创作文章数，不足一年的按照当前年份
+        List<UserAchievementVo.CreativeProcess> creativeProcessList = new ArrayList<>();
+        creativeProcessList = userPostInfoMapper.getUserCreativeProcess(userId);
+        // 如果没有创作过文章或者当前年创作文章数为0，则展示当前年份的0
+        if (creativeProcessList.isEmpty() || creativeProcessList.get(0).getYear() != LocalDate.now().getYear()) {
+            creativeProcessList.add(new UserAchievementVo.CreativeProcess(LocalDate.now().getYear(),0));
+        }
+        return creativeProcessList;
     }
 }

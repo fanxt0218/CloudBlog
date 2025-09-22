@@ -1,6 +1,10 @@
 package com.cloudblog.common.pojo.Vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 public class UserAchievementVo {
@@ -12,4 +16,18 @@ public class UserAchievementVo {
     private Integer collectCount;
 
     private Integer rank;
+
+    List<CreativeProcess> creativeProcessList;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreativeProcess {
+
+        private Integer year;
+
+        private Integer postCount;
+
+
+    }
 }

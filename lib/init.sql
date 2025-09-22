@@ -148,13 +148,15 @@ create table posts_content (
 drop table if exists category;
 create table category (
     id int primary key auto_increment comment '主键',
+    user_id bigint comment '用户id',
     category_name varchar(32) comment '分类名称',
     image varchar(255) comment '分类封面',
     description varchar(255) comment '分类描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
 
-    unique index uk_category_name (category_name)
+    unique index uk_category_name (category_name),
+    index idx_user_id (user_id)
 )comment '分类表';
 
 drop table if exists comments;

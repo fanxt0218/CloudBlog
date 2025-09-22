@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.user.mapper.UserPostInfoMapper">
+    <resultMap id="CreativeProcessResultMap" type="com.cloudblog.common.pojo.Vo.UserAchievementVo$CreativeProcess">
+        <id property="year" column="year"/>
+        <result property="postCount" column="post_count"/>
+    </resultMap>
+    <select id="getUserCreativeProcess"
+            resultType="com.cloudblog.common.pojo.Vo.UserAchievementVo$CreativeProcess" resultMap="CreativeProcessResultMap">
+        SELECT
+            YEAR(create_time) as year,
+            COUNT(*) as post_count
+        FROM posts
+        WHERE author_id = #{userId}
+          AND status = 2  -- 已发布状态
+          AND create_time IS NOT NULL
+        GROUP BY YEAR(create_time)
+        HAVING post_count > 0
+        ORDER BY year Desc
+    </select>
 </mapper>

@@ -14,6 +14,8 @@ public class Category {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
+    private Long userId;
+
     private String categoryName;
 
     private String image;

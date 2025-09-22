@@ -20,6 +20,11 @@
         </dependency>
         <dependency>
             <groupId>com.cloudblog</groupId>
+            <artifactId>CloudBlog-Content</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudblog</groupId>
             <artifactId>CloudBlog-Common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

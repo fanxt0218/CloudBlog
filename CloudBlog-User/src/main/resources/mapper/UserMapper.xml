@@ -3,6 +3,15 @@
 <mapper namespace="com.cloudblog.user.mapper.UserMapper">
 
     <select id="queryUserByNumber" resultType="com.cloudblog.common.pojo.Dto.User">
-        select * from user where user_account = #{number}
+        select id,
+               user_account,
+               phone,
+               email,
+               password,
+               status,
+               last_login_time,
+               permission_id,
+               create_time
+        from user where user_account = #{number}
     </select>
 </mapper>
