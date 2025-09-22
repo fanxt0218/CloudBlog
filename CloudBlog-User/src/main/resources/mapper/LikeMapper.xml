@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.user.mapper.LikeMapper">
+
+    <select id="getUserLikeCount" resultType="java.lang.Integer">
+        select count(*) from likes where (target_id in (select id from posts where author_id = #{userId})
+            or target_id in (select id from share where author_id = #{userId})) and status = 0
+    </select>
+</mapper>

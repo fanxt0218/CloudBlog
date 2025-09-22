@@ -6,12 +6,11 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @TableName("usr_vip")
-public class UsrVip {
+public class UserVip {
 
     @TableId(type = IdType.AUTO)
     private Long id;

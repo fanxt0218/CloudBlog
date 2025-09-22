@@ -111,7 +111,7 @@ create table posts (
     title varchar(255) comment '标题',
     introduction text comment '简介',
     image varchar(255) comment '封面',
-    status tinyint default 0 comment '状态,0:正常 1:删除',
+    status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
     content_id bigint comment '内容id',
     type int default 0 comment '类型(扩展)',
     is_vip tinyint default 0 comment '是否会员可见,0:否 1:是',

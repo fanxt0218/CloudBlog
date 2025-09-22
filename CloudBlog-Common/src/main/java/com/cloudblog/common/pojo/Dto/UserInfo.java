@@ -31,7 +31,7 @@ public class UserInfo {
 
     private String region;
 
-    private LocalDate birthdate;
+    private LocalDate birthDate;
 
     private String profession;
 
