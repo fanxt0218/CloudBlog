@@ -1,6 +1,6 @@
 package com.cloudblog.content.service.impl;
 
-import com.cloudblog.common.pojo.Dto.Tag;
+import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.InterestMapper;
 import com.cloudblog.content.service.InterestService;

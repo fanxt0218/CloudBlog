@@ -1,7 +1,7 @@
 package com.cloudblog.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloudblog.common.pojo.Dto.Comments;
+import com.cloudblog.common.pojo.DoMain.Comments;
 
 public interface CommentMapper extends BaseMapper<Comments> {
 

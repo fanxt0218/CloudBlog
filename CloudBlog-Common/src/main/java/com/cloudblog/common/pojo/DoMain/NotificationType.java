@@ -1,4 +1,4 @@
-package com.cloudblog.common.pojo.Dto;
+package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -6,21 +6,27 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("user_interest")
-public class UserInterest {
+@TableName("notification_type")
+public class NotificationType {
 
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
-    private Long userId;
+    private String typeName;
 
-    private Integer tagId;
+    private String typeCode;
 
-    private BigDecimal weight;
+    private String template;
+
+    private String description;
+
+    /**
+     * 0: 禁用 1: 启用
+     */
+    private Integer isActive;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

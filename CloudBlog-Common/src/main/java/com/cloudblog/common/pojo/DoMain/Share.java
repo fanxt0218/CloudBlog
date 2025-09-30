@@ -1,4 +1,4 @@
-package com.cloudblog.common.pojo.Dto;
+package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -9,38 +9,21 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("posts")
-public class Posts {
+@TableName("share")
+public class Share {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long authorId;
 
-    private String title;
-
-    private String introduction;
-
-    private String image;
-
+    private String content;
     /**
-     * 0：正常 1：删除
+     * 0: 纯文本，1:Markdown 2:html
      */
+    private Integer contentType;
+
     private Integer status;
-
-    private Long contentId;
-
-    /**
-     * 用于扩展，比如可见范围
-     */
-    private Integer type;
-
-    /**
-     * 0:否 1：是
-     */
-    private Integer isVip;
-
-    private Integer categoryId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

@@ -1,8 +1,7 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloudblog.common.pojo.Dto.Tag;
-import com.cloudblog.common.pojo.Dto.UserInterest;
+import com.cloudblog.common.pojo.DoMain.Tag;
 
 import java.util.List;
 

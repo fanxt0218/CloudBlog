@@ -1,9 +1,8 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cloudblog.common.enums.UserStatus;
-import com.cloudblog.common.pojo.Dto.User;
-import com.cloudblog.common.pojo.Dto.UserInfo;
+import com.cloudblog.common.pojo.DoMain.User;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
@@ -12,15 +11,11 @@ import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.service.UserService;
-import jakarta.annotation.Resource;
-import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -85,6 +80,11 @@ public class UserServiceImpl implements UserService {
                 .token("")
                 .build();
         return AjaxResult.success("注册成功", result);
+    }
+
+    @Override
+    public User getUser(Long userId) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getId, userId));
     }
 
 

@@ -1,7 +1,7 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloudblog.common.pojo.Dto.Category;
+import com.cloudblog.common.pojo.DoMain.Category;
 
 public interface CategoryMapper extends BaseMapper<Category> {
 

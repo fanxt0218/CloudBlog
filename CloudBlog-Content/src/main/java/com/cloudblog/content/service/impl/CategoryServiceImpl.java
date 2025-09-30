@@ -1,13 +1,12 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cloudblog.common.pojo.Dto.Category;
+import com.cloudblog.common.pojo.DoMain.Category;
 import com.cloudblog.common.pojo.Vo.CategoryInfoListVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.CategoryMapper;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.CategoryService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

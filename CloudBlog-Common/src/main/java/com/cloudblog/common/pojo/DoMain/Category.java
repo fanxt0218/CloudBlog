@@ -1,27 +1,28 @@
-package com.cloudblog.common.pojo.Dto;
+package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("tag")
-public class Tag {
+@TableName("category")
+public class Category {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
 
-    private String tagName;
+    private Long userId;
+
+    private String categoryName;
+
+    private String image;
 
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 }

@@ -1,4 +1,4 @@
-package com.cloudblog.common.pojo.Dto;
+package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -9,8 +9,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("browse")
-public class Browse {
+@TableName("comments")
+public class Comments {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -19,11 +19,22 @@ public class Browse {
 
     private Long userId;
 
+    private Long parentId;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
-     * 0: 文章 1：动态
+     * 0:正常 1:删除
+     */
+    private Integer status;
+
+    private String userName;
+
+    private String userImage;
+
+    /**
+     * 0:文章 1:动态
      */
     private Integer type;
 }

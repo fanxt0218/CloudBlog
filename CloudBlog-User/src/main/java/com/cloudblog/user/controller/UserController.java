@@ -2,8 +2,6 @@ package com.cloudblog.user.controller;
 
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.result.AjaxResult;
-import com.cloudblog.user.mapper.UserMapper;
-import com.cloudblog.common.pojo.Dto.User;
 import com.cloudblog.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

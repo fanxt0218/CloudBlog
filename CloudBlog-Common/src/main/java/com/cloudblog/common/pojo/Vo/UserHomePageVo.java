@@ -24,4 +24,6 @@ public class UserHomePageVo {
     private Long fanCount;
 
     private Integer blogAge;
+
+    private Integer level;
 }

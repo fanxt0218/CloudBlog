@@ -1,4 +1,4 @@
-package com.cloudblog.common.pojo.Dto;
+package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

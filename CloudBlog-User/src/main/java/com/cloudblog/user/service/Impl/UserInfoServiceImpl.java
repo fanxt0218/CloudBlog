@@ -2,19 +2,29 @@ package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.enums.PostStatus;
-import com.cloudblog.common.pojo.Dto.*;
+import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Po.UserLikeListPo;
+import com.cloudblog.common.pojo.Vo.PersonalInfoVo;
 import com.cloudblog.common.pojo.Vo.UserAchievementVo;
 import com.cloudblog.common.pojo.Vo.UserHomePageVo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.content.service.InterestService;
+import com.cloudblog.content.service.LevelService;
+import com.cloudblog.content.service.PostService;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
+import com.cloudblog.user.service.UserService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import static com.cloudblog.common.result.AjaxResult.DATA_TAG;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -33,6 +43,14 @@ public class UserInfoServiceImpl implements UserInfoService {
     private CollectMapper collectMapper;
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private LevelService levelService;
+    @Autowired
+    private InterestService interestService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PostService postService;
 
     @Override
     public AjaxResult getUserInfo(Long userId) {
@@ -46,7 +64,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         userHomePageVo.setRegion(userInfo.getRegion());
         userHomePageVo.setJoinTime(userInfo.getCreateTime());
         userHomePageVo.setIntroduction(userInfo.getIntroduction());
-        userHomePageVo.setBlogAge(LocalDate.now().getYear() - userInfo.getCreateTime().getYear());
+        userHomePageVo.setBlogAge(this.getUserBlogAge(userInfo.getCreateTime()));
         // 用户访问量
         Long browseCount = browseMapper.selectCount(new LambdaQueryWrapper<Browse>().eq(Browse::getUserId, userId));
         // 文章数
@@ -55,9 +73,12 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .eq(Posts::getStatus, PostStatus.REVIEWING.getCode()));
         // 粉丝数
         Long fanCount = userFocusMapper.selectCount(new LambdaQueryWrapper<UserFocus>().eq(UserFocus::getFocusUserId, userId));
+        // 获取等级
+        Integer level = getUserLevel(userInfo.getExp());
         userHomePageVo.setVisits(browseCount);
         userHomePageVo.setPostCount(postCount);
         userHomePageVo.setFanCount(fanCount);
+        userHomePageVo.setLevel(level);
 
         return AjaxResult.success(userHomePageVo);
     }
@@ -87,6 +108,44 @@ public class UserInfoServiceImpl implements UserInfoService {
         return AjaxResult.success(userAchievementVo);
     }
 
+    @Override
+    public AjaxResult getPersonalInfo(Long userId) {
+        if (userId == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        // 用户信息
+        UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
+        User user = userService.getUser(userId);
+        // 获取码龄
+        Integer userBlogAge = this.getUserBlogAge(userInfo.getCreateTime());
+        // 获取兴趣
+        List<Tag> tags = (List<Tag>) interestService.getInterestInfo(userId).get(DATA_TAG);
+        List<PersonalInfoVo.UserTagList> userTagList = tags.stream().map(tag -> new PersonalInfoVo.UserTagList(tag.getId(), tag.getTagName())).toList();
+
+        PersonalInfoVo personalInfoVo = new PersonalInfoVo();
+        BeanUtils.copyProperties(userInfo, personalInfoVo);
+        personalInfoVo.setUserId(user.getId());
+        personalInfoVo.setUserAccount(user.getUserAccount());
+        personalInfoVo.setBlogAge(userBlogAge);
+        personalInfoVo.setTags(userTagList);
+
+        return AjaxResult.success(personalInfoVo);
+    }
+
+    @Override
+    public AjaxResult getAccountSettings(Long userId) {
+        User user = userService.getUser(userId);
+        return AjaxResult.success(user);
+    }
+
+    @Override
+    public AjaxResult getLikeList(UserLikeListPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        return null;
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId
@@ -104,5 +163,32 @@ public class UserInfoServiceImpl implements UserInfoService {
             creativeProcessList.add(new UserAchievementVo.CreativeProcess(LocalDate.now().getYear(),0));
         }
         return creativeProcessList;
+    }
+
+    /**
+     * 获取用户等级
+     * @param exp
+     * @return
+     */
+    public Integer getUserLevel(Integer exp) {
+        Integer level = 1;
+        List<Level> levelList = levelService.getLevelList();
+        levelList.sort(Comparator.comparingInt(Level::getId));
+        for (Level singleLevel : levelList) {
+            if (exp < singleLevel.getExpThreshold()) {
+                break;
+            }
+            level = singleLevel.getLevel();
+        }
+        return level;
+    }
+
+    /**
+     * 获取用户博客年龄
+     * @param joinTime
+     * @return
+     */
+    public Integer getUserBlogAge(LocalDateTime joinTime) {
+        return LocalDate.now().getYear() - joinTime.getYear();
     }
 }
