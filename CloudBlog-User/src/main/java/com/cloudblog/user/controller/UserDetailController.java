@@ -33,9 +33,9 @@ public class UserDetailController {
     }
 
     /**
-     * 获取用户点赞信息
+     * 获取用户点赞信息列表
      */
-    @GetMapping("/likeList")
+    @PostMapping("/likeList")
     public AjaxResult getLikeList(@RequestBody UserLikeListPo po) {
         return userInfoService.getLikeList(po);
     }

@@ -1,5 +1,7 @@
 package com.cloudblog.user.service.Impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudblog.common.pojo.Vo.UserLikeListVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.*;
@@ -143,7 +145,8 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (po.getUserId() == null) {
             return AjaxResult.error("用户ID不能为空");
         }
-        return null;
+        IPage<UserLikeListVo> userLikeListVoList = postService.getUserLikeList(po);
+        return AjaxResult.success(userLikeListVoList);
     }
 
     /**
