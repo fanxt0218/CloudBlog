@@ -10,6 +10,15 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <resultMap id="UserCollectResultMap" type="com.cloudblog.common.pojo.Vo.UserCollectListVo">
+        <id property="postId" column="id"/>
+        <result property="title" column="title"/>
+        <result property="image" column="image"/>
+        <result property="isVip" column="is_vip"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
         select p.id as id, title, image, is_vip, td.create_time as create_time from
             (select target_id, create_time from likes
@@ -21,5 +30,27 @@
                 left join
             posts p
             on td.target_id = p.id where p.status = 2
+    </select>
+
+    <select id="getUserCollectList" resultType="com.cloudblog.common.pojo.Vo.UserCollectListVo" resultMap="UserCollectResultMap">
+        select
+            p.id as id,
+            title,
+            image,
+            is_vip,
+            c.status as status,
+            c.create_time as create_time
+        from
+            favorites f
+                inner join
+            collect c
+                on f.id = c.favorites_id and c.status = 0 and f.id = #{favoritesId} and c.user_id = #{userId}
+                inner join
+            posts p
+                on c.post_id = p.id and p.status = 2
+        <where>
+            <if test="postName != null and postName != '' ">and p.title like concat('%', #{postName}, '%')</if>
+        </where>
+        order by c.create_time desc
     </select>
 </mapper>

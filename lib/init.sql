@@ -219,6 +219,7 @@ create table collect (
     id bigint primary key auto_increment comment '主键',
     post_id bigint comment '文章id',
     user_id bigint comment '用户id',
+    favorites_id int comment '收藏夹id',
     create_time datetime comment '收藏时间',
     status tinyint default 0 comment '收藏状态,0:正常 1:取消',
 
@@ -226,6 +227,19 @@ create table collect (
     index idx_user_id (user_id),
     index idx_status (status)
 )comment '收藏记录表';
+
+drop table if exists favorites;
+create table favorites (
+    id int primary key auto_increment comment '主键',
+    user_id bigint comment '用户id',
+    favorites_name varchar(32) comment '收藏夹名称',
+    description varchar(255) comment '收藏夹描述',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    unique index uk_favorites_name (favorites_name),
+    index idx_user_id (user_id)
+)comment '收藏夹表';
 
 drop table if exists notification;
 create table notification (

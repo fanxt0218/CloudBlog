@@ -1,14 +1,12 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cloudblog.common.pojo.Vo.UserLikeListVo;
+import com.cloudblog.common.pojo.Po.UserCollectListPo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
-import com.cloudblog.common.pojo.Vo.PersonalInfoVo;
-import com.cloudblog.common.pojo.Vo.UserAchievementVo;
-import com.cloudblog.common.pojo.Vo.UserHomePageVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.InterestService;
 import com.cloudblog.content.service.LevelService;
@@ -147,6 +145,15 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         IPage<UserLikeListVo> userLikeListVoList = postService.getUserLikeList(po);
         return AjaxResult.success(userLikeListVoList);
+    }
+
+    @Override
+    public AjaxResult getCollectList(UserCollectListPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        IPage<UserCollectListVo> userCollectListVoList = postService.getUserCollectList(po);
+        return AjaxResult.success(userCollectListVoList);
     }
 
     /**

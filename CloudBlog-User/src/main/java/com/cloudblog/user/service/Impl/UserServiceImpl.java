@@ -8,6 +8,7 @@ import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.GenerateUserInfo;
 import com.cloudblog.common.utils.PasswordUtil;
+import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.service.UserService;
@@ -24,6 +25,8 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private UserInfoMapper userInfoMapper;
+    @Autowired
+    private FavoritesService favoritesService;
 
     @Transactional
     @Override
@@ -73,6 +76,9 @@ public class UserServiceImpl implements UserService {
         userInfo.setUserName(userPo.getUserName());
         userInfo.setCreateTime(LocalDateTime.now());
         userInfoMapper.insert(userInfo);
+
+        // 初始化默认收藏夹
+        favoritesService.initDefaultFavorites(user.getId());
 
         // TODO 完善鉴权，返回token
         UserRegisterVo result = UserRegisterVo.builder()

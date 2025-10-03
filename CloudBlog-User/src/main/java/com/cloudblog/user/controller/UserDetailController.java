@@ -1,5 +1,6 @@
 package com.cloudblog.user.controller;
 
+import com.cloudblog.common.pojo.Po.UserCollectListPo;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.service.UserInfoService;
@@ -39,4 +40,13 @@ public class UserDetailController {
     public AjaxResult getLikeList(@RequestBody UserLikeListPo po) {
         return userInfoService.getLikeList(po);
     }
+
+    /**
+     * 获取用户收藏列表
+     */
+    @PostMapping("/collectList")
+    public AjaxResult getCollectList(@RequestBody UserCollectListPo po) {
+        return userInfoService.getCollectList(po);
+    }
+
 }

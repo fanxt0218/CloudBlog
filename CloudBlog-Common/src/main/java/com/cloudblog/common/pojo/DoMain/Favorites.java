@@ -3,26 +3,24 @@ package com.cloudblog.common.pojo.DoMain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("collect")
-public class Collect {
+@TableName("favorites")
+public class Favorites {
 
     @TableId(type = IdType.AUTO)
-    private Long id;
-
-    private Long postId;
+    private Integer id;
 
     private Long userId;
 
-    private Integer favoritesId;
+    private String favoritesName;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String description;
+
     private LocalDateTime createTime;
 
-    private Integer status;
+    private LocalDateTime updateTime;
 }
