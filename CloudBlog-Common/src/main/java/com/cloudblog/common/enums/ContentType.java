@@ -4,7 +4,7 @@ public enum ContentType {
 
     POST,
 
-    COMMENT,
+    SHARE,
 
-    SHARE
+    COMMENT
 }

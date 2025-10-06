@@ -15,13 +15,4 @@ public class InterestController {
     @Autowired
     private InterestService interestService;
 
-    /**
-     * 获取用户兴趣信息
-     * @param userId
-     * @return
-     */
-    @GetMapping("/getUserInterestInfo")
-    public AjaxResult getInterestInfo(@RequestParam Long userId) {
-        return interestService.getInterestInfo(userId);
-    }
 }

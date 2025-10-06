@@ -1,5 +1,6 @@
 package com.cloudblog.user.service;
 
+import com.cloudblog.common.pojo.Po.UserBrowseListPo;
 import com.cloudblog.common.pojo.Po.UserCollectListPo;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
 import com.cloudblog.common.result.AjaxResult;
@@ -17,4 +18,16 @@ public interface UserInfoService {
     AjaxResult getLikeList(UserLikeListPo po);
 
     AjaxResult getCollectList(UserCollectListPo po);
+
+    AjaxResult getBrowseHistory(UserBrowseListPo po);
+
+    AjaxResult getUserFavorites(Long userId);
+
+    AjaxResult getInterestInfo(Long userId);
+
+    AjaxResult getCategoryInfo(Long userId);
+
+    AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag);
+
+    AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag);
 }

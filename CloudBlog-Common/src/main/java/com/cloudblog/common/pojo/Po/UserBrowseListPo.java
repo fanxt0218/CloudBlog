@@ -3,10 +3,9 @@ package com.cloudblog.common.pojo.Po;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
-public class UserLikeListPo {
+public class UserBrowseListPo {
 
     private Long userId;
 

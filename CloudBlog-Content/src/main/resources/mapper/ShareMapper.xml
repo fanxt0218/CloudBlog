@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.ShareMapper">
+
+    <resultMap id="UserShareVoResultMap" type="com.cloudblog.common.pojo.Vo.UserShareVo">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="contentType" column="content_type"/>
+        <result property="browseCount" column="browse_count"/>
+        <result property="likeCount" column="like_count"/>
+    </resultMap>
+    <select id="getUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo">
+        SELECT s.id AS id,
+               s.content AS content,
+               s.create_time AS create_time,
+               s.content_type AS content_type,
+               IFNULL(browse_count.browse_count, 0) AS browse_count,
+               IFNULL(like_count.like_count, 0) AS like_count
+        FROM share s
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS browse_count
+            FROM browse
+            WHERE type = 1
+            GROUP BY post_id
+        ) browse_count ON s.id = browse_count.post_id
+        LEFT JOIN (
+            SELECT target_id AS post_id, COUNT(*) AS like_count
+            FROM likes
+            WHERE type = 1 AND status = 0
+            GROUP BY target_id
+        ) like_count ON s.id = like_count.post_id
+        WHERE s.author_id = #{userId} AND s.status = 2
+        <if test="lastId != null and lastCreateTime != null">
+            AND (
+            s.create_time &lt; #{lastCreateTime}
+            OR (s.create_time = #{lastCreateTime} AND s.id &lt; #{lastId})
+            )
+        </if>
+        ORDER BY s.create_time DESC, s.id DESC
+        LIMIT #{size}
+    </select>
+</mapper>

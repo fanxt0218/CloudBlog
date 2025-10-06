@@ -1,6 +1,7 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudblog.common.pojo.Po.UserBrowseListPo;
 import com.cloudblog.common.pojo.Po.UserCollectListPo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -8,9 +9,7 @@ import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
 import com.cloudblog.common.result.AjaxResult;
-import com.cloudblog.content.service.InterestService;
-import com.cloudblog.content.service.LevelService;
-import com.cloudblog.content.service.PostService;
+import com.cloudblog.content.service.*;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
 import com.cloudblog.user.service.UserService;
@@ -51,6 +50,12 @@ public class UserInfoServiceImpl implements UserInfoService {
     private UserService userService;
     @Autowired
     private PostService postService;
+    @Autowired
+    private FavoritesService favoritesService;
+    @Autowired
+    private CategoryService categoryService;
+    @Autowired
+    private ShareService shareService;
 
     @Override
     public AjaxResult getUserInfo(Long userId) {
@@ -154,6 +159,40 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         IPage<UserCollectListVo> userCollectListVoList = postService.getUserCollectList(po);
         return AjaxResult.success(userCollectListVoList);
+    }
+
+    @Override
+    public AjaxResult getBrowseHistory(UserBrowseListPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        IPage<UserBrowseListVo> userBrowseListVoList = postService.getUserBrowseHistory(po);
+        return AjaxResult.success(userBrowseListVoList);
+    }
+
+    @Override
+    public AjaxResult getUserFavorites(Long userId) {
+        return favoritesService.getUserFavorites(userId);
+    }
+
+    @Override
+    public AjaxResult getInterestInfo(Long userId) {
+        return interestService.getInterestInfo(userId);
+    }
+
+    @Override
+    public AjaxResult getCategoryInfo(Long userId) {
+        return categoryService.getCategoryInfo(userId);
+    }
+
+    @Override
+    public AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag) {
+        return postService.getUserPostList(userId, cursor, size, sortBy, tag);
+    }
+
+    @Override
+    public AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag) {
+        return shareService.getUserShareList(userId, cursor, size, sortBy, tag);
     }
 
     /**

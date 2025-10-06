@@ -204,7 +204,7 @@ create table likes (
     id bigint primary key auto_increment comment '主键',
     target_id bigint comment '目标id',
     user_id bigint comment '用户id',
-    type tinyint comment '目标类型,0:文章 1:评论 2:动态',
+    type tinyint comment '目标类型,0:文章 1:动态 2:评论',
     create_time datetime comment '点赞时间',
     status tinyint default 0 comment '点赞状态,0:正常 1:取消',
 
@@ -282,10 +282,25 @@ create table share (
     id bigint primary key auto_increment comment '主键',
     author_id bigint comment '作者id',
     content text comment '动态内容',
+    topic_id int comment '话题id',
     content_type tinyint comment '内容类型,0:纯文本 1:Markdown 2:HTML',
-    status tinyint default 0 comment '状态',
+    status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
 
-    index idx_post_id (author_id)
-)
+    index idx_post_id (author_id),
+    index idx_status (status),
+    index idx_topic_id (topic_id)
+)comment '动态表';
+
+drop table if exists topic;
+create table topic (
+    id int primary key auto_increment comment '主键',
+    topic_name varchar(32) comment '话题名称',
+    image varchar(255) comment '话题封面',
+    description varchar(255) comment '话题描述',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    unique index uk_topic_name (topic_name)
+)comment '话题表';

@@ -24,8 +24,60 @@ public class UserInfoController {
         return userInfoService.getUserInfo(userId);
     }
 
+    /**
+     * 获取用户成就
+     * @param userId
+     * @return
+     */
     @GetMapping("/getUserAchievement")
     public AjaxResult getUserAchievement(@RequestParam Long userId) {
         return userInfoService.getUserAchievement(userId);
     }
+
+    /**
+     * 获取用户兴趣信息
+     * @param userId
+     * @return
+     */
+    @GetMapping("/getUserInterestInfo")
+    public AjaxResult getInterestInfo(@RequestParam Long userId) {
+        return userInfoService.getInterestInfo(userId);
+    }
+
+    /**
+     * 获取用户分类信息
+     * @param userId
+     * @return
+     */
+    @RequestMapping("/getUserCategoryInfo")
+    public AjaxResult getCategoryInfo(@RequestParam Long userId) {
+        return userInfoService.getCategoryInfo(userId);
+    }
+
+    /**
+     * 获取用户博客列表
+     */
+    @GetMapping("/getUserPostList")
+    public AjaxResult getUserPostList(
+            @RequestParam Long userId,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String tag) {
+        return userInfoService.getUserPostList(userId, cursor, size, sortBy, tag);
+    }
+
+    /**
+     * 获取用户动态列表
+     */
+    @GetMapping("/getUserShareList")
+    public AjaxResult getUserShareList(
+            @RequestParam Long userId,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String tag) {
+        return userInfoService.getUserShareList(userId, cursor, size, sortBy, tag);
+    }
+
 }

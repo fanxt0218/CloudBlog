@@ -15,11 +15,5 @@ public class CollectController {
     @Autowired
     private FavoritesService favoritesService;
 
-    /**
-     * 获取用户收藏夹列表
-     */
-    @GetMapping("/getUserFavorites")
-    public AjaxResult getUserFavorites(@RequestParam Long userId) {
-        return favoritesService.getUserFavorites(userId);
-    }
+
 }

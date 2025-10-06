@@ -19,13 +19,34 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <resultMap id="UserBrowseResultMap" type="com.cloudblog.common.pojo.Vo.UserBrowseListVo">
+        <id property="postId" column="id"/>
+        <result property="title" column="title"/>
+        <result property="image" column="image"/>
+        <result property="isVip" column="is_vip"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="UserPostResultMap" type="com.cloudblog.common.pojo.Vo.UserPostVo">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="introduction" column="introduction"/>
+        <result property="image" column="image"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="browseCount" column="browse_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="collectCount" column="collect_count"/>
+    </resultMap>
+
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
         select p.id as id, title, image, is_vip, td.create_time as create_time from
             (select target_id, create_time from likes
                 <where>
                     type = #{type} and user_id = #{userId} and status = 0
-                    <if test="beginTime != null"> and createTime &gt; #{beginTime}</if>
-                    <if test="endTime != null"> and createTime &lt; #{endTime}</if>
+                    <if test="beginTime != null"> and date(createTime) &gt;= #{beginTime}</if>
+                    <if test="endTime != null"> and date(createTime) &lt;= #{endTime}</if>
                 </where>) td
                 left join
             posts p
@@ -52,5 +73,70 @@
             <if test="postName != null and postName != '' ">and p.title like concat('%', #{postName}, '%')</if>
         </where>
         order by c.create_time desc
+    </select>
+
+    <select id="getUserBrowseHistory" resultType="com.cloudblog.common.pojo.Vo.UserBrowseListVo" resultMap="UserBrowseResultMap">
+        select id,
+            title,
+            image,
+            is_vip,
+            b.create_time as create_time
+        from
+            posts
+                inner join
+            (select
+                post_id,
+                create_time
+            from browse
+            where
+                user_id = #{userId}
+                and type = #{type}
+                <if test="beginTime != null"> and date(create_time) &gt;= #{beginTime} </if>
+                <if test="endTime != null"> and date(create_time) &lt;= #{endTime}</if>
+            ) b
+        on posts.id = b.post_id
+        where status = 2
+        order by b.create_time desc
+    </select>
+
+    <select id="getUserPostList" resultType="com.cloudblog.common.pojo.DoMain.Posts" resultMap="UserPostResultMap">
+        SELECT p.id AS id,
+            p.title AS title,
+            p.introduction AS introduction,
+            p.image AS image,
+            p.type AS type,
+            p.create_time AS create_time,
+            p.update_time AS update_time,
+            IFNULL(browse_count.browse_count, 0) AS browse_count,
+            IFNULL(like_count.like_count, 0) AS like_count,
+            IFNULL(collect_count.collect_count, 0) AS collect_count
+        FROM posts p
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS browse_count
+            FROM browse
+            WHERE type = 0
+            GROUP BY post_id
+        ) browse_count ON p.id = browse_count.post_id
+        LEFT JOIN (
+            SELECT target_id AS post_id, COUNT(*) AS like_count
+            FROM likes
+            WHERE type = 0 AND status = 0
+            GROUP BY target_id
+        ) like_count ON p.id = like_count.post_id
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS collect_count
+            FROM collect
+            WHERE status = 0
+            GROUP BY post_id
+        ) collect_count ON p.id = collect_count.post_id
+        WHERE p.author_id = #{userId} AND p.status = 2
+        <if test="lastId != null and lastCreateTime != null">
+            AND (
+            p.create_time &lt; #{lastCreateTime}
+            OR (p.create_time = #{lastCreateTime} AND p.id &lt; #{lastId})
+            )
+        </if>
+        ORDER BY p.create_time DESC, p.id DESC
+        LIMIT #{size}
     </select>
 </mapper>

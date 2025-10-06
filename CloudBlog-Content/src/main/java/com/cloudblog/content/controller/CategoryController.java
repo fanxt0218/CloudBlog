@@ -14,13 +14,4 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    /**
-     * 获取用户分类信息
-     * @param userId
-     * @return
-     */
-    @RequestMapping("/getUserCategoryInfo")
-    public AjaxResult getCategoryInfo(@RequestParam Long userId) {
-        return categoryService.getCategoryInfo(userId);
-    }
 }
