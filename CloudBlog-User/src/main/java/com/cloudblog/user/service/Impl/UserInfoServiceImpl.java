@@ -66,6 +66,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
         UserHomePageVo userHomePageVo = new UserHomePageVo();
         userHomePageVo.setUserName(userInfo.getUserName());
+        userHomePageVo.setImage(userInfo.getImage());
         userHomePageVo.setRegion(userInfo.getRegion());
         userHomePageVo.setJoinTime(userInfo.getCreateTime());
         userHomePageVo.setIntroduction(userInfo.getIntroduction());
@@ -80,10 +81,18 @@ public class UserInfoServiceImpl implements UserInfoService {
         Long fanCount = userFocusMapper.selectCount(new LambdaQueryWrapper<UserFocus>().eq(UserFocus::getFocusUserId, userId));
         // 获取等级
         Integer level = getUserLevel(userInfo.getExp());
+
         userHomePageVo.setVisits(browseCount);
         userHomePageVo.setPostCount(postCount);
         userHomePageVo.setFanCount(fanCount);
         userHomePageVo.setLevel(level);
+
+        // 额外部分（用户信息弹框）
+        // 关注数
+        Long focusCount = userFocusMapper.selectCount(new LambdaQueryWrapper<UserFocus>().eq(UserFocus::getUserId, userId));
+        userHomePageVo.setFocusCount(focusCount);
+        // 是否是VIP
+        userHomePageVo.setIsVip(userInfo.getIsVip());
 
         return AjaxResult.success(userHomePageVo);
     }

@@ -10,6 +10,8 @@ public class UserHomePageVo {
 
     private String userName;
 
+    private String image;
+
     private String region;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -26,4 +28,8 @@ public class UserHomePageVo {
     private Integer blogAge;
 
     private Integer level;
+
+    private Long focusCount;
+
+    private Integer isVip;
 }
