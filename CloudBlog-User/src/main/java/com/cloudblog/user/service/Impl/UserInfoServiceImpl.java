@@ -204,6 +204,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         return shareService.getUserShareList(userId, cursor, size, sortBy, tag);
     }
 
+    @Override
+    public AjaxResult getUserLevelInfo(Long userId) {
+        return levelService.getUserLevelInfo(userId);
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId

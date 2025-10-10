@@ -30,4 +30,6 @@ public interface UserInfoService {
     AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag);
 
     AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag);
+
+    AjaxResult getUserLevelInfo(Long userId);
 }

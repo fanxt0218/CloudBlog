@@ -246,10 +246,11 @@ create table notification (
     id bigint primary key auto_increment comment '主键',
     recipient_id bigint comment '接收者id',
     sender_id bigint comment '发送者id',
-    type tinyint comment '通知类型,0:点赞 1:收藏 2:评论 3:关注',
+    type tinyint comment '通知类型,关联类型id',
     object_type tinyint comment '对象类型,0:文章 1:动态 2:其他',
     object_id bigint comment '关联对象id',
     content text comment '通知内容',
+#     relationship tinyint comment '关系类型,0:陌生人 1:已关注 2:粉丝 3:好友 4:官方',
     is_read tinyint default 0 comment '是否已读,0:未读 1:已读',
     is_aggregated tinyint default 0 comment '是否已聚合,0:否 1:是',
     aggregated_count int comment '聚合数量',
@@ -267,7 +268,7 @@ create table notification (
 
 drop table if exists notification_type;
 create table notification_type (
-    id tinyint primary key comment '主键',
+    id tinyint primary key auto_increment comment '主键',
     type_name varchar(32) comment '类型名称',
     type_code varchar(32) comment '类型编码',
     template varchar(255) comment '通知类型模板',

@@ -66,4 +66,12 @@ public class UserDetailController {
         return userInfoService.getBrowseHistory(po);
     }
 
+    /**
+     * 获取用户等级信息
+     */
+    @GetMapping("/userLevelInfo")
+    public AjaxResult getUserLevelInfo(@RequestParam Long userId) {
+        return userInfoService.getUserLevelInfo(userId);
+    }
+
 }

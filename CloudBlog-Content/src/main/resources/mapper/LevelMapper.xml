@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.content.mapper.LevelMapper">
+
+    <resultMap id="UserLevelInfoResultMap" type="com.cloudblog.common.pojo.Vo.UserLevelInfoVo">
+        <id property="image" column="image"/>
+        <id property="name" column="name"/>
+        <id property="exp" column="exp"/>
+        <id property="level" column="level"/>
+        <id property="nextLevelThreshold" column="next_level_threshold"/>
+    </resultMap>
+    <select id="getUserLevelInfo" resultType="com.cloudblog.common.result.AjaxResult"
+            parameterType="java.lang.Long" resultMap="UserLevelInfoResultMap">
+        SELECT
+            ui.image AS image,
+            ui.user_name AS name,
+            ui.exp AS exp,
+            l.level AS level,
+            next_level.exp_threshold as next_level_threshold
+        FROM user_info ui
+                 JOIN level l ON ui.exp >= l.exp_threshold
+                 LEFT JOIN level next_level ON l.level + 1 = next_level.level
+        WHERE ui.user_id = #{userId}
+        ORDER BY l.exp_threshold DESC
+            LIMIT 1
+    </select>
 </mapper>

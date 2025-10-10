@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.FocusMapper">
+
+    <resultMap id="UserFocusResultMap" type="com.cloudblog.common.pojo.Vo.UserFocusListVo">
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userImage" column="user_image"/>
+        <result property="introduction" column="introduction"/>
+    </resultMap>
+
+    <resultMap id="UserFanResultMap" type="com.cloudblog.common.pojo.Vo.UserFanListVo">
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userImage" column="user_image"/>
+        <result property="introduction" column="introduction"/>
+        <result property="isFollowEachOther" column="is_follow_each_other"/>
+    </resultMap>
+    <select id="getUserFocusList" resultType="com.cloudblog.common.pojo.Vo.UserFocusListVo"
+            parameterType="java.lang.Long" resultMap="UserFocusResultMap">
+        select
+            uf.focus_user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            ui.introduction as introduction
+        from
+            user_focus uf
+                join
+            user_info ui
+            on uf.user_id = ui.user_id where uf.user_id = #{userId}
+        order by uf.create_time desc
+    </select>
+
+    <select id="getUserFanList" resultType="com.cloudblog.common.pojo.Vo.UserFanListVo"
+            parameterType="java.lang.Long" resultMap="UserFanResultMap">
+        select
+            uf.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            ui.introduction as introduction,
+            case
+                when EXISTS (
+                    select 1 from user_focus uf2
+                    where uf2.user_id = uf.focus_user_id
+                      and uf2.focus_user_id = #{userId}
+                ) then 1
+                else 0
+                end as is_follow_each_other
+        from
+            user_focus uf
+                join
+            user_info ui
+            on uf.focus_user_id = ui.user_id where uf.focus_user_id = #{userId}
+        order by uf.create_time desc
+    </select>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.NotificationMapper">
+
+    <resultMap id="NotificationTypeResultMap" type="com.cloudblog.common.pojo.DoMain.NotificationType">
+        <id property="id" column="id"/>
+        <id property="typeName" column="type_name"/>
+        <id property="typeCode" column="type_code"/>
+        <id property="template" column="template"/>
+        <id property="description" column="description"/>
+        <id property="isActive" column="is_active"/>
+        <id property="createTime" column="create_time"/>
+        <id property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="UserChatResultMap" type="com.cloudblog.common.pojo.Dto.UserChatList">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="user_image"/>
+        <id property="lastMessage" column="last_message"/>
+        <id property="lastMessageTime" column="last_message_time"/>
+        <id property="unreadCount" column="unread_count"/>
+    </resultMap>
+
+    <resultMap id="UserCommentResultMap" type="com.cloudblog.common.pojo.Dto.UserCommentList">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="user_image"/>
+        <id property="content" column="content"/>
+        <id property="objectType" column="object_type"/>
+        <id property="objectId" column="object_id"/>
+        <id property="objectTitle" column="object_title"/>
+        <id property="createTime" column="create_time"/>
+        <id property="isRead" column="is_read"/>
+    </resultMap>
+
+    <resultMap id="UserFanResultMap" type="com.cloudblog.common.pojo.Dto.UserFanNoticeList">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="user_image"/>
+        <id property="createTime" column="create_time"/>
+        <id property="isRead" column="is_read"/>
+    </resultMap>
+
+    <resultMap id="UserLikeAndCollectResultMap" type="com.cloudblog.common.pojo.Dto.UserLikeAndCollectNoticeList">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="user_image"/>
+        <id property="objectType" column="object_type"/>
+        <id property="objectId" column="object_id"/>
+        <id property="objectTitle" column="object_title"/>
+        <id property="createTime" column="create_time"/>
+        <id property="isRead" column="is_read"/>
+    </resultMap>
+
+    <select id="getNotificationTypeList" resultType="com.cloudblog.common.pojo.DoMain.NotificationType" resultMap="NotificationTypeResultMap">
+        select
+            id,
+            type_name,
+            type_code,
+            template,
+            description,
+            is_active,
+            create_time,
+            update_time
+        from notification_type
+        where is_active = 1
+    </select>
+
+    <select id="getChatList" resultType="com.cloudblog.common.pojo.Dto.UserChatList"
+            parameterType="java.lang.Long" resultMap="UserChatResultMap">
+        SELECT
+            u.id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            n.content as last_message,
+            DATE_FORMAT(n.create_time, '%Y-%m-%d %H:%i:%s') as last_message_time,
+            (SELECT COUNT(*)
+             FROM notification
+             WHERE recipient_id = #{userId}
+               AND sender_id = u.id
+               AND is_read = 0) as unread_count
+        FROM user u
+                 JOIN user_info ui ON u.id = ui.user_id
+                 JOIN (
+            SELECT sender_id, content, create_time,
+                   ROW_NUMBER() OVER (PARTITION BY sender_id ORDER BY create_time DESC) as rn
+            FROM notification
+            WHERE recipient_id = #{userId} AND type = 1
+        ) n ON n.sender_id = u.id AND n.rn = 1
+        ORDER BY n.create_time DESC
+    </select>
+
+    <select id="getCommentList" resultType="com.cloudblog.common.pojo.Dto.UserCommentList"
+            parameterType="java.lang.Long" resultMap="UserCommentResultMap">
+        select
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            n.content as content,
+            n.object_type as object_type,
+            n.object_id as object_id,
+            coalesce(
+                    p.title,
+                    s.content,
+                    (SELECT cc.content
+                     FROM comments cm
+                              JOIN comment_content cc ON cm.id = cc.comment_id
+                     WHERE cm.id = n.object_id)
+            ) as object_title,
+            n.create_time as create_time,
+            n.is_read as is_read
+        from
+            notification n
+                join
+            user_info ui
+            on n.sender_id = ui.user_id
+                left join posts p on n.object_type = 0 and n.object_id = p.id
+                left join share s on n.object_type = 1 and n.object_id = s.id
+                left join comments c on n.object_type = 2 and n.object_id = c.id
+        where n.type = 2 and recipient_id = #{userId}
+        order by n.create_time desc
+    </select>
+    <select id="getFanList" resultType="com.cloudblog.common.pojo.Dto.UserFanNoticeList"
+            parameterType="java.lang.Long" resultMap="UserFanResultMap">
+        select
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            n.create_time as create_time,
+            n.is_read as is_read
+        from
+            notification n
+                join
+            user_info ui
+            on n.sender_id = ui.user_id
+        where type = 3 and recipient_id = #{userId}
+        order by n.create_time desc
+    </select>
+
+    <select id="getLikeAndCollectList" resultType="com.cloudblog.common.pojo.Dto.UserLikeAndCollectNoticeList" parameterType="java.lang.Long" resultMap="UserLikeAndCollectResultMap">
+        select
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_image,
+            n.content as content,
+            n.object_type as object_type,
+            n.object_id as object_id,
+            coalesce(
+                    p.title,
+                    s.content,
+                    (SELECT cc.content
+                     FROM comments cm
+                              JOIN comment_content cc ON cm.id = cc.comment_id
+                     WHERE cm.id = n.object_id)
+            ) as object_title,
+            n.create_time as create_time,
+            n.is_read as is_read
+        from
+            notification n
+                join
+            user_info ui
+            on n.sender_id = ui.user_id
+                left join posts p on n.object_type = 0 and n.object_id = p.id
+                left join share s on n.object_type = 1 and n.object_id = s.id
+                left join comments c on n.object_type = 2 and n.object_id = c.id
+        where (n.type = 4 or n.type = 5) and recipient_id = 1
+    </select>
+</mapper>
