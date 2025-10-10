@@ -1,8 +1,6 @@
 package com.cloudblog.user.service;
 
-import com.cloudblog.common.pojo.Po.UserBrowseListPo;
-import com.cloudblog.common.pojo.Po.UserCollectListPo;
-import com.cloudblog.common.pojo.Po.UserLikeListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.result.AjaxResult;
 
 public interface UserInfoService {
@@ -32,4 +30,12 @@ public interface UserInfoService {
     AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag);
 
     AjaxResult getUserLevelInfo(Long userId);
+
+    AjaxResult updatePersonalInfo(UpdatePersonalInfoPo po);
+
+    AjaxResult updatePassword(UpdatePasswordPo po);
+
+    AjaxResult updatePhone(UpdatePhonePo po);
+
+    AjaxResult updateEmail(UpdateEmailPo po);
 }

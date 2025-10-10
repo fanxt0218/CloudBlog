@@ -1,6 +1,8 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.DoMain.NotificationType;
+import com.cloudblog.common.pojo.Dto.ChatContentType;
+import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
 import com.cloudblog.common.result.AjaxResult;
 
@@ -11,4 +13,8 @@ public interface NotificationService {
     AjaxResult getNotificationList(UserNotificationsPo po);
 
     List<NotificationType> getNotificationTypeList();
+
+    AjaxResult getChatDetail(UserChatDetailPo po);
+
+    List<ChatContentType> getChatContentType();
 }

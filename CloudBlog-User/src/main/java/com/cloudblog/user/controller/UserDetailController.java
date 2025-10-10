@@ -1,8 +1,6 @@
 package com.cloudblog.user.controller;
 
-import com.cloudblog.common.pojo.Po.UserBrowseListPo;
-import com.cloudblog.common.pojo.Po.UserCollectListPo;
-import com.cloudblog.common.pojo.Po.UserLikeListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +24,43 @@ public class UserDetailController {
     }
 
     /**
+     * 修改用户信息详情(个人资料)
+     */
+    @PostMapping("/updatePersonalInfo")
+    public AjaxResult updatePersonalInfo(@RequestBody UpdatePersonalInfoPo po) {
+        return userInfoService.updatePersonalInfo(po);
+    }
+    /**
      * 获取用户信息详情(账户设置)
      * @return
      */
     @GetMapping("/accountSettings")
     public AjaxResult getAccountSettings(@RequestParam Long userId) {
         return userInfoService.getAccountSettings(userId);
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/updatePassword")
+    public AjaxResult updatePassword(@RequestBody UpdatePasswordPo po) {
+        return userInfoService.updatePassword(po);
+    }
+
+    /**
+     * 修改手机号
+     */
+    @PostMapping("/updatePhone")
+    public AjaxResult updatePhone(@RequestBody UpdatePhonePo po) {
+        return userInfoService.updatePhone(po);
+    }
+
+    /**
+     * 修改邮箱
+     */
+    @PostMapping("/updateEmail")
+    public AjaxResult updateEmail(@RequestBody UpdateEmailPo po) {
+        return userInfoService.updateEmail(po);
     }
 
     /**

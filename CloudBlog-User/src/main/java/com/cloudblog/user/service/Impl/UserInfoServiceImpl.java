@@ -1,18 +1,19 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cloudblog.common.pojo.Po.UserBrowseListPo;
-import com.cloudblog.common.pojo.Po.UserCollectListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.*;
-import com.cloudblog.common.pojo.Po.UserLikeListPo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.content.service.*;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
 import com.cloudblog.user.service.UserService;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import static com.cloudblog.common.result.AjaxResult.DATA_TAG;
+import static com.cloudblog.user.service.Impl.UserServiceImpl.*;
 
+@Slf4j
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
 
@@ -209,6 +212,118 @@ public class UserInfoServiceImpl implements UserInfoService {
         return levelService.getUserLevelInfo(userId);
     }
 
+    @Override
+    public AjaxResult updatePersonalInfo(UpdatePersonalInfoPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        // 检查账户是否重复
+//        if (po.getUserAccount() != null && !po.getUserAccount().isEmpty()) {
+//            User userByAccount = userService.getUserByAccount(po.getUserAccount());
+//            if (userByAccount != null) {
+//                return AjaxResult.warn("该用户账户已存在");
+//            }
+//        }
+        // 检查用户昵称是否符合规范
+        if (po.getUserName() != null && !po.getUserName().isEmpty()) {
+            if (!checkUserName(po.getUserName())){
+                return AjaxResult.warn("用户名只能由3-16位的字母、数字、下划线、汉字组成");
+            }
+        }
+        // 执行更新
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(po, userInfo);
+        userInfo.setUpdateTime(LocalDateTime.now());
+        try {
+            userInfoMapper.update(userInfo, new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, po.getUserId()));
+        } catch (Exception e) {
+            log.error("更新用户信息失败：{}", e.getMessage());
+            return AjaxResult.error("更新失败");
+        }
+        return AjaxResult.success("更新成功");
+    }
+
+    @Override
+    public AjaxResult updatePassword(UpdatePasswordPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        // 校验密码格式
+        if (!checkPassword(po.getNewPassword())) {
+            return AjaxResult.warn("密码只能由6-16位的字母、数字组成");
+        }
+        // 验证新旧密码
+        User user = userService.getUser(po.getUserId());
+        if (PasswordUtil.checkPassword(po.getNewPassword(), user.getPassword())) {
+            return AjaxResult.warn("新密码不能与旧密码相同");
+        }
+        // 执行更新
+        User updateUser = new User();
+        updateUser.setId(po.getUserId());
+        updateUser.setPassword(PasswordUtil.hashPassword(po.getNewPassword()));
+        try {
+            userService.updatePassword(updateUser);
+        } catch (Exception e) {
+            log.error("更新用户密码失败：{}", e.getMessage());
+            return AjaxResult.error("更新失败");
+        }
+        return AjaxResult.success("更新成功");
+    }
+
+    @Override
+    public AjaxResult updatePhone(UpdatePhonePo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        // 检查手机号格式
+        if (!checkPhone(po.getNewPhone())) {
+            return AjaxResult.warn("手机号格式不正确");
+        }
+        // 检查手机号是否重复
+        User user = userService.getUserByPhone(po.getNewPhone());
+        if (user != null) {
+            return AjaxResult.warn("手机号已注册");
+        }
+        // 执行更新
+        User updateUser = new User();
+        updateUser.setId(po.getUserId());
+        updateUser.setPhone(po.getNewPhone());
+        try {
+            userService.updatePhone(updateUser);
+        } catch (Exception e) {
+            log.error("更新用户手机号失败：{}", e.getMessage());
+            return AjaxResult.error("更新失败");
+        }
+        return AjaxResult.success("更新成功");
+    }
+
+    @Override
+    public AjaxResult updateEmail(UpdateEmailPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        // 验证邮箱格式
+        if (!checkEmail(po.getNewEmail())) {
+            return AjaxResult.warn("邮箱格式不正确");
+        }
+        // 验证邮箱是否重复
+        User user = userService.getUserByEmail(po.getNewEmail());
+        if (user != null) {
+            return AjaxResult.warn("邮箱已被绑定");
+        }
+        // 执行更新
+        User updateUser = new User();
+        updateUser.setId(po.getUserId());
+        updateUser.setEmail(po.getNewEmail());
+        try {
+            userService.updateEmail(updateUser);
+        } catch (Exception e) {
+            log.error("更新用户邮箱失败：{}", e.getMessage());
+            return AjaxResult.error("更新失败");
+        }
+        return AjaxResult.success("更新成功");
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId
@@ -254,4 +369,13 @@ public class UserInfoServiceImpl implements UserInfoService {
     public Integer getUserBlogAge(LocalDateTime joinTime) {
         return LocalDate.now().getYear() - joinTime.getYear();
     }
+
+    public static Boolean checkEmail(String email){
+        if (email == null || email.isEmpty()) {
+            return false;
+        }
+        return email.matches( "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
+                "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
+    }
+
 }

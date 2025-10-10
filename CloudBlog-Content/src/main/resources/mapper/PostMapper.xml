@@ -33,6 +33,7 @@
         <result property="introduction" column="introduction"/>
         <result property="image" column="image"/>
         <result property="type" column="type"/>
+        <result property="postType" column="post_type"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="browseCount" column="browse_count"/>
@@ -105,6 +106,7 @@
             p.introduction AS introduction,
             p.image AS image,
             p.type AS type,
+            p.post_type AS post_type,
             p.create_time AS create_time,
             p.update_time AS update_time,
             IFNULL(browse_count.browse_count, 0) AS browse_count,

@@ -93,13 +93,45 @@ public class UserServiceImpl implements UserService {
         return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getId, userId));
     }
 
+    @Override
+    public User getUserByAccount(String userAccount) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserAccount, userAccount));
+    }
+
+    @Override
+    public void updatePassword(User updateUser) {
+        userMapper.updateById(updateUser);
+    }
+
+    @Override
+    public User getUserByPhone(String newPhone) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, newPhone));
+    }
+
+    @Override
+    public void updatePhone(User updateUser) {
+        userMapper.updateById(updateUser);
+    }
+
+    @Override
+    public User getUserByEmail(String newEmail) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getEmail, newEmail));
+    }
+
+    @Override
+    public void updateEmail(User updateUser) {
+        userMapper.updateById(updateUser);
+    }
+
 
     /**
      * 校验用户名
+     *
      * @param userName
      * @return
      */
-    public boolean checkUserName(String userName) {
+
+    public static Boolean checkUserName(String userName) {
         // 用户名只能由字母、数字下、划线、汉字组成，且3-16位
         return userName.matches("^[a-zA-Z0-9_\u4e00-\u9fa5]{3,16}$");
     }
@@ -109,12 +141,18 @@ public class UserServiceImpl implements UserService {
      * @param password
      * @return
      */
-    private boolean checkPassword(String password) {
+
+    public static Boolean checkPassword(String password) {
         // 密码只能由字母、数字组成，且6-16位
         return password.matches("^[a-zA-Z0-9]{6,16}$");
     }
 
-    private boolean checkPhone(String phone) {
+    /**
+     * 校验手机号
+     * @param phone
+     * @return
+     */
+    public static boolean checkPhone(String phone) {
         // 手机号只能由数字组成，且11位
         return phone.matches("^[0-9]{11}$");
     }

@@ -51,6 +51,19 @@ create table level (
     unique index uk_level (level)
 )comment '等级表';
 
+insert into level (level, level_name, exp_threshold) values
+(1,'等级一',0),
+(2,'等级二',1000),
+(3,'等级三',2000),
+(4,'等级四',3000),
+(5,'等级五',4000),
+(6,'等级六',5000),
+(7,'等级七',6000),
+(8,'等级八',7000),
+(9,'等级九',8000),
+(10,'等级十',10000);
+
+
 drop table if exists user_focus;
 create table user_focus (
     id bigint primary key auto_increment comment '主键',
@@ -114,6 +127,7 @@ create table posts (
     status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
     content_id bigint comment '内容id',
     type int default 0 comment '类型(扩展)',
+    post_type tinyint default 0 comment '文章类型(0:普通文章/博客 1:新闻/资讯)',
     is_vip tinyint default 0 comment '是否会员可见,0:否 1:是',
     category_id int comment '分类id',
     create_time datetime comment '创建时间',
@@ -247,7 +261,7 @@ create table notification (
     recipient_id bigint comment '接收者id',
     sender_id bigint comment '发送者id',
     type tinyint comment '通知类型,关联类型id',
-    object_type tinyint comment '对象类型,0:文章 1:动态 2:其他',
+    object_type tinyint comment '对象类型,0:文章 1:动态 2:评论 3:文本 4:图片 5:文件 6:视频 7:音频',
     object_id bigint comment '关联对象id',
     content text comment '通知内容',
 #     relationship tinyint comment '关系类型,0:陌生人 1:已关注 2:粉丝 3:好友 4:官方',
@@ -277,6 +291,11 @@ create table notification_type (
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间'
 )comment '通知类型表';
+
+insert into notification_type (type_name, type_code, template, description) values
+    ('聊天', 'user_chat', '**发来消息：***: ', '聊天信息'),
+    ('评论', 'comment', '评论了你', '用户评论'),
+    ('新增粉丝', 'new_fan', '***关注了你', '新增粉丝');
 
 drop table if exists share;
 create table share (

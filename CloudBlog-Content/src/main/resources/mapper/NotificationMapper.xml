@@ -53,6 +53,20 @@
         <id property="isRead" column="is_read"/>
     </resultMap>
 
+    <resultMap id="ConversationInfoResultMap" type="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ConversationInfo">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="user_image"/>
+    </resultMap>
+
+    <resultMap id="UserMessageResultMap" type="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ChatMessage">
+        <id property="messageId" column="message_id"/>
+        <id property="senderId" column="sender_id"/>
+        <id property="sendTime" column="send_time"/>
+        <id property="content" column="content"/>
+        <id property="contentType" column="content_type"/>
+    </resultMap>
+
     <select id="getNotificationTypeList" resultType="com.cloudblog.common.pojo.DoMain.NotificationType" resultMap="NotificationTypeResultMap">
         select
             id,
@@ -165,5 +179,34 @@
                 left join share s on n.object_type = 1 and n.object_id = s.id
                 left join comments c on n.object_type = 2 and n.object_id = c.id
         where (n.type = 4 or n.type = 5) and recipient_id = 1
+    </select>
+
+    <select id="getChatUserInfo" resultType="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ConversationInfo"
+            parameterType="java.lang.Long" resultMap="ConversationInfoResultMap">
+        select
+            user_id,
+            user_name,
+            image as user_image
+        from user_info
+        where user_id = #{userId}
+    </select>
+
+    <select id="getChatDetail" resultType="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ChatMessage"
+            parameterType="com.cloudblog.common.pojo.Po.UserChatDetailPo" resultMap="UserMessageResultMap">
+        select
+            id,
+            sender_id,
+            create_time,
+            content,
+            object_type as content_type
+        from
+            notification
+        where
+            type = 1
+                and
+            (sender_id = #{po.userId} and recipient_id = #{po.targetUserId})
+           or
+            (sender_id = #{po.targetUserId} and recipient_id = #{po.userId})
+        order by create_time
     </select>
 </mapper>

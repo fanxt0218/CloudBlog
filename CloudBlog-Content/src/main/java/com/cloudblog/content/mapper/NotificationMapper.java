@@ -7,6 +7,9 @@ import com.cloudblog.common.pojo.Dto.UserChatList;
 import com.cloudblog.common.pojo.Dto.UserCommentList;
 import com.cloudblog.common.pojo.Dto.UserFanNoticeList;
 import com.cloudblog.common.pojo.Dto.UserLikeAndCollectNoticeList;
+import com.cloudblog.common.pojo.Po.UserChatDetailPo;
+import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -44,5 +47,18 @@ public interface NotificationMapper extends BaseMapper<Notification> {
      * @param userId
      * @return
      */
-    List<UserLikeAndCollectNoticeList> getLikeAndCollectList(Long userId);
+    List<UserLikeAndCollectNoticeList> getLikeAndCollectList(@Param("userId") Long userId);
+
+    /**
+     * 获取聊天用户详情
+     * @return
+     */
+    UserChatDetailVo.ConversationInfo getChatUserInfo(@Param("userId") Long userId);
+
+    /**
+     * 获取聊天详情
+     * @param po
+     * @return
+     */
+    List<UserChatDetailVo.ChatMessage> getChatDetail(@Param("po") UserChatDetailPo po);
 }

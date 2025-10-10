@@ -18,6 +18,11 @@ public class UserPostVo {
 
     private Integer type;
 
+    /**
+     * 文章类型(0:普通文章/博客 1:新闻/资讯)
+     */
+    private Integer postType;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 

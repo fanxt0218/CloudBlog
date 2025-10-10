@@ -36,6 +36,11 @@ public class Posts {
     private Integer type;
 
     /**
+     * 文章类型(0:普通文章/博客 1:新闻/资讯)
+     */
+    private Integer postType;
+
+    /**
      * 0:否 1：是
      */
     private Integer isVip;

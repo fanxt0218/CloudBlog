@@ -2,11 +2,10 @@ package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
-import com.cloudblog.common.pojo.Dto.UserChatList;
-import com.cloudblog.common.pojo.Dto.UserCommentList;
-import com.cloudblog.common.pojo.Dto.UserFanNoticeList;
-import com.cloudblog.common.pojo.Dto.UserLikeAndCollectNoticeList;
+import com.cloudblog.common.pojo.Dto.*;
+import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
+import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
 import com.cloudblog.common.pojo.Vo.UserFocusListVo;
 import com.cloudblog.common.result.AjaxResult;
@@ -50,6 +49,46 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationType> getNotificationTypeList() {
         return notificationMapper.getNotificationTypeList();
+    }
+
+    @Override
+    public AjaxResult getChatDetail(UserChatDetailPo po) {
+        if (po.getUserId() == null || po.getTargetUserId() == null) {
+            return AjaxResult.error("参与用户ID不能为空");
+        }
+        UserChatDetailVo userChatDetailVo = new UserChatDetailVo();
+        // 查询聊天用户信息
+        ArrayList<UserChatDetailVo.ConversationInfo> participants = new ArrayList<>();
+
+        UserChatDetailVo.ConversationInfo chatUserInfo = notificationMapper.getChatUserInfo(po.getUserId());
+        chatUserInfo.setSelf(true);
+        participants.add(chatUserInfo);
+        // 非文件传输助手
+        if (!po.getTargetUserId().equals(po.getUserId())) {
+            UserChatDetailVo.ConversationInfo targetUserInfo = notificationMapper.getChatUserInfo(po.getTargetUserId());
+            targetUserInfo.setSelf(false);
+            participants.add(targetUserInfo);
+        }
+
+        userChatDetailVo.setParticipants(participants);
+
+        // 查询聊天记录
+        List<UserChatDetailVo.ChatMessage> messages = notificationMapper.getChatDetail(po);
+        userChatDetailVo.setMessages(messages);
+
+        return AjaxResult.success(userChatDetailVo);
+    }
+
+    @Override
+    public List<ChatContentType> getChatContentType() {
+        // TODO 这里是暂时硬编码的内容类型
+        return List.of(
+                new ChatContentType(3, "文本"),
+                new ChatContentType(4, "图片"),
+                new ChatContentType(5, "文件"),
+                new ChatContentType(6, "视频"),
+                new ChatContentType(7, "音频")
+                );
     }
 
     /**

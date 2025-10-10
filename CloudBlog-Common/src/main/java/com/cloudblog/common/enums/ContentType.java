@@ -6,5 +6,18 @@ public enum ContentType {
 
     SHARE,
 
-    COMMENT
+    COMMENT,
+
+    /**
+     * 聊天部分
+     */
+    TEXT,
+
+    IMAGE,
+
+    FILE,
+
+    AUDIO,
+
+    VIDEO
 }
