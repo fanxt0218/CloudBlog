@@ -4,6 +4,8 @@ file:
   resource:
     prefix: /profile
     path: D:/cloud_blog/upload
+    content:
+      avatar: /avatar
 spring:
   profiles:
     active: dev

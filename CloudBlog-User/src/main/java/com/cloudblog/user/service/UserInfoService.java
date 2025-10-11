@@ -2,6 +2,7 @@ package com.cloudblog.user.service;
 
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.result.AjaxResult;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserInfoService {
 
@@ -38,4 +39,6 @@ public interface UserInfoService {
     AjaxResult updatePhone(UpdatePhonePo po);
 
     AjaxResult updateEmail(UpdateEmailPo po);
+
+    AjaxResult uploadAvatar(MultipartFile file);
 }

@@ -8,6 +8,7 @@ import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
+import com.cloudblog.common.utils.UploadUtil;
 import com.cloudblog.content.service.*;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
@@ -16,7 +17,9 @@ import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,6 +62,9 @@ public class UserInfoServiceImpl implements UserInfoService {
     private CategoryService categoryService;
     @Autowired
     private ShareService shareService;
+
+    @Value("${file.resource.content.avatar}")
+    private String avatarPath;
 
     @Override
     public AjaxResult getUserInfo(Long userId) {
@@ -322,6 +328,13 @@ public class UserInfoServiceImpl implements UserInfoService {
             return AjaxResult.error("更新失败");
         }
         return AjaxResult.success("更新成功");
+    }
+
+    @Override
+    public AjaxResult uploadAvatar(MultipartFile file) {
+        String uploadPath = avatarPath;
+        String path = UploadUtil.uploadFile(file, uploadPath);
+        return AjaxResult.success("上传成功", path);
     }
 
     /**

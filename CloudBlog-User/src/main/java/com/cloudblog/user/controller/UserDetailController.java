@@ -5,6 +5,7 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/userInfo/detail")
@@ -101,6 +102,14 @@ public class UserDetailController {
     @GetMapping("/userLevelInfo")
     public AjaxResult getUserLevelInfo(@RequestParam Long userId) {
         return userInfoService.getUserLevelInfo(userId);
+    }
+
+    /**
+     * 上传头像
+     */
+    @PostMapping("/uploadAvatar")
+    public AjaxResult uploadAvatar(@RequestParam MultipartFile file) {
+        return userInfoService.uploadAvatar(file);
     }
 
 }
