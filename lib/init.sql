@@ -102,6 +102,32 @@ create table tag (
     unique index uk_tag_name (tag_name)
 )comment '标签表';
 
+insert into tag (tag_name, description, create_time) values
+('java', 'java语言', now()),
+('python', 'python语言', now()),
+('c++', 'c++语言', now()),
+('javascript', 'javascript语言', now()),
+('html', 'html语言', now()),
+('css', 'css语言', now()),
+('mysql', 'mysql数据库', now()),
+('redis', 'redis数据库', now()),
+('mongodb', 'mongodb数据库', now()),
+('前端', '前端技术', now()),
+('后端', '后端技术', now()),
+('数据库', '数据库技术', now()),
+('大数据', '大数据技术', now()),
+('人工智能', '人工智能技术', now()),
+('机器学习', '机器学习技术', now()),
+('爬虫', '爬虫技术', now()),
+('测试', '测试', now()),
+('开发工具', '开发工具', now()),
+('运维', '运维技术', now()),
+('区块链', '区块链技术', now()),
+('物联网', '物联网技术', now()),
+('游戏开发', '游戏开发技术', now()),
+('移动开发', '移动开发技术', now()),
+('AIGC', 'AI创作', now());
+
 drop table if exists user_vip;
 create table user_vip (
     id bigint primary key auto_increment comment '主键',
@@ -303,7 +329,7 @@ create table share (
     author_id bigint comment '作者id',
     content text comment '动态内容',
     topic_id int comment '话题id',
-    content_type tinyint comment '内容类型,0:纯文本 1:Markdown 2:HTML',
+    content_type tinyint comment '内容类型,0:Markdown 1:HTML 2:TEXT',
     status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',

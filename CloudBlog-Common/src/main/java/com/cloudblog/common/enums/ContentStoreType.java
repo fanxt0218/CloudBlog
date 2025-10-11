@@ -4,5 +4,7 @@ public enum ContentStoreType {
 
     MARKDOWN,
 
-    HTML
+    HTML,
+
+    TEXT
 }

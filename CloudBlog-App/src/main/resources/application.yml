@@ -1,6 +1,9 @@
 server:
   port: 9090
-
+file:
+  resource:
+    prefix: /profile
+    path: D:/cloud_blog/upload
 spring:
   profiles:
     active: dev
