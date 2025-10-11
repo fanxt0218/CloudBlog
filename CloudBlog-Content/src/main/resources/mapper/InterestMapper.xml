@@ -8,7 +8,7 @@
                t.description,
                t.create_time,
                t.update_time
-        from tag t left join (select * from user_interest where user_id = #{userId}) ui on t.id = ui.tag_id
+        from tag t inner join (select user_id, tag_id, weight from user_interest where user_id = #{userId}) ui on t.id = ui.tag_id
         order by ui.weight desc
     </select>
 </mapper>

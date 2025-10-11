@@ -16,6 +16,7 @@
         <result property="introduction" column="introduction"/>
         <result property="isFollowEachOther" column="is_follow_each_other"/>
     </resultMap>
+
     <select id="getUserFocusList" resultType="com.cloudblog.common.pojo.Vo.UserFocusListVo"
             parameterType="java.lang.Long" resultMap="UserFocusResultMap">
         select
@@ -53,4 +54,16 @@
             on uf.focus_user_id = ui.user_id where uf.focus_user_id = #{userId}
         order by uf.create_time desc
     </select>
+
+    <insert id="focusUser" parameterType="com.cloudblog.common.pojo.Po.FocusUserPo">
+        insert into user_focus (user_id, focus_user_id, create_time)
+        values (#{userId}, #{focusUserId}, now())
+    </insert>
+
+    <delete id="cancelFocusUser" parameterType="com.cloudblog.common.pojo.Po.FocusUserPo">
+        delete from user_focus
+        where user_id = #{userId}
+          and focus_user_id = #{focusUserId}
+    </delete>
+
 </mapper>

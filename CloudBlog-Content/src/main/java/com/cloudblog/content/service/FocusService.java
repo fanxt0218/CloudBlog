@@ -1,7 +1,9 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.Po.FocusUserPo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
 import com.cloudblog.common.pojo.Vo.UserFocusListVo;
+import com.cloudblog.common.result.AjaxResult;
 
 import java.util.List;
 
@@ -20,4 +22,11 @@ public interface FocusService {
      * @return
      */
     List<UserFanListVo> getUserFanList(Long userId);
+
+    /**
+     * 关注用户
+     * @param po
+     * @return
+     */
+    AjaxResult followUser(FocusUserPo po);
 }
