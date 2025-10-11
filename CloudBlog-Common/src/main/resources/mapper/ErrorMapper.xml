@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.common.mapper.ErrorMapper">
+
+    <insert id="insertGlobalException">
+        insert into error_log (err_type, err_msg, err_stack, create_time)
+        values (#{simpleName}, #{message}, #{stackTrace}, now())
+    </insert>
+</mapper>

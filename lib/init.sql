@@ -350,3 +350,15 @@ create table topic (
 
     unique index uk_topic_name (topic_name)
 )comment '话题表';
+
+drop table if exists err_log;
+create table err_log (
+    id bigint primary key auto_increment comment '主键',
+    err_type varchar(32) comment '错误类型',
+    err_msg varchar(255) comment '错误信息',
+    err_stack varchar(255) comment '错误堆栈',
+    create_time datetime comment '创建时间',
+
+    index idx_create_time (create_time),
+    index idx_err_type (err_type)
+)comment '错误日志表';

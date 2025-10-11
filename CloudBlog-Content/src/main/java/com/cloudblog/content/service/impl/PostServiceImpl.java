@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.PostStatus;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.UserBrowseListPo;
@@ -115,8 +117,7 @@ public class PostServiceImpl implements PostService {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
-            e.printStackTrace();
-            return AjaxResult.error("获取用户文章列表失败: " + e.getMessage());
+            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
         }
     }
 
