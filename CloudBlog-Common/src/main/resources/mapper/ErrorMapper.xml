@@ -3,7 +3,7 @@
 <mapper namespace="com.cloudblog.common.mapper.ErrorMapper">
 
     <insert id="insertGlobalException">
-        insert into error_log (err_type, err_msg, err_stack, create_time)
+        insert into err_log (err_type, err_msg, err_stack, create_time)
         values (#{simpleName}, #{message}, #{stackTrace}, now())
     </insert>
 </mapper>
