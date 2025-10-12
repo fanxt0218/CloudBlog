@@ -16,9 +16,18 @@ spring:
     username: root
     password: ${blog.db.pw}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  ai:
+    openai:
+      api-key: ${blog.openai.api-key}
+      base-url: ${blog.openai.base-url}
+      chat:
+        options:
+          model: deepseek-v3.1:671b
+
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**.xml
+
 
 logging:
   level:

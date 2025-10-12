@@ -39,6 +39,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public AjaxResult handleException(Exception e) {
         log.error("Exception: {}", e.getMessage());
+        e.printStackTrace();
         // 持久化错误日志
         errorMapper.insertGlobalException(e.getClass().getSimpleName(), e.getMessage(), Arrays.toString(e.getStackTrace()));
         return AjaxResult.error("服务器异常");

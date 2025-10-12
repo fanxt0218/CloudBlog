@@ -194,9 +194,9 @@
     <select id="getChatDetail" resultType="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ChatMessage"
             parameterType="com.cloudblog.common.pojo.Po.UserChatDetailPo" resultMap="UserMessageResultMap">
         select
-            id,
+            id as message_id,
             sender_id,
-            create_time,
+            create_time as send_time,
             content,
             object_type as content_type
         from
