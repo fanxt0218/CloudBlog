@@ -46,6 +46,7 @@ public class FocusServiceImpl implements FocusService {
             // 关注
             try {
                 focusMapper.focusUser(po);
+                // TODO 发送通知
             } catch (Exception e) {
                 log.error("关注失败：{}", e.getMessage());
                 return AjaxResult.error("关注失败");

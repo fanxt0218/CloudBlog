@@ -6,7 +6,9 @@ public enum UserStatus {
 
     LOCKED(1),
 
-    DELETED(2);
+    DELETED(2),
+
+    DISABLED(3);
 
     private int value;
 

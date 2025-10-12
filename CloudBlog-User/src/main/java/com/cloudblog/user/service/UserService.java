@@ -48,4 +48,6 @@ public interface UserService {
      * @param updateUser
      */
     void updateEmail(User updateUser);
+
+    AjaxResult cancellation(Long userId);
 }

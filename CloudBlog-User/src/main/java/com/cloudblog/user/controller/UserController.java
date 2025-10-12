@@ -21,5 +21,13 @@ public class UserController {
         return userService.register(userPo);
     }
 
+    /**
+     * 注销账户
+     */
+    @PostMapping("/cancellation")
+    public AjaxResult cancellation(@RequestParam Long userId) {
+        return userService.cancellation(userId);
+    }
+
 
 }

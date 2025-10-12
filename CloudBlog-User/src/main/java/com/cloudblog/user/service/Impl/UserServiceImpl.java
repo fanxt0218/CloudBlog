@@ -1,6 +1,7 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.UserStatus;
 import com.cloudblog.common.pojo.DoMain.User;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
@@ -121,6 +122,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateEmail(User updateUser) {
         userMapper.updateById(updateUser);
+    }
+
+    @Override
+    public AjaxResult cancellation(Long userId) {
+        if (userId == null) {
+            return AjaxResult.warn("用户ID不能为空");
+        }
+        User user = new User();
+        user.setId(userId);
+        user.setStatus(UserStatus.DISABLED.getValue());
+        userMapper.updateById(user);
+        // TODO 弹出登录
+        return AjaxResult.success("注销成功");
     }
 
 
