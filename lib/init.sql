@@ -354,7 +354,7 @@ create table topic (
 drop table if exists err_log;
 create table err_log (
     id bigint primary key auto_increment comment '主键',
-    err_type varchar(32) comment '错误类型',
+    err_type varchar(64) comment '错误类型',
     err_msg text comment '错误信息',
     err_stack text comment '错误堆栈',
     create_time datetime comment '创建时间',

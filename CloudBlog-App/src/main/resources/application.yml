@@ -23,6 +23,10 @@ spring:
       chat:
         options:
           model: deepseek-v3.1:671b
+      embedding:
+        base-url: ${blog.openai.embedding.base-url}
+        options:
+          model: embeddinggemma:300m
 
 
 mybatis-plus:
