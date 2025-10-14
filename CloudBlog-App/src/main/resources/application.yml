@@ -27,6 +27,15 @@ spring:
         base-url: ${blog.openai.embedding.base-url}
         options:
           model: embeddinggemma:300m
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: embedded
+  sql:
+    init:
+      platform: mysql
+
 
 
 mybatis-plus:
