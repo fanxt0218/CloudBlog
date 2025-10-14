@@ -1,13 +1,28 @@
 package com.cloudblog.content.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.cloudblog.common.pojo.Po.PostPo;
+import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.content.service.PostService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/content/post")
 public class PostController {
 
+    @Autowired
+    private PostService postService;
+
     /**
-     * 获取用户文章列表
+     * 获取首页文章列表
      */
+    @PostMapping("/getIndexPostList")
+    public AjaxResult getIndexPostList(
+            @RequestBody PostPo po,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String tag) {
+        return postService.getIndexPostList(po, cursor, size, sortBy, tag);
+    }
 }

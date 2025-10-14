@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
-@TableName(value = "error_log")
+@TableName(value = "err_log")
 public class Error {
 
     @TableId(type = IdType.AUTO)
@@ -18,22 +18,22 @@ public class Error {
 
     private CommonError errType;
 
-    private String message;
+    private String errMsg;
 
-    private String stackTrace;
+    private String errStack;
 
     private LocalDateTime createTime;
 
     public Error(CommonError errType, String message) {
         this.errType = errType;
-        this.message = message;
+        this.errMsg = message;
         this.createTime = LocalDateTime.now();
     }
 
     public Error(CommonError errType, String message, String stackTrace) {
         this.errType = errType;
-        this.message = message;
-        this.stackTrace = stackTrace;
+        this.errMsg = message;
+        this.errStack = stackTrace;
         this.createTime = LocalDateTime.now();
     }
 }

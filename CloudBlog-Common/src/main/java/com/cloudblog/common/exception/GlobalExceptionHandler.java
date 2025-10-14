@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public AjaxResult handleCloudBlogException(CloudBlogException e) {
         log.error("CloudBlogException: {}", e.getMessage());
+//        e.printStackTrace();
         errorMapper.insert(new Error(e.getErrType(), e.getErrMessage(), Arrays.toString(e.getStackTrace())));
         return AjaxResult.error(e.getMessage());
     }

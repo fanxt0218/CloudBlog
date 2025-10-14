@@ -76,4 +76,35 @@ public interface PostMapper extends BaseMapper<Posts> {
             @Param("lastId") Long lastId,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i);
+
+    /**
+     * 获取用户文章列表(根据兴趣推送)
+     * @param userId
+     * @param lastId
+     * @param lastCreateTime
+     * @param i
+     * @return
+     */
+    List<UserPostVo> getPostListWithInterest(
+            @Param("userId") Long userId,
+            @Param("lastId") Long lastId,
+            @Param("lastCreateTime") LocalDateTime lastCreateTime,
+            @Param("size") int i,
+            @Param("postType") Integer postType);
+
+    /**
+     * 获取用户文章列表(不根据无兴趣推送)
+     * @param userId
+     * @param lastId
+     * @param lastCreateTime
+     * @param i
+     * @return
+     */
+    List<UserPostVo> getPostListWithNoInterest(
+            @Param("userId") Long userId,
+            @Param("lastId") Long lastId,
+            @Param("lastCreateTime") LocalDateTime lastCreateTime,
+            @Param("size") int i,
+            @Param("tagId") Integer tagId,
+            @Param("postType") Integer postType);
 }

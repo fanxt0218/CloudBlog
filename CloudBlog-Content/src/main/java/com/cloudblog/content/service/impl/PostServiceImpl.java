@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.PostStatus;
+import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.Dto.PageResponse;
+import com.cloudblog.common.pojo.Po.PostPo;
 import com.cloudblog.common.pojo.Po.UserBrowseListPo;
 import com.cloudblog.common.pojo.Po.UserCollectListPo;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
@@ -19,6 +21,7 @@ import com.cloudblog.common.pojo.Vo.UserPostVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.FavoritesService;
+import com.cloudblog.content.service.InterestService;
 import com.cloudblog.content.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +42,8 @@ public class PostServiceImpl implements PostService {
     private PostMapper postMapper;
     @Autowired
     private FavoritesService favoritesService;
+    @Autowired
+    private InterestService interestService;
 
     @Override
     public IPage<UserLikeListVo> getUserLikeList(UserLikeListPo po) {
@@ -117,6 +122,79 @@ public class PostServiceImpl implements PostService {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
+            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
+        }
+    }
+
+    @Override
+    public AjaxResult getIndexPostList(PostPo po, String cursor, Integer size, String sortBy, String tag) {
+        // 判断是否有用户id（是否登录），以此去配置推荐算法
+        boolean withInterest = true;
+        Object data = interestService.getInterestInfo(po.getUserId()).get("data");
+        // 无兴趣/选择了tag/未登录=默认推荐
+        if (data == null || po.getTagId() != null || po.getUserId() == null) {
+            withInterest = false;
+        }
+        // 默认文章
+        if (po.getPostTye() == null) {
+            po.setPostTye(PostType.POST.ordinal());
+        }
+        // 执行查询
+        try {
+            // 默认参数处理
+            size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+            // 解析游标
+            Map<String, Object> cursorMap = parseCursor(cursor);
+            Long lastId = null;
+            LocalDateTime lastCreateTime = null;
+
+            if (cursorMap != null) {
+                lastId = ((Number) cursorMap.get("id")).longValue();
+                Object createTimeObj = cursorMap.get("createTime");
+                if (createTimeObj != null) {
+                    if (createTimeObj instanceof String) {
+                        lastCreateTime = LocalDateTime.parse((String) createTimeObj);
+                    } else if (createTimeObj instanceof LocalDateTime) {
+                        lastCreateTime = (LocalDateTime) createTimeObj;
+                    }
+                }
+            }
+            List<UserPostVo> posts;
+            if (withInterest){
+                // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+                // 兴趣推荐
+                posts = postMapper.getPostListWithInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getPostTye());
+            }else {
+                // 默认推荐
+                posts = postMapper.getPostListWithNoInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getTagId(), po.getPostTye());
+
+            }
+            // 构建PageResponse返回结果
+            PageResponse<UserPostVo> response = new PageResponse<>();
+            response.setPageSize(size);
+
+            // 判断是否还有更多数据
+            boolean hasNext = posts.size() > size;
+            response.setHasNext(hasNext);
+
+            // 设置实际返回的数据列表
+            if (hasNext) {
+                // 移除多查的一个元素
+                response.setContent(posts.subList(0, size));
+                // 生成下一个游标
+                UserPostVo lastPost = posts.get(size - 1);
+                Posts post = new Posts();
+                BeanUtils.copyProperties(lastPost, post);
+                String nextCursor = generateCursor(post);
+                response.setNextCursor(nextCursor);
+            } else {
+                response.setContent(posts);
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
         }
     }

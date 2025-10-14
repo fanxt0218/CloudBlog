@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudblog.common.pojo.Po.PostPo;
 import com.cloudblog.common.pojo.Po.UserBrowseListPo;
 import com.cloudblog.common.pojo.Po.UserCollectListPo;
 import com.cloudblog.common.pojo.Po.UserLikeListPo;
@@ -43,4 +44,11 @@ public interface PostService {
      * @return
      */
     AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag);
+
+    /**
+     * 获取首页文章列表
+     * @param po
+     * @return
+     */
+    AjaxResult getIndexPostList(PostPo po, String cursor, Integer size, String sortBy, String tag);
 }
