@@ -362,3 +362,16 @@ create table err_log (
     index idx_create_time (create_time),
     index idx_err_type (err_type)
 )comment '错误日志表';
+
+drop table if exists conversation;
+create table conversation (
+    id bigint primary key auto_increment comment '主键',
+    user_id bigint comment '用户id',
+    conversation_id varchar(36) comment '会话id',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    unique index uk_user_friend (user_id, conversation_id),
+    index idx_user_id (user_id),
+    index idx_conversation_id (conversation_id)
+)comment '会话表';

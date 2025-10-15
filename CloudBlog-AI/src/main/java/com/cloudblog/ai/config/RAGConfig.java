@@ -1,5 +1,6 @@
-package com.cloudblog.ai.controller.config;
+package com.cloudblog.ai.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @Configuration
 public class RAGConfig {
 
@@ -27,8 +29,8 @@ public class RAGConfig {
      */
     @Bean
     public CommandLineRunner preload(EmbeddingModel embeddingModel, VectorStore vectorStore) {
-        System.out.println("开始预加载");
-        Resource resource1 = new ClassPathResource("rag/preload.txt");
-        return args -> vectorStore.write(new TokenTextSplitter().transform(new TextReader(resource1).read()));
+        log.info("开始预加载");
+        Resource targetResource = new ClassPathResource("rag/preload.txt");
+        return args -> vectorStore.write(new TokenTextSplitter().transform(new TextReader(targetResource).read()));
     }
 }

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.ai.mapper.AiMapper">
+
+    <resultMap id="AiChatListResultMap" type="com.cloudblog.common.pojo.Dto.AiChatList">
+        <id property="conversationId" column="conversation_id"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="AiChatDetailResultMap" type="com.cloudblog.common.pojo.Dto.AiChatDetail">
+        <id property="conversationId" column="conversation_id"/>
+        <result property="content" column="content"/>
+        <result property="type" column="type"/>
+        <result property="timestamp" column="timestamp"/>
+    </resultMap>
+
+    <resultMap id="AiChatResultMap" type="com.cloudblog.common.pojo.DoMain.AiChat">
+        <id property="conversationId" column="conversation_id"/>
+        <result property="content" column="content"/>
+        <result property="type" column="type"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="autoId" column="auto_id"/>
+    </resultMap>
+
+    <resultMap id="ConversationResultMap" type="com.cloudblog.common.pojo.DoMain.Conversation">
+        <id property="id" column="id"/>
+        <id property="conversationId" column="conversation_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="createConversation">
+        insert into conversation (user_id, conversation_id,create_time)
+        values (#{userId}, #{conversationId}, now())
+    </insert>
+
+
+    <select id="getChatList" resultType="com.cloudblog.common.pojo.Dto.AiChatList"
+            parameterType="java.lang.Long" resultMap="AiChatListResultMap">
+        select
+            conversation_id,
+            create_time
+        from
+            conversation
+        where
+            user_id = #{userId}
+        order by
+            create_time desc
+    </select>
+
+    <select id="getChatDetail" resultType="com.cloudblog.common.pojo.Dto.AiChatDetail"
+            parameterType="java.lang.String" resultMap="AiChatDetailResultMap">
+        select
+            conversation_id,
+            content,
+            type,
+            `timestamp`
+        from SPRING_AI_CHAT_MEMORY
+        where conversation_id = #{conversationId}
+        order by auto_id
+    </select>
+
+    <select id="getChatByConversationId" resultType="com.cloudblog.common.pojo.DoMain.Conversation"
+            parameterType="java.lang.String" resultMap="ConversationResultMap">
+        select
+            id,
+            user_id,
+            conversation_id,
+            create_time,
+            update_time
+        from
+            conversation
+        where
+            conversation_id = #{conversationId}
+    </select>
+</mapper>

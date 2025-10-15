@@ -1,4 +1,4 @@
-package com.cloudblog.ai.controller.config;
+package com.cloudblog.ai.config;
 
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
