@@ -81,6 +81,11 @@ public class ShareServiceImpl implements ShareService {
         }
     }
 
+    @Override
+    public void addShareBrowseCount(Long postId, Long userId) {
+        shareMapper.addShareBrowseCount(postId, userId);
+    }
+
     /**
      * 解析游标字符串
      * @param cursor 游标字符串

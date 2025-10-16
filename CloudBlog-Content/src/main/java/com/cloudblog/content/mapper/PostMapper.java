@@ -3,7 +3,9 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.pojo.DoMain.PostTag;
 import com.cloudblog.common.pojo.DoMain.Posts;
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
 import com.cloudblog.common.pojo.Vo.UserCollectListVo;
 import com.cloudblog.common.pojo.Vo.UserLikeListVo;
@@ -107,4 +109,25 @@ public interface PostMapper extends BaseMapper<Posts> {
             @Param("size") int i,
             @Param("tagId") Integer tagId,
             @Param("postType") Integer postType);
+
+
+    /**
+     * 获取文章标签
+     * @param postId
+     * @return
+     */
+    List<PostTag> getPostTagByPostId(Long postId);
+
+    /**
+     * 获取用户兴趣
+     * @param userId
+     * @return
+     */
+    List<UserInterest> getUserInterest(Long userId);
+
+    /**
+     * 增加文章浏览次数
+     * @param postId
+     */
+    void addPostBrowseCount(@Param("postId") Long postId, @Param("userId") Long userId);
 }

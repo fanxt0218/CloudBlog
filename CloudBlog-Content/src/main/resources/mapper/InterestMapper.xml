@@ -11,4 +11,17 @@
         from tag t inner join (select user_id, tag_id, weight from user_interest where user_id = #{userId}) ui on t.id = ui.tag_id
         order by ui.weight desc
     </select>
+
+    <update id="upgradeUserInterest" parameterType="java.util.List">
+        UPDATE user_interest
+        SET weight = CASE
+        <foreach collection="interests" item="interest">
+            WHEN user_id = #{interest.userId} AND tag_id = #{interest.tagId} THEN #{interest.weight}
+        </foreach>
+        END
+        WHERE (user_id, tag_id) IN
+        <foreach collection="interests" item="interest" open="(" close=")" separator=",">
+            (#{interest.userId}, #{interest.tagId})
+        </foreach>
+    </update>
 </mapper>

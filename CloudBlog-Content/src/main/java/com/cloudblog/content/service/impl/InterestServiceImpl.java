@@ -1,6 +1,7 @@
 package com.cloudblog.content.service.impl;
 
 import com.cloudblog.common.pojo.DoMain.Tag;
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.InterestMapper;
 import com.cloudblog.content.service.InterestService;
@@ -24,5 +25,13 @@ public class InterestServiceImpl implements InterestService {
         // 获取用户兴趣
         List<Tag> tags = interestMapper.getUserInterest(userId);
         return AjaxResult.success(tags);
+    }
+
+    @Override
+    public void upgradeUserInterest(List<UserInterest> interests) {
+        if (interests == null || interests.isEmpty()) {
+            return;
+        }
+        interestMapper.upgradeUserInterest(interests);
     }
 }

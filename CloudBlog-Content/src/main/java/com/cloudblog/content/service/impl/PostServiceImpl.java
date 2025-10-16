@@ -8,12 +8,11 @@ import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
+import com.cloudblog.common.pojo.DoMain.PostTag;
 import com.cloudblog.common.pojo.DoMain.Posts;
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Dto.PageResponse;
-import com.cloudblog.common.pojo.Po.PostPo;
-import com.cloudblog.common.pojo.Po.UserBrowseListPo;
-import com.cloudblog.common.pojo.Po.UserCollectListPo;
-import com.cloudblog.common.pojo.Po.UserLikeListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
 import com.cloudblog.common.pojo.Vo.UserCollectListVo;
 import com.cloudblog.common.pojo.Vo.UserLikeListVo;
@@ -23,17 +22,17 @@ import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.content.service.InterestService;
 import com.cloudblog.content.service.PostService;
+import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -44,6 +43,8 @@ public class PostServiceImpl implements PostService {
     private FavoritesService favoritesService;
     @Autowired
     private InterestService interestService;
+    @Autowired
+    private ShareService shareService;
 
     @Override
     public IPage<UserLikeListVo> getUserLikeList(UserLikeListPo po) {
@@ -197,6 +198,51 @@ public class PostServiceImpl implements PostService {
             e.printStackTrace();
             throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
         }
+    }
+
+    @Override
+    public AjaxResult addBrowseCount(AddBrowseCountPo po) {
+        if (po.getPostId() == null || po.getUserId() == null) {
+            return AjaxResult.error("参数错误");
+        }
+        // 增加浏览量
+        if (po.getContentType() == ContentType.POST.ordinal()) {
+            // 文章
+            postMapper.addPostBrowseCount(po.getPostId(), po.getUserId());
+        } else if (po.getContentType() == ContentType.SHARE.ordinal()) {
+            // 动态
+            shareService.addShareBrowseCount(po.getPostId(), po.getUserId());
+        }
+
+        //只有文章才增加标签的权重
+        if (po.getContentType().equals(ContentType.POST.ordinal())) {
+            // 获取文章标签
+            List<PostTag> tags = postMapper.getPostTagByPostId(po.getPostId());
+            if (tags == null || tags.isEmpty()) {
+                return AjaxResult.success();
+            }
+//            System.out.println("文章标签"+ tags);
+            // 获取用户兴趣
+            List<UserInterest> interests = postMapper.getUserInterest(po.getUserId());
+            if (interests == null || interests.isEmpty()) {
+                // 如果用户没有兴趣，则不进行该操作，后续可以添加隐式兴趣
+                return AjaxResult.success();
+            }
+//            System.out.println("用户兴趣"+ interests);
+            List<Integer> tagIds = tags.stream().map(PostTag::getTagId).toList();
+            List<UserInterest> upgrades = new ArrayList<>();
+            interests.forEach(interest -> {
+                if (tagIds.contains(interest.getTagId())) {
+                    // 先默认加0.1
+                    interest.setWeight(interest.getWeight().add(new BigDecimal("0.1")));
+                    upgrades.add(interest);
+                }
+            });
+//            System.out.println("用户兴趣升级"+ upgrades);
+            // 批量更新用户兴趣指数
+            interestService.upgradeUserInterest(upgrades);
+        }
+        return AjaxResult.success();
     }
 
     /**

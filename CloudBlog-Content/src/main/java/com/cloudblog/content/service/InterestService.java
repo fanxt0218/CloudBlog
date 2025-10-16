@@ -1,6 +1,9 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.result.AjaxResult;
+
+import java.util.List;
 
 public interface InterestService {
 
@@ -10,4 +13,10 @@ public interface InterestService {
      * @return
      */
     AjaxResult getInterestInfo(Long userId);
+
+    /**
+     * 升级用户兴趣信息
+     * @param interests
+     */
+    void upgradeUserInterest(List<UserInterest> interests);
 }

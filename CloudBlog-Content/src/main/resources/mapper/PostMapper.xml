@@ -41,6 +41,22 @@
         <result property="collectCount" column="collect_count"/>
     </resultMap>
 
+    <resultMap id="PostTagResultMap" type="com.cloudblog.common.pojo.DoMain.PostTag">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="tagId" column="tag_id"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="UserInterestResultMap" type="com.cloudblog.common.pojo.DoMain.UserInterest">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="tagId" column="tag_id"/>
+        <result property="weight" column="weight"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
         select p.id as id, title, image, is_vip, td.create_time as create_time from
             (select target_id, create_time from likes
@@ -237,4 +253,38 @@
         ORDER BY p.create_time DESC, p.id DESC
         LIMIT #{size}
     </select>
+
+    <select id="getPostTagByPostId" resultType="com.cloudblog.common.pojo.DoMain.PostTag"
+            parameterType="java.lang.Long" resultMap="PostTagResultMap">
+        select
+            id,
+            post_id,
+            tag_id,
+            create_time
+        from
+            post_tag
+        where
+            post_id = #{postId}
+    </select>
+
+    <select id="getUserInterest" resultType="com.cloudblog.common.pojo.DoMain.UserInterest"
+            parameterType="java.lang.Long" resultMap="UserInterestResultMap">
+        select
+            id,
+            user_id,
+            tag_id,
+            weight,
+            create_time,
+            update_time
+        from
+            user_interest
+        where
+            user_id = #{userId}
+    </select>
+
+    <insert id="addPostBrowseCount" parameterType="java.lang.Long">
+        insert into browse(post_id, user_id, type, create_time)
+        values (#{postId}, #{userId}, 0, now())
+    </insert>
+
 </mapper>

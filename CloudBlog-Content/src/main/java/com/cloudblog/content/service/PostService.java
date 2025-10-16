@@ -1,10 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cloudblog.common.pojo.Po.PostPo;
-import com.cloudblog.common.pojo.Po.UserBrowseListPo;
-import com.cloudblog.common.pojo.Po.UserCollectListPo;
-import com.cloudblog.common.pojo.Po.UserLikeListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
 import com.cloudblog.common.pojo.Vo.UserCollectListVo;
 import com.cloudblog.common.pojo.Vo.UserLikeListVo;
@@ -51,4 +48,11 @@ public interface PostService {
      * @return
      */
     AjaxResult getIndexPostList(PostPo po, String cursor, Integer size, String sortBy, String tag);
+
+    /**
+     * 增加浏览
+     * @param po
+     * @return
+     */
+    AjaxResult addBrowseCount(AddBrowseCountPo po);
 }

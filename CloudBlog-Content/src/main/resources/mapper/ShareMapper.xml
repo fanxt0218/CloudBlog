@@ -10,6 +10,7 @@
         <result property="browseCount" column="browse_count"/>
         <result property="likeCount" column="like_count"/>
     </resultMap>
+
     <select id="getUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo">
         SELECT s.id AS id,
                s.content AS content,
@@ -40,4 +41,10 @@
         ORDER BY s.create_time DESC, s.id DESC
         LIMIT #{size}
     </select>
+
+    <insert id="addShareBrowseCount">
+        insert into browse (user_id, post_id, type, create_time)
+        values (#{userId}, #{postId}, 1, now())
+    </insert>
+
 </mapper>
