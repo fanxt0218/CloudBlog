@@ -22,7 +22,8 @@ spring:
       base-url: ${blog.openai.base-url}
       chat:
         options:
-          model: deepseek-v3.1:671b
+          model: qwen3-vl:235b
+      #          model: deepseek-v3.1:671b
       embedding:
         base-url: ${blog.openai.embedding.base-url}
         options:
@@ -39,11 +40,13 @@ spring:
 #      schema-locations: classpath:
 #      mode: always
 
-
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**.xml
-
 
 logging:
   level:

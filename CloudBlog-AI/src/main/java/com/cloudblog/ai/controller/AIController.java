@@ -3,15 +3,31 @@ package com.cloudblog.ai.controller;
 import com.cloudblog.ai.service.AiService;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.SystemPromptGenerator;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.content.Media;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/ai")
@@ -35,17 +51,16 @@ public class AIController {
             @RequestParam Long userId,
             @RequestParam String message,
             @RequestParam String conversationId,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
         // 判断会话是否存在，不存在则创建会话
         aiService.initConversation(userId, conversationId);
+        // TODO 保存上传的文件
 
-        return chatClient.prompt()
-                .user(message)
+        return processImagePrompt(message, file)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
     }
-
 
     /**
      * 获取会话列表
@@ -71,4 +86,83 @@ public class AIController {
     public AjaxResult deleteChat(@RequestParam String conversationId) {
         return AjaxResult.success(aiService.deleteChat(conversationId));
     }
+
+    /**
+     * 处理多模态输入
+     * @param message
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    private ChatClient.ChatClientRequestSpec processImagePrompt(String message, MultipartFile file) throws IOException {
+        var promptBuilder = chatClient.prompt();
+        String fileContentAsContext = "";
+
+        // 1. 如果有文件，提取其内容作为上下文
+        if (file != null && !file.isEmpty()) {
+            String mimeType = file.getContentType();
+
+            // -- 图片处理逻辑 --
+            if (mimeType != null && mimeType.startsWith("image/")) {
+                String dataUri = convertFileToDataUri(file);
+                promptBuilder.user(userSpec -> userSpec.text(message).media(new Media(MimeType.valueOf(mimeType), URI.create(dataUri))));
+
+                // -- 文本文档处理逻辑 --
+            } else {
+                fileContentAsContext = extractTextFromFile(file);
+
+                // 2. 将提取的文本和用户的问题组合成一个新的提示
+                String combinedPrompt = String.format(
+                        "基于以下文档内容:\n\n---\n%s\n---\n\n请回答我的问题: %s",
+                        fileContentAsContext,
+                        message
+                );
+                promptBuilder.user(combinedPrompt);
+            }
+        } else {
+            // 没有文件，正常处理
+            promptBuilder.user(message);
+        }
+        return promptBuilder;
+    }
+
+    /**
+     * 将 MultipartFile 转换为 Base64 编码的 Data URI 字符串
+     * @param file 上传的文件
+     * @return Data URI 字符串，例如 "data:image/png;base64,iVBORw0KGgo..."
+     * @throws IOException 读取文件字节时可能发生异常
+     */
+    private String convertFileToDataUri(MultipartFile file) throws IOException {
+        // 获取文件的 Base64 编码
+        String base64Data = Base64.getEncoder().encodeToString(file.getBytes());
+        // 拼接成 Data URI 格式
+        return "data:" + file.getContentType() + ";base64," + base64Data;
+    }
+
+    /**
+     * 根据文件类型提取纯文本内容
+     */
+    private String extractTextFromFile(MultipartFile file) throws IOException {
+        String mimeType = file.getContentType();
+
+        try (InputStream inputStream = file.getInputStream()) {
+            if (MediaType.TEXT_PLAIN_VALUE.equals(mimeType)) {
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            } else if (MediaType.APPLICATION_PDF_VALUE.equals(mimeType)) {
+                try (PDDocument document = PDDocument.load(inputStream)) {
+                    return new PDFTextStripper().getText(document);
+                }
+            } else if ("application/vnd.openxmlformats-officedocument.wordprocessingml.document".equals(mimeType)) { // .docx
+                try (XWPFDocument doc = new XWPFDocument(inputStream);
+                     XWPFWordExtractor extractor = new XWPFWordExtractor(doc)) {
+                    return extractor.getText();
+                }
+            } else {
+                // 返回一个友好的提示，告知不支持此文件类型
+                return "不支持的文件类型: " + mimeType;
+            }
+        }
+    }
+
+
 }
