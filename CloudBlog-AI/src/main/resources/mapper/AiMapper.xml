@@ -35,7 +35,6 @@
         values (#{userId}, #{conversationId}, now())
     </insert>
 
-
     <select id="getChatList" resultType="com.cloudblog.common.pojo.Dto.AiChatList"
             parameterType="java.lang.Long" resultMap="AiChatListResultMap">
         select
@@ -74,4 +73,9 @@
         where
             conversation_id = #{conversationId}
     </select>
+
+    <delete id="deleteConversation" parameterType="java.lang.String">
+        delete from conversation where conversation_id = #{conversationId}
+    </delete>
+
 </mapper>

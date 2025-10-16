@@ -10,6 +10,7 @@ import com.cloudblog.common.pojo.Dto.AiChatList;
 import com.cloudblog.common.result.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -45,5 +46,15 @@ public class AiServiceImpl implements AiService {
         }
         List<AiChatDetail> chatDetails = aiMapper.getChatDetail(conversationId);
         return AjaxResult.success(chatDetails);
+    }
+
+    @Transactional
+    @Override
+    public AjaxResult deleteChat(String conversationId) {
+        // 删除会话详情
+        aiMapper.delete(new LambdaQueryWrapper<AiChat>().eq(AiChat::getConversationId, conversationId));
+        // 删除会话
+        aiMapper.deleteConversation(conversationId);
+        return AjaxResult.success("删除成功");
     }
 }

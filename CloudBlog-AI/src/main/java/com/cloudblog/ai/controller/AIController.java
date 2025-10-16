@@ -66,4 +66,9 @@ public class AIController {
     public AjaxResult getChatDetail(@RequestParam String conversationId) {
         return AjaxResult.success(aiService.getChatDetail(conversationId));
     }
+
+    @PostMapping("/deleteChat")
+    public AjaxResult deleteChat(@RequestParam String conversationId) {
+        return AjaxResult.success(aiService.deleteChat(conversationId));
+    }
 }

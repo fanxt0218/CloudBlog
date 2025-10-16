@@ -23,4 +23,11 @@ public interface AiService {
      * @return
      */
     AjaxResult getChatDetail(String conversationId);
+
+    /**
+     * 删除会话
+     * @param conversationId
+     * @return
+     */
+    AjaxResult deleteChat(String conversationId);
 }
