@@ -1,6 +1,7 @@
 package com.cloudblog.ai.service;
 
 import com.cloudblog.common.result.AjaxResult;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface AiService {
 
@@ -30,4 +31,21 @@ public interface AiService {
      * @return
      */
     AjaxResult deleteChat(String conversationId);
+
+    /**
+     * 保存用户消息(简洁版)
+     * @param userId
+     * @param conversationId
+     * @param message
+     * @param file
+     */
+    void saveUserMessage(Long userId, String conversationId, String message, MultipartFile file);
+
+    /**
+     * 保存AI消息(简洁版)
+     * @param userId
+     * @param conversationId
+     * @param content
+     */
+    void saveAssistantMessage(Long userId, String conversationId, String content);
 }

@@ -375,3 +375,15 @@ create table conversation (
     index idx_user_id (user_id),
     index idx_conversation_id (conversation_id)
 )comment '会话表';
+
+drop table if exists chat_message;
+create table chat_message (
+    id bigint primary key auto_increment comment '主键',
+    conversation_id varchar(36) comment '会话id',
+    type varchar(32) comment '消息类型 USER ASSISTANT SYSTEM TOOL',
+    content text comment '消息内容',
+    timestamp datetime comment '创建时间',
+    file varchar(255) comment '文件地址',
+
+    index idx_conversation_id (conversation_id)
+)comment 'AI聊天消息表';

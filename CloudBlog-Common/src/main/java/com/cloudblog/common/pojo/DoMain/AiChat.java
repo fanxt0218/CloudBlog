@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 用于存储全量数据
+ */
 @Data
 @TableName("SPRING_AI_CHAT_MEMORY")
 public class AiChat {

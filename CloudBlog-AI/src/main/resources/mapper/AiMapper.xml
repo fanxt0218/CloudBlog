@@ -55,9 +55,9 @@
             content,
             type,
             `timestamp`
-        from SPRING_AI_CHAT_MEMORY
+        from chat_message
         where conversation_id = #{conversationId}
-        order by auto_id
+        order by id
     </select>
 
     <select id="getChatByConversationId" resultType="com.cloudblog.common.pojo.DoMain.Conversation"
@@ -77,5 +77,37 @@
     <delete id="deleteConversation" parameterType="java.lang.String">
         delete from conversation where conversation_id = #{conversationId}
     </delete>
+
+    <insert id="saveUserMessage">
+        insert into chat_message (
+            conversation_id,
+            content,
+            type,
+            `timestamp`
+            <if test="file != null">, file</if>
+        )
+        values (
+            #{conversationId},
+            #{content},
+            'USER',
+            now()
+            <if test="file != null">, #{file}</if>
+        )
+    </insert>
+
+    <insert id="saveAssistantMessage">
+        insert into chat_message (
+            conversation_id,
+            content,
+            type,
+            `timestamp`
+        )
+        values (
+            #{conversationId},
+            #{content},
+            'ASSISTANT',
+            now()
+        )
+    </insert>
 
 </mapper>

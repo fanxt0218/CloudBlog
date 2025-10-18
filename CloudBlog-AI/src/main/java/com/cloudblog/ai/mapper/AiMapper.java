@@ -6,6 +6,7 @@ import com.cloudblog.common.pojo.DoMain.Conversation;
 import com.cloudblog.common.pojo.Dto.AiChatDetail;
 import com.cloudblog.common.pojo.Dto.AiChatList;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -43,4 +44,29 @@ public interface AiMapper extends BaseMapper<AiChat> {
      * @param conversationId
      */
     void deleteConversation(String conversationId);
+
+    /**
+     * 保存用户消息(简洁版)
+     * @param userId
+     * @param conversationId
+     * @param message
+     * @param file
+     */
+    void saveUserMessage(
+            Long userId,
+            @Param("conversationId") String conversationId,
+            @Param("content") String message,
+            @Param("file") String file
+    );
+
+    /**
+     * 保存AI消息(简洁版)
+     * @param userId
+     * @param conversationId
+     * @param content
+     */
+    void saveAssistantMessage(
+            Long userId,
+            @Param("conversationId") String conversationId,
+            @Param("content") String content);
 }

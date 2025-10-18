@@ -11,6 +11,7 @@ import com.cloudblog.common.result.AjaxResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -56,5 +57,20 @@ public class AiServiceImpl implements AiService {
         // 删除会话
         aiMapper.deleteConversation(conversationId);
         return AjaxResult.success("删除成功");
+    }
+
+    @Override
+    public void saveUserMessage(Long userId, String conversationId, String message, MultipartFile file) {
+        String filePath = null;
+        if (file != null) {
+            // TODO 保存文件
+            filePath = "";
+        }
+        aiMapper.saveUserMessage(userId, conversationId, message, filePath);
+    }
+
+    @Override
+    public void saveAssistantMessage(Long userId, String conversationId, String content) {
+        aiMapper.saveAssistantMessage(userId, conversationId, content);
     }
 }

@@ -3,6 +3,7 @@ package com.cloudblog.ai.controller;
 import com.cloudblog.ai.service.AiService;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.SystemPromptGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -29,6 +30,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @RestController
 @RequestMapping("/ai")
 public class AIController {
@@ -47,19 +49,33 @@ public class AIController {
     }
 
     @PostMapping("/chat")
-    public Flux<String> test(
+    public Flux<String> chat(
             @RequestParam Long userId,
             @RequestParam String message,
             @RequestParam String conversationId,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
         // 判断会话是否存在，不存在则创建会话
         aiService.initConversation(userId, conversationId);
-        // TODO 保存上传的文件
+        // 保存用户消息（简洁版）
+        aiService.saveUserMessage(userId, conversationId, message, file);
+        // 追加器
+        StringBuilder AssistantMessageCollector = new StringBuilder();
 
-        return processImagePrompt(message, file)  // 处理多模态输入
+        // 流式响应
+        Flux<String> originStream = processImagePrompt(message, file)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
+
+        return originStream
+                .doOnNext(AssistantMessageCollector::append) // 追加到容器中
+                .doOnComplete(()->{  // 会话结束，保存AI消息
+                    aiService.saveAssistantMessage(userId, conversationId, AssistantMessageCollector.toString());
+                })
+                .doOnError(error -> {
+                    // 流处理过程中发生错误，记录日志
+                    log.error("Error processing AI stream for conversation {}: {}", conversationId, error.getMessage());
+                });
     }
 
     /**
@@ -82,6 +98,11 @@ public class AIController {
         return AjaxResult.success(aiService.getChatDetail(conversationId));
     }
 
+    /**
+     * 删除会话
+     * @param conversationId
+     * @return
+     */
     @PostMapping("/deleteChat")
     public AjaxResult deleteChat(@RequestParam String conversationId) {
         return AjaxResult.success(aiService.deleteChat(conversationId));
