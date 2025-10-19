@@ -37,9 +37,9 @@ public interface AiService {
      * @param userId
      * @param conversationId
      * @param message
-     * @param file
+     * @param filePath
      */
-    void saveUserMessage(Long userId, String conversationId, String message, MultipartFile file);
+    void saveUserMessage(Long userId, String conversationId, String message, String filePath);
 
     /**
      * 保存AI消息(简洁版)
@@ -48,4 +48,11 @@ public interface AiService {
      * @param content
      */
     void saveAssistantMessage(Long userId, String conversationId, String content);
+
+    /**
+     * 上传文件
+     * @param file
+     * @return
+     */
+    String uploadFile(Long userId, String conversationId, MultipartFile file);
 }

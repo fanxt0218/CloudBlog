@@ -3,6 +3,7 @@ package com.cloudblog.ai.controller;
 import com.cloudblog.ai.service.AiService;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.SystemPromptGenerator;
+import com.cloudblog.common.utils.UploadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -53,16 +55,16 @@ public class AIController {
             @RequestParam Long userId,
             @RequestParam String message,
             @RequestParam String conversationId,
-            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+            @RequestParam(value = "filePath", required = false) String filePath) throws IOException {
         // 判断会话是否存在，不存在则创建会话
         aiService.initConversation(userId, conversationId);
         // 保存用户消息（简洁版）
-        aiService.saveUserMessage(userId, conversationId, message, file);
+        aiService.saveUserMessage(userId, conversationId, message, filePath);
         // 追加器
         StringBuilder AssistantMessageCollector = new StringBuilder();
 
         // 流式响应
-        Flux<String> originStream = processImagePrompt(message, file)  // 处理多模态输入
+        Flux<String> originStream = processImagePrompt(message, UploadUtil.UPLOAD_PATH + filePath)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
@@ -109,28 +111,45 @@ public class AIController {
     }
 
     /**
+     * 文件上传
+     * @param userId
+     * @param conversationId
+     * @param file
+     * @return
+     */
+    @PostMapping("/upload")
+    public AjaxResult upload(
+            @RequestParam Long userId,
+            @RequestParam String conversationId,
+            @RequestParam("file") MultipartFile file) {
+        return AjaxResult.success(aiService.uploadFile(userId, conversationId, file));
+    }
+
+    /**
      * 处理多模态输入
      * @param message
-     * @param file
+     * @param filePath
      * @return
      * @throws IOException
      */
-    private ChatClient.ChatClientRequestSpec processImagePrompt(String message, MultipartFile file) throws IOException {
+    private ChatClient.ChatClientRequestSpec processImagePrompt(String message, String filePath) throws IOException {
         var promptBuilder = chatClient.prompt();
         String fileContentAsContext = "";
 
         // 1. 如果有文件，提取其内容作为上下文
-        if (file != null && !file.isEmpty()) {
-            String mimeType = file.getContentType();
+        if (filePath != null && !filePath.isEmpty()) {
+            // 获取文件
+            File file = new File(filePath);
+            String mimeType = guessMimeType(filePath);
 
             // -- 图片处理逻辑 --
             if (mimeType != null && mimeType.startsWith("image/")) {
-                String dataUri = convertFileToDataUri(file);
+                String dataUri = convertFileToDataUri(file, mimeType);
                 promptBuilder.user(userSpec -> userSpec.text(message).media(new Media(MimeType.valueOf(mimeType), URI.create(dataUri))));
 
                 // -- 文本文档处理逻辑 --
             } else {
-                fileContentAsContext = extractTextFromFile(file);
+                fileContentAsContext = extractTextFromFile(file, mimeType);
 
                 // 2. 将提取的文本和用户的问题组合成一个新的提示
                 String combinedPrompt = String.format(
@@ -148,25 +167,51 @@ public class AIController {
     }
 
     /**
+     * 尝试根据文件名猜测 MIME 类型
+     * @param filePath
+     * @return
+     */
+    private String guessMimeType(String filePath) {
+        String extension = "";
+        int lastDotIndex = filePath.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            extension = filePath.substring(lastDotIndex + 1).toLowerCase();
+        }
+
+        return switch (extension) {
+            case "txt" -> MediaType.TEXT_PLAIN_VALUE;
+            case "pdf" -> MediaType.APPLICATION_PDF_VALUE;
+            case "png" -> MediaType.IMAGE_PNG_VALUE;
+            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG_VALUE;
+            case "gif" -> MediaType.IMAGE_GIF_VALUE;
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            default -> MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        };
+    }
+
+    /**
      * 将 MultipartFile 转换为 Base64 编码的 Data URI 字符串
      * @param file 上传的文件
      * @return Data URI 字符串，例如 "data:image/png;base64,iVBORw0KGgo..."
      * @throws IOException 读取文件字节时可能发生异常
      */
-    private String convertFileToDataUri(MultipartFile file) throws IOException {
-        // 获取文件的 Base64 编码
-        String base64Data = Base64.getEncoder().encodeToString(file.getBytes());
-        // 拼接成 Data URI 格式
-        return "data:" + file.getContentType() + ";base64," + base64Data;
+    private String convertFileToDataUri(File file, String mimeType) throws IOException {
+        try {
+            // 使用 Files.readAllBytes 读取文件内容
+            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+            String base64Data = Base64.getEncoder().encodeToString(bytes);
+            return "data:" + mimeType + ";base64," + base64Data;
+        } catch (Exception e) {
+            log.error("Failed to convert file to Data URI: {}", e.getMessage(), e);
+            throw new IOException("Failed to process file: " + file.getAbsolutePath(), e);
+        }
     }
 
     /**
      * 根据文件类型提取纯文本内容
      */
-    private String extractTextFromFile(MultipartFile file) throws IOException {
-        String mimeType = file.getContentType();
-
-        try (InputStream inputStream = file.getInputStream()) {
+    private String extractTextFromFile(File file, String mimeType) throws IOException {
+        try (InputStream inputStream = new java.io.FileInputStream(file)) {
             if (MediaType.TEXT_PLAIN_VALUE.equals(mimeType)) {
                 return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             } else if (MediaType.APPLICATION_PDF_VALUE.equals(mimeType)) {

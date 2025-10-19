@@ -8,6 +8,7 @@ import com.cloudblog.common.pojo.DoMain.Conversation;
 import com.cloudblog.common.pojo.Dto.AiChatDetail;
 import com.cloudblog.common.pojo.Dto.AiChatList;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.UploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,23 +55,31 @@ public class AiServiceImpl implements AiService {
     public AjaxResult deleteChat(String conversationId) {
         // 删除会话详情
         aiMapper.delete(new LambdaQueryWrapper<AiChat>().eq(AiChat::getConversationId, conversationId));
+        aiMapper.deleteChatMessages(conversationId);
         // 删除会话
         aiMapper.deleteConversation(conversationId);
         return AjaxResult.success("删除成功");
     }
 
     @Override
-    public void saveUserMessage(Long userId, String conversationId, String message, MultipartFile file) {
-        String filePath = null;
-        if (file != null) {
-            // TODO 保存文件
-            filePath = "";
-        }
+    public void saveUserMessage(Long userId, String conversationId, String message, String filePath) {
         aiMapper.saveUserMessage(userId, conversationId, message, filePath);
     }
 
     @Override
     public void saveAssistantMessage(Long userId, String conversationId, String content) {
         aiMapper.saveAssistantMessage(userId, conversationId, content);
+    }
+
+    @Override
+    public String uploadFile(Long userId, String conversationId, MultipartFile file) {
+        if (file == null) {
+            return null;
+        }
+        if (userId == null || conversationId == null || conversationId.isEmpty()){
+            return null;
+        }
+        String uploadPath = "/file" + "/" + userId + "/" + conversationId;
+        return UploadUtil.uploadFile(file,uploadPath);
     }
 }

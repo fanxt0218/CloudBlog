@@ -78,6 +78,10 @@
         delete from conversation where conversation_id = #{conversationId}
     </delete>
 
+    <delete id="deleteChatMessages">
+        delete from chat_message where conversation_id = #{conversationId}
+    </delete>
+
     <insert id="saveUserMessage">
         insert into chat_message (
             conversation_id,

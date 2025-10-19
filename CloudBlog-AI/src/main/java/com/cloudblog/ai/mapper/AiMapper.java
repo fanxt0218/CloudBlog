@@ -69,4 +69,10 @@ public interface AiMapper extends BaseMapper<AiChat> {
             Long userId,
             @Param("conversationId") String conversationId,
             @Param("content") String content);
+
+    /**
+     * 删除会话消息
+     * @param conversationId
+     */
+    void deleteChatMessages(String conversationId);
 }

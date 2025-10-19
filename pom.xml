@@ -17,6 +17,7 @@
         <module>CloudBlog-User</module>
         <module>CloudBlog-Common</module>
         <module>CloudBlog-Content</module>
+        <module>CloudBlog-AI</module>
     </modules>
     <properties>
         <java.version>17</java.version>
