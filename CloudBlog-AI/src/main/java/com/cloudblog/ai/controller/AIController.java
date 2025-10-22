@@ -97,7 +97,7 @@ public class AIController {
      */
     @GetMapping("/chatDetail")
     public AjaxResult getChatDetail(@RequestParam String conversationId) {
-        return AjaxResult.success(aiService.getChatDetail(conversationId));
+        return AjaxResult.success("上传成功", aiService.getChatDetail(conversationId));
     }
 
     /**

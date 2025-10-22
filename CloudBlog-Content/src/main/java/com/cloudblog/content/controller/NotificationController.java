@@ -1,5 +1,6 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.pojo.Po.ChatPo;
 import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
 import com.cloudblog.common.result.AjaxResult;
@@ -23,7 +24,7 @@ public class NotificationController {
     }
 
     /**
-     * 获取通知列表(聊天信息)
+     * 获取通知列表
      */
     @PostMapping("/getNotificationList")
     public AjaxResult getChatList(@RequestBody UserNotificationsPo po) {
@@ -44,5 +45,10 @@ public class NotificationController {
     @GetMapping("/getChatContentType")
     public AjaxResult getChatContentType() {
         return AjaxResult.success(notificationService.getChatContentType());
+    }
+
+    @PostMapping("/chat")
+    public AjaxResult chat(@RequestBody ChatPo po) {
+        return notificationService.chat(po);
     }
 }

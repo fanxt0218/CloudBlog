@@ -1,8 +1,12 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.ContentType;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
 import com.cloudblog.common.pojo.Dto.*;
+import com.cloudblog.common.pojo.Po.ChatPo;
 import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
 import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
@@ -12,15 +16,18 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.NotificationMapper;
 import com.cloudblog.content.service.FocusService;
 import com.cloudblog.content.service.NotificationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
@@ -61,6 +68,9 @@ public class NotificationServiceImpl implements NotificationService {
         ArrayList<UserChatDetailVo.ConversationInfo> participants = new ArrayList<>();
 
         UserChatDetailVo.ConversationInfo chatUserInfo = notificationMapper.getChatUserInfo(po.getUserId());
+        if (chatUserInfo == null) {
+            return AjaxResult.error("用户不存在");
+        }
         chatUserInfo.setSelf(true);
         participants.add(chatUserInfo);
         // 非文件传输助手
@@ -89,6 +99,34 @@ public class NotificationServiceImpl implements NotificationService {
                 new ChatContentType(6, "视频"),
                 new ChatContentType(7, "音频")
                 );
+    }
+
+    @Override
+    public AjaxResult chat(ChatPo po) {
+        if (po.getUserId() == null || po.getTargetId() == null) {
+            return AjaxResult.error("参数错误");
+        }
+        if (po.getContent() == null || po.getContent().isEmpty()) {
+            return AjaxResult.error("聊天内容不能为空");
+        }
+        if (notificationMapper.getChatUserInfo(po.getUserId()) == null || notificationMapper.getChatUserInfo(po.getTargetId()) == null) {
+            return AjaxResult.error("目标用户不存在");
+        }
+        try {
+            Notification notification = new Notification();
+            notification.setRecipientId(po.getTargetId());
+            notification.setSenderId(po.getUserId());
+            notification.setContent(po.getContent());
+            notification.setType(com.cloudblog.common.enums.NotificationType.CHAT.ordinal());
+            notification.setObjectType(ContentType.TEXT.ordinal()); // 目前默认为文本，后续可能支持其他类型
+            notification.setIsRead(0);
+            notification.setCreateTime(LocalDateTime.now());
+            notificationMapper.insert(notification);
+        } catch (Exception e) {
+            log.error("发送失败：{}", e.getMessage());
+            throw new CloudBlogException("发送失败");
+        }
+        return AjaxResult.success("发送成功");
     }
 
     /**

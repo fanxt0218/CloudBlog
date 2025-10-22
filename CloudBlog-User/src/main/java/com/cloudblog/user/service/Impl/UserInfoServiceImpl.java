@@ -85,7 +85,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         // 文章数
         Long postCount = userPostInfoMapper.selectCount(new LambdaQueryWrapper<Posts>()
                 .eq(Posts::getAuthorId, userId)
-                .eq(Posts::getStatus, PostStatus.REVIEWING.getCode()));
+                .eq(Posts::getStatus, PostStatus.PUBLISHED.getCode()));
         // 粉丝数
         Long fanCount = userFocusMapper.selectCount(new LambdaQueryWrapper<UserFocus>().eq(UserFocus::getFocusUserId, userId));
         // 获取等级
