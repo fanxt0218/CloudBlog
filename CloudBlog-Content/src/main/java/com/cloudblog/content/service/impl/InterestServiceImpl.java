@@ -34,4 +34,10 @@ public class InterestServiceImpl implements InterestService {
         }
         interestMapper.upgradeUserInterest(interests);
     }
+
+    @Override
+    public AjaxResult getTagList() {
+        List<Tag> tags = interestMapper.selectList(null);
+        return AjaxResult.success(tags);
+    }
 }

@@ -118,6 +118,9 @@ public class PostServiceImpl implements PostService {
                 BeanUtils.copyProperties(lastPost, post);
                 String nextCursor = generateCursor(post);
                 response.setNextCursor(nextCursor);
+                // 总元素数
+                Long totalCount = postMapper.getUserTotalCount(userId,PostType.POST.ordinal());
+                response.setTotalElements(totalCount);
             } else {
                 response.setContent(posts);
             }

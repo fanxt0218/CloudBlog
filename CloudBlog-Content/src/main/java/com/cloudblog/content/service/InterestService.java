@@ -19,4 +19,6 @@ public interface InterestService {
      * @param interests
      */
     void upgradeUserInterest(List<UserInterest> interests);
+
+    AjaxResult getTagList();
 }

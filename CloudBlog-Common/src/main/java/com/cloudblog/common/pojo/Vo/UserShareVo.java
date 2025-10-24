@@ -10,7 +10,15 @@ public class UserShareVo {
 
     private Long id;
 
-    private String content;
+    /**
+     * 简略信息
+     */
+    private String brief;
+
+    /**
+     * 可能存在的图片
+     */
+    private String image;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

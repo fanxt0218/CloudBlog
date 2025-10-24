@@ -14,4 +14,6 @@ public interface FavoritesService {
     void initDefaultFavorites(Long id);
 
     Favorites getUserDefaultFavorites(Long userId);
+
+    AjaxResult collecting(Long userId, Long postId, Integer status);
 }

@@ -39,4 +39,11 @@ public class FavoritesServiceImpl implements FavoritesService {
         // 返回默认收藏夹
         return favorites.get(0);
     }
+
+    @Override
+    public AjaxResult collecting(Long userId, Long postId, Integer status) {
+        favoritesMapper.collecting(userId, postId,status);
+        //TODO 通知、兴趣权重
+        return AjaxResult.success("操作成功");
+    }
 }

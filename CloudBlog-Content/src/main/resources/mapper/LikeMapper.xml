@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cloudblog.user.mapper.LikeMapper">
+<mapper namespace="com.cloudblog.content.mapper.LikeMapper">
+
+    <update id="liking">
+        update likes set status = #{status} where user_id = #{userId} and target_id = #{targetId} and type = #{type}
+    </update>
 
     <select id="getUserLikeCount" resultType="java.lang.Integer">
         select count(*) from likes where (target_id in (select id from posts where author_id = #{userId})

@@ -6,4 +6,8 @@
         insert into favorites(user_id, favorites_name, description, create_time)
             values (#{id}, '默认收藏夹', '默认收藏夹', now())
     </insert>
+
+    <update id="collecting">
+        update collect set status = #{status} where user_id = #{userId} and post_id = #{postId}
+    </update>
 </mapper>

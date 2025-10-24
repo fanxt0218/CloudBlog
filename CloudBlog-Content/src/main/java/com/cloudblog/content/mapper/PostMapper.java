@@ -130,4 +130,11 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @param postId
      */
     void addPostBrowseCount(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    /**
+     * 获取用户文章总数
+     * @param userId
+     * @return
+     */
+    Long getUserTotalCount(@Param("userId") Long userId, @Param("type") Integer type);
 }

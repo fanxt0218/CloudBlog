@@ -30,4 +30,8 @@ public class Share {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
+    private String brief;
+
+    private String image;
 }

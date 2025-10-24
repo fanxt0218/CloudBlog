@@ -4,7 +4,8 @@
 
     <resultMap id="UserShareVoResultMap" type="com.cloudblog.common.pojo.Vo.UserShareVo">
         <id property="id" column="id"/>
-        <result property="content" column="content"/>
+        <result property="brief" column="brief"/>
+        <result property="image" column="image"/>
         <result property="createTime" column="create_time"/>
         <result property="contentType" column="content_type"/>
         <result property="browseCount" column="browse_count"/>
@@ -13,7 +14,8 @@
 
     <select id="getUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo">
         SELECT s.id AS id,
-               s.content AS content,
+               s.brief AS brief,
+               s.image AS image,
                s.create_time AS create_time,
                s.content_type AS content_type,
                IFNULL(browse_count.browse_count, 0) AS browse_count,

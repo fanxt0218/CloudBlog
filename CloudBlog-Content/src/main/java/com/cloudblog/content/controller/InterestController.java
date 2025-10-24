@@ -15,4 +15,12 @@ public class InterestController {
     @Autowired
     private InterestService interestService;
 
+    /**
+     * 获取标签列表
+     */
+    @GetMapping("/tagList")
+    public AjaxResult getTagList() {
+        return interestService.getTagList();
+    }
+
 }

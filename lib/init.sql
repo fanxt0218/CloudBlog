@@ -328,6 +328,8 @@ create table share (
     id bigint primary key auto_increment comment '主键',
     author_id bigint comment '作者id',
     content text comment '动态内容',
+    brief varchar(255) comment '简略描述',
+    image varchar(255) comment '图片地址(可能)',
     topic_id int comment '话题id',
     content_type tinyint comment '内容类型,0:Markdown 1:HTML 2:TEXT',
     status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
@@ -350,6 +352,13 @@ create table topic (
 
     unique index uk_topic_name (topic_name)
 )comment '话题表';
+
+insert into topic (topic_name, image, description, create_time) values
+    ('技术', 'https://picsum.photos/200/300', '技术类', now()),
+    ('生活', 'https://picsum.photos/200/300', '生活类', now()),
+    ('游戏', 'https://picsum.photos/200/300', '游戏类', now()),
+    ('电影', 'https://picsum.photos/200/300', '电影类', now()),
+    ('音乐', 'https://picsum.photos/200/300', '音乐类', now());
 
 drop table if exists err_log;
 create table err_log (

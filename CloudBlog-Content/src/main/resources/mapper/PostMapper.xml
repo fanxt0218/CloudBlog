@@ -8,6 +8,7 @@
         <result property="image" column="image"/>
         <result property="isVip" column="is_vip"/>
         <result property="createTime" column="create_time"/>
+        <result property="status" column="status"/>
     </resultMap>
 
     <resultMap id="UserCollectResultMap" type="com.cloudblog.common.pojo.Vo.UserCollectListVo">
@@ -58,8 +59,8 @@
     </resultMap>
 
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
-        select p.id as id, title, image, is_vip, td.create_time as create_time from
-            (select target_id, create_time from likes
+        select p.id as id, title, image, is_vip, td.create_time as create_time, td.status as status from
+            (select target_id, create_time, status from likes
                 <where>
                     type = #{type} and user_id = #{userId} and status = 0
                     <if test="beginTime != null"> and date(createTime) &gt;= #{beginTime}</if>
@@ -280,6 +281,10 @@
             user_interest
         where
             user_id = #{userId}
+    </select>
+
+    <select id="getUserTotalCount" resultType="java.lang.Long">
+        select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
     </select>
 
     <insert id="addPostBrowseCount" parameterType="java.lang.Long">

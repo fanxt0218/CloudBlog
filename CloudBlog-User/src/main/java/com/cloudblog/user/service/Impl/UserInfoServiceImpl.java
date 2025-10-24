@@ -43,7 +43,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     private UserFocusMapper userFocusMapper;
     @Autowired
-    private LikeMapper likeMapper;
+    private LikeService likeService;
     @Autowired
     private CollectMapper collectMapper;
     @Autowired
@@ -112,7 +112,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             return AjaxResult.error("用户ID不能为空");
         }
         // 点赞数
-        Integer likeCount = likeMapper.getUserLikeCount(userId);
+        Integer likeCount = likeService.getUserLikeCount(userId);
         // 收藏数
         Integer collectCount = collectMapper.getUserCollectCount(userId);
         // 评论数
