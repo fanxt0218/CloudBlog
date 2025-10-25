@@ -19,8 +19,16 @@ public class InterestController {
      * 获取标签列表
      */
     @GetMapping("/tagList")
-    public AjaxResult getTagList() {
-        return interestService.getTagList();
+    public AjaxResult getTagList(@RequestParam(required = false) Integer classId) {
+        return interestService.getTagList(classId);
+    }
+
+    /**
+     * 获取标签分类列表
+     */
+    @GetMapping("/tagClassList")
+    public AjaxResult getTagClassList() {
+        return interestService.getTagClassList();
     }
 
 }

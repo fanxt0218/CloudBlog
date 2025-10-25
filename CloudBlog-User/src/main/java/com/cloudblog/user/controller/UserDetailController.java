@@ -31,6 +31,14 @@ public class UserDetailController {
     public AjaxResult updatePersonalInfo(@RequestBody UpdatePersonalInfoPo po) {
         return userInfoService.updatePersonalInfo(po);
     }
+
+    /**
+     * 移除用户兴趣
+     */
+    @PostMapping("/removeInterest")
+    public AjaxResult removeInterest(@RequestBody RemoveInterestPo po) {
+        return userInfoService.removeInterest(po);
+    }
     /**
      * 获取用户信息详情(账户设置)
      * @return

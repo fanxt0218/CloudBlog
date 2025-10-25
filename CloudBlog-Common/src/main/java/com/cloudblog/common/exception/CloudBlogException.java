@@ -12,6 +12,11 @@ public class CloudBlogException extends RuntimeException {
         super(message);
     }
 
+    /**
+     * 这里传入message的时候，尽量传入原堆栈信息，这样在日志中会打印出堆栈信息，方便排查问题
+     * @param message
+     * @param commonError
+     */
     public CloudBlogException(String message, CommonError commonError) {
         super(message);
         this.errMessage = commonError.getErrMessage();

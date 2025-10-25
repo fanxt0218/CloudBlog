@@ -26,5 +26,4 @@ public class UpdatePersonalInfoPo {
 
     private String profession;
 
-    private List<Integer> tags;
 }

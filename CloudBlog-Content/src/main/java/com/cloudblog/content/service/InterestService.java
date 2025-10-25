@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.Po.RemoveInterestPo;
 import com.cloudblog.common.result.AjaxResult;
 
 import java.util.List;
@@ -20,5 +21,13 @@ public interface InterestService {
      */
     void upgradeUserInterest(List<UserInterest> interests);
 
-    AjaxResult getTagList();
+    AjaxResult getTagList(Integer classId);
+
+    AjaxResult getTagClassList();
+
+    /**
+     * 移除用户兴趣
+     * @param po
+     */
+    void removeInterest(RemoveInterestPo po);
 }

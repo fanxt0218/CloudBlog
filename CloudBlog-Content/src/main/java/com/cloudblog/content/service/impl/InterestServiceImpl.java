@@ -1,7 +1,9 @@
 package com.cloudblog.content.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.Po.RemoveInterestPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.InterestMapper;
 import com.cloudblog.content.service.InterestService;
@@ -36,8 +38,24 @@ public class InterestServiceImpl implements InterestService {
     }
 
     @Override
-    public AjaxResult getTagList() {
-        List<Tag> tags = interestMapper.selectList(null);
+    public AjaxResult getTagList(Integer classId) {
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        if (classId != null) {
+            queryWrapper.eq(Tag::getClassId, classId);
+        } else {
+            queryWrapper = null;
+        }
+        List<Tag> tags = interestMapper.selectList(queryWrapper);
         return AjaxResult.success(tags);
+    }
+
+    @Override
+    public AjaxResult getTagClassList() {
+        return AjaxResult.success(interestMapper.getTagClassList());
+    }
+
+    @Override
+    public void removeInterest(RemoveInterestPo po) {
+        interestMapper.removeInterest(po);
     }
 }

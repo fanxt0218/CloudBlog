@@ -41,4 +41,6 @@ public interface UserInfoService {
     AjaxResult updateEmail(UpdateEmailPo po);
 
     AjaxResult uploadAvatar(MultipartFile file);
+
+    AjaxResult removeInterest(RemoveInterestPo po);
 }

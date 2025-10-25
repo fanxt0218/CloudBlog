@@ -95,6 +95,7 @@ drop table if exists tag;
 create table tag (
     id int primary key auto_increment comment '主键',
     tag_name varchar(32) comment '标签名称',
+    class_id int comment '分类id',
     description varchar(64) comment '标签描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
@@ -127,6 +128,18 @@ insert into tag (tag_name, description, create_time) values
 ('游戏开发', '游戏开发技术', now()),
 ('移动开发', '移动开发技术', now()),
 ('AIGC', 'AI创作', now());
+
+drop table if exists tag_class;
+create table tag_class (
+    id int primary key auto_increment comment '主键',
+    class_name varchar(32) comment '分类名称',
+    description varchar(255) comment '分类描述',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    unique index uk_class_name (class_name)
+)comment '标签分类表';
+
 
 drop table if exists user_vip;
 create table user_vip (

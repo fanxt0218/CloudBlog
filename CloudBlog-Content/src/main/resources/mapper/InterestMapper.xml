@@ -2,6 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.content.mapper.InterestMapper">
 
+    <resultMap id="TagClassVoResultMap" type="com.cloudblog.common.pojo.Vo.TagClassVo">
+        <id property="id" column="id"/>
+        <result property="className" column="class_name"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
     <select id="getUserInterest" resultType="com.cloudblog.common.pojo.DoMain.Tag">
         select t.id,
                t.tag_name,
@@ -10,6 +16,14 @@
                t.update_time
         from tag t inner join (select user_id, tag_id, weight from user_interest where user_id = #{userId}) ui on t.id = ui.tag_id
         order by ui.weight desc
+    </select>
+
+    <select id="getTagClassList" resultType="com.cloudblog.common.pojo.Vo.TagClassVo" resultMap="TagClassVoResultMap">
+        select
+            id,
+            class_name,
+            description
+        from tag_class
     </select>
 
     <update id="upgradeUserInterest" parameterType="java.util.List">
@@ -24,4 +38,9 @@
             (#{interest.userId}, #{interest.tagId})
         </foreach>
     </update>
+
+    <delete id="removeInterest" parameterType="com.cloudblog.common.pojo.Po.RemoveInterestPo">
+        delete from user_interest where user_id = #{userId} and tag_id = #{tagId}
+    </delete>
+
 </mapper>

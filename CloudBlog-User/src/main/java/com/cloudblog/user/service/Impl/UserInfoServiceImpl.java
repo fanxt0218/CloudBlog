@@ -1,6 +1,8 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -335,6 +338,22 @@ public class UserInfoServiceImpl implements UserInfoService {
         String uploadPath = avatarPath;
         String path = UploadUtil.uploadFile(file, uploadPath);
         return AjaxResult.success("上传成功", path);
+    }
+
+    @Override
+    public AjaxResult removeInterest(RemoveInterestPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        if (po.getTagId() == null) {
+            return AjaxResult.error("标签ID不能为空");
+        }
+        try {
+            interestService.removeInterest(po);
+        } catch (Exception e) {
+            CloudBlogException.cast(Arrays.toString(e.getStackTrace()), CommonError.INTERNAL_ERROR);
+        }
+        return AjaxResult.success("删除成功");
     }
 
     /**
