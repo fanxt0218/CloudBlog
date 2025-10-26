@@ -39,6 +39,15 @@ public class UserDetailController {
     public AjaxResult removeInterest(@RequestBody RemoveInterestPo po) {
         return userInfoService.removeInterest(po);
     }
+
+    /**
+     * 添加用户兴趣
+     */
+    @PostMapping("/addInterest")
+    public AjaxResult addInterest(@RequestBody AddInterestPo po) {
+        return userInfoService.addInterest(po);
+    }
+
     /**
      * 获取用户信息详情(账户设置)
      * @return

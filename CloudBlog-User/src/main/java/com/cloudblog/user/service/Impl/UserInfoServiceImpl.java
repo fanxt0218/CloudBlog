@@ -356,6 +356,23 @@ public class UserInfoServiceImpl implements UserInfoService {
         return AjaxResult.success("删除成功");
     }
 
+    @Override
+    public AjaxResult addInterest(AddInterestPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("用户ID不能为空");
+        }
+        if (po.getTagId() == null) {
+            return AjaxResult.error("标签ID不能为空");
+        }
+        try {
+            interestService.addInterest(po);
+        } catch (Exception e) {
+            log.error("添加用户兴趣失败：{}", e.getMessage());
+            CloudBlogException.cast(Arrays.toString(e.getStackTrace()), CommonError.INTERNAL_ERROR);
+        }
+        return AjaxResult.success("添加成功");
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId

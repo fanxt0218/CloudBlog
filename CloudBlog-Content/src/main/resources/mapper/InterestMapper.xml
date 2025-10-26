@@ -39,8 +39,11 @@
         </foreach>
     </update>
 
-    <delete id="removeInterest" parameterType="com.cloudblog.common.pojo.Po.RemoveInterestPo">
+    <delete id="removeUserInterest" parameterType="com.cloudblog.common.pojo.Po.RemoveInterestPo">
         delete from user_interest where user_id = #{userId} and tag_id = #{tagId}
     </delete>
 
+    <insert id="addUserInterest" parameterType="com.cloudblog.common.pojo.Po.AddInterestPo">
+        insert into user_interest (user_id, tag_id, create_time) values (#{userId}, #{tagId}, now())
+    </insert>
 </mapper>

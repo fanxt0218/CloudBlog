@@ -3,6 +3,7 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.Po.AddInterestPo;
 import com.cloudblog.common.pojo.Po.RemoveInterestPo;
 import com.cloudblog.common.pojo.Vo.TagClassVo;
 import org.apache.ibatis.annotations.Param;
@@ -34,5 +35,11 @@ public interface InterestMapper extends BaseMapper<Tag> {
      * 移除用户兴趣
      * @param po
      */
-    void removeInterest(RemoveInterestPo po);
+    void removeUserInterest(RemoveInterestPo po);
+
+    /**
+     * 添加用户兴趣
+     * @param po
+     */
+    void addUserInterest(AddInterestPo po);
 }

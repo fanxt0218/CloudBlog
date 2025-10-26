@@ -3,6 +3,7 @@ package com.cloudblog.content.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.Po.AddInterestPo;
 import com.cloudblog.common.pojo.Po.RemoveInterestPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.InterestMapper;
@@ -56,6 +57,21 @@ public class InterestServiceImpl implements InterestService {
 
     @Override
     public void removeInterest(RemoveInterestPo po) {
-        interestMapper.removeInterest(po);
+        interestMapper.removeUserInterest(po);
+    }
+
+    @Override
+    public void addInterest(AddInterestPo po) {
+        // 判断标签是否存在
+        if (interestMapper.selectOne(new LambdaQueryWrapper<Tag>().eq(Tag::getId, po.getTagId())) == null) {
+            return;
+        }
+        // 判断是否已经添加过
+        List<Tag> userInterest = interestMapper.getUserInterest(po.getUserId());
+        if (userInterest.stream().anyMatch(tag -> tag.getId().equals(po.getTagId()))) {
+            return;
+        }
+
+        interestMapper.addUserInterest(po);
     }
 }

@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.Po.AddInterestPo;
 import com.cloudblog.common.pojo.Po.RemoveInterestPo;
 import com.cloudblog.common.result.AjaxResult;
 
@@ -30,4 +31,10 @@ public interface InterestService {
      * @param po
      */
     void removeInterest(RemoveInterestPo po);
+
+    /**
+     * 添加用户兴趣
+     * @param po
+     */
+    void addInterest(AddInterestPo po);
 }
