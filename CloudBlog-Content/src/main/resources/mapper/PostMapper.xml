@@ -63,8 +63,8 @@
             (select target_id, create_time, status from likes
                 <where>
                     type = #{type} and user_id = #{userId} and status = 0
-                    <if test="beginTime != null"> and date(createTime) &gt;= #{beginTime}</if>
-                    <if test="endTime != null"> and date(createTime) &lt;= #{endTime}</if>
+                    <if test="beginTime != null"> and date(create_time) &gt;= #{beginTime}</if>
+                    <if test="endTime != null"> and date(create_time) &lt;= #{endTime}</if>
                 </where>) td
                 left join
             posts p
