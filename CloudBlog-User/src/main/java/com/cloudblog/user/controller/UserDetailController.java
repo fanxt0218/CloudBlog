@@ -98,6 +98,13 @@ public class UserDetailController {
     }
 
     /**
+     * 查询用户默认收藏夹id
+     */
+    @GetMapping("/getDefaultFavoritesId")
+    public AjaxResult getDefaultFavoritesId(@RequestParam Long userId) {
+        return userInfoService.getDefaultFavoritesId(userId);
+    }
+    /**
      * 获取用户收藏列表
      */
     @PostMapping("/collectList")

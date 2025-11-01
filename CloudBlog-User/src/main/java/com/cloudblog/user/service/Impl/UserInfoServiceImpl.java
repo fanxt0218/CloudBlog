@@ -373,6 +373,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         return AjaxResult.success("添加成功");
     }
 
+    @Override
+    public AjaxResult getDefaultFavoritesId(Long userId) {
+        return AjaxResult.success(favoritesService.getUserDefaultFavorites(userId));
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId

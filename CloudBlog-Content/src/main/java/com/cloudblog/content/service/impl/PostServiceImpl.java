@@ -61,7 +61,7 @@ public class PostServiceImpl implements PostService {
         int pageSize = po.getPageSize() == null || po.getPageSize() <= 0 ? 10 : po.getPageSize();
         // 提前处理情况
         po.setPostName(po.getPostName() == null || po.getPostName().trim().isEmpty() ? null : po.getPostName());
-        po.setFavoritesId(po.getFavoritesId() == null ? favoritesService.getUserDefaultFavorites(po.getUserId()).getId() : po.getFavoritesId());
+        po.setFavoritesId(po.getFavoritesId() == null || po.getFavoritesId() == 0 ? favoritesService.getUserDefaultFavorites(po.getUserId()).getId() : po.getFavoritesId());
         Page<UserCollectListVo> page = new Page<>(pageNum, pageSize);
         return postMapper.getUserCollectList(page,po.getUserId(),po.getFavoritesId(),po.getPostName());
     }

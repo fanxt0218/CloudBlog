@@ -1,6 +1,7 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.VipStatus;
 import com.cloudblog.common.pojo.DoMain.UserVip;
 import com.cloudblog.common.pojo.Vo.UserVipInfoVo;
 import com.cloudblog.common.result.AjaxResult;
@@ -8,6 +9,7 @@ import com.cloudblog.content.mapper.VipMapper;
 import com.cloudblog.content.service.VipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +29,7 @@ public class VipServiceImpl implements VipService {
         return AjaxResult.success(userVipInfoVo);
     }
 
+    @Transactional
     @Override
     public AjaxResult openVip(Long userId) {
         if (userId == null) {
@@ -39,10 +42,12 @@ public class VipServiceImpl implements VipService {
         }
         // 默认开通1个月会员，后续可更改逻辑
         UserVip userVip = new UserVip();
-        userVip.setId(userId);
+        userVip.setUserId(userId);
         userVip.setExpiresTime(LocalDateTime.now().plusMonths(1));
         userVip.setCreateTime(LocalDateTime.now());
         vipMapper.insert(userVip);
+        // 更改用户信息
+        vipMapper.updateUserVipStatus(userId, VipStatus.OPENED.getCode());
         return AjaxResult.success("开通会员成功");
     }
 }

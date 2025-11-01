@@ -9,6 +9,9 @@
         <result property="status" column="status"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
+    <update id="updateUserVipStatus">
+        update user_info set status = #{code} where user_id = #{userId}
+    </update>
 
     <select id="getUserVipInfo" resultType="com.cloudblog.common.pojo.Vo.UserVipInfoVo" resultMap="UserVipInfoVoResultMap">
         select
