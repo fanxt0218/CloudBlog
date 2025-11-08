@@ -1,6 +1,7 @@
 package com.cloudblog.content.controller;
 
 import com.cloudblog.common.pojo.Po.ChatPo;
+import com.cloudblog.common.pojo.Po.ReadNotificationPo;
 import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
 import com.cloudblog.common.result.AjaxResult;
@@ -47,8 +48,21 @@ public class NotificationController {
         return AjaxResult.success(notificationService.getChatContentType());
     }
 
+    /**
+     * 发送消息
+     * @param po
+     * @return
+     */
     @PostMapping("/chat")
     public AjaxResult chat(@RequestBody ChatPo po) {
         return notificationService.chat(po);
+    }
+
+    /**
+     * 已读消息
+     */
+    @PostMapping("/readNotification")
+    public AjaxResult readNotification(@RequestBody ReadNotificationPo po) {
+        return notificationService.readNotification(po);
     }
 }

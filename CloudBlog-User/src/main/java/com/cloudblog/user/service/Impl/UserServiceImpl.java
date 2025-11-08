@@ -1,10 +1,13 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cloudblog.common.enums.UserStatus;
 import com.cloudblog.common.pojo.DoMain.User;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
+import com.cloudblog.common.pojo.Po.LoginPo;
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
+import com.cloudblog.common.pojo.Vo.LoginVo;
 import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.GenerateUserInfo;
@@ -135,6 +138,35 @@ public class UserServiceImpl implements UserService {
         userMapper.updateById(user);
         // TODO 弹出登录
         return AjaxResult.success("注销成功");
+    }
+
+    @Override
+    public AjaxResult login(LoginPo po) {
+        if (!po.getPassword().equals(po.getTwicePassword())) {
+            return AjaxResult.warn("两次输入的密码不一致");
+        }
+        // 判断用户是否存在
+        User user = userMapper.getUser(po.getLoginType(), po.getTarget());
+        if (user == null) {
+            return AjaxResult.warn("用户不存在");
+        }
+        // 判断用户状态
+        if (!user.getStatus().equals(UserStatus.NORMAL.getValue())) {
+            return AjaxResult.warn("用户状态异常");
+        }
+        // 校验密码
+        if (!PasswordUtil.checkPassword(po.getPassword(), user.getPassword())) {
+            return AjaxResult.warn("密码错误");
+        }
+        // 更新登录时间
+        user.setLastLoginTime(LocalDateTime.now());
+        userMapper.update(user, new LambdaUpdateWrapper<User>().eq(User::getId, user.getId()));
+        // TODO 完善鉴权，返回token
+        LoginVo loginVo = LoginVo.builder()
+                .userId(user.getId())
+                .token("")
+                .build();
+        return AjaxResult.success("登录成功", loginVo);
     }
 
 

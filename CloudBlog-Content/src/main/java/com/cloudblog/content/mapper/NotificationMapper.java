@@ -7,6 +7,7 @@ import com.cloudblog.common.pojo.Dto.UserChatList;
 import com.cloudblog.common.pojo.Dto.UserCommentList;
 import com.cloudblog.common.pojo.Dto.UserFanNoticeList;
 import com.cloudblog.common.pojo.Dto.UserLikeAndCollectNoticeList;
+import com.cloudblog.common.pojo.Po.ReadNotificationPo;
 import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
 import org.apache.ibatis.annotations.Param;
@@ -61,4 +62,10 @@ public interface NotificationMapper extends BaseMapper<Notification> {
      * @return
      */
     List<UserChatDetailVo.ChatMessage> getChatDetail(@Param("po") UserChatDetailPo po);
+
+    /**
+     * 读取通知
+     * @param po
+     */
+    void readNotification(@Param("po") ReadNotificationPo po, @Param("type") Integer type);
 }

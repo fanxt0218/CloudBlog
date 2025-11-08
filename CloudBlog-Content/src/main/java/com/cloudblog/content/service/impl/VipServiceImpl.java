@@ -48,6 +48,7 @@ public class VipServiceImpl implements VipService {
         vipMapper.insert(userVip);
         // 更改用户信息
         vipMapper.updateUserVipStatus(userId, VipStatus.OPENED.getCode());
+        // TODO 后续考虑同步用户会员状态与会员信息
         return AjaxResult.success("开通会员成功");
     }
 }

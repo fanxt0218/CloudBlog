@@ -26,12 +26,18 @@ public class UploadUtil {
 
     public static String UPLOAD_PATH;
 
+    public static String PREFIX;
+
     @Value("${file.resource.path}")
     private String prePath;
+
+    @Value("${file.resource.prefix}")
+    private String prefix;
 
     @PostConstruct
     public void init() {
         UPLOAD_PATH = this.prePath;
+        PREFIX = this.prefix;
         log.info("上传文件路径：{}", UPLOAD_PATH);
     }
 
@@ -94,7 +100,7 @@ public class UploadUtil {
             file.transferTo(destFile);
 
             // 返回路径（确保路径格式正确）
-            String resultPath = path + "/" + fileName;
+            String resultPath = PREFIX + path + "/" + fileName;
             return resultPath.replace("\\", "/"); // 统一使用正斜杠
 
         } catch (IOException e) {

@@ -290,7 +290,6 @@ create table favorites (
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
 
-    unique index uk_favorites_name (favorites_name),
     index idx_user_id (user_id)
 )comment '收藏夹表';
 

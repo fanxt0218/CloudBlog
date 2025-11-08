@@ -42,8 +42,8 @@
             case
                 when EXISTS (
                     select 1 from user_focus uf2
-                    where uf2.user_id = uf.focus_user_id
-                      and uf2.focus_user_id = #{userId}
+                    where uf.user_id = uf2.focus_user_id
+                    and uf2.user_id = #{user_id}
                 ) then 1
                 else 0
                 end as is_follow_each_other

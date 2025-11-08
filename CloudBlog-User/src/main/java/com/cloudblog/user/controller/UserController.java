@@ -1,5 +1,6 @@
 package com.cloudblog.user.controller;
 
+import com.cloudblog.common.pojo.Po.LoginPo;
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.service.UserService;
@@ -27,6 +28,14 @@ public class UserController {
     @PostMapping("/cancellation")
     public AjaxResult cancellation(@RequestParam Long userId) {
         return userService.cancellation(userId);
+    }
+
+    /**
+     * 用户登录
+     */
+    @PostMapping("/login")
+    public AjaxResult login(@RequestBody LoginPo po) {
+        return userService.login(po);
     }
 
 

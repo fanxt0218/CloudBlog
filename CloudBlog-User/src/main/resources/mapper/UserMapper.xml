@@ -14,4 +14,22 @@
                create_time
         from user where user_account = #{number}
     </select>
+
+    <select id="getUser" resultType="com.cloudblog.common.pojo.DoMain.User">
+        select
+            id,
+            user_account,
+            phone,
+            email,
+            password,
+            status,
+            last_login_time,
+            permission_id,
+            create_time
+        from user where
+            case
+                when #{loginType} = 'phone' then phone = #{target}
+                when #{loginType} = 'email' then email = #{target}
+            end
+    </select>
 </mapper>

@@ -93,15 +93,28 @@
              FROM notification
              WHERE recipient_id = #{userId}
                AND sender_id = u.id
-               AND is_read = 0) as unread_count
+               AND is_read = 0
+               AND type = 1) as unread_count
         FROM user u
                  JOIN user_info ui ON u.id = ui.user_id
                  JOIN (
-            SELECT sender_id, content, create_time,
-                   ROW_NUMBER() OVER (PARTITION BY sender_id ORDER BY create_time DESC) as rn
+            SELECT
+                CASE
+                    WHEN sender_id = #{userId} THEN recipient_id
+                    ELSE sender_id
+                    END as chat_user_id,
+                sender_id,
+                content,
+                create_time,
+                ROW_NUMBER() OVER (PARTITION BY
+                       CASE
+                           WHEN sender_id = #{userId} THEN recipient_id
+                           ELSE sender_id
+                       END
+                       ORDER BY create_time DESC) as rn
             FROM notification
-            WHERE recipient_id = #{userId} AND type = 1
-        ) n ON n.sender_id = u.id AND n.rn = 1
+            WHERE (recipient_id = #{userId} OR sender_id = #{userId}) AND type = 1
+        ) n ON n.chat_user_id = u.id AND n.rn = 1
         ORDER BY n.create_time DESC
     </select>
 
@@ -209,4 +222,16 @@
             (sender_id = #{po.targetUserId} and recipient_id = #{po.userId})
         order by create_time
     </select>
+
+    <update id="readNotification">
+        update notification
+        set is_read = 1
+        where
+            recipient_id = #{po.userId}
+        and
+            sender_id = #{po.targetUserId}
+        and
+            type = #{type}
+    </update>
+
 </mapper>

@@ -7,6 +7,7 @@ import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
 import com.cloudblog.common.pojo.Dto.*;
 import com.cloudblog.common.pojo.Po.ChatPo;
+import com.cloudblog.common.pojo.Po.ReadNotificationPo;
 import com.cloudblog.common.pojo.Po.UserChatDetailPo;
 import com.cloudblog.common.pojo.Po.UserNotificationsPo;
 import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
@@ -104,6 +105,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public AjaxResult chat(ChatPo po) {
         if (po.getUserId() == null || po.getTargetId() == null) {
+            log.info("userId{},targetId{}", po.getUserId(), po.getTargetId());
             return AjaxResult.error("参数错误");
         }
         if (po.getContent() == null || po.getContent().isEmpty()) {
@@ -117,8 +119,8 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setRecipientId(po.getTargetId());
             notification.setSenderId(po.getUserId());
             notification.setContent(po.getContent());
-            notification.setType(com.cloudblog.common.enums.NotificationType.CHAT.ordinal());
-            notification.setObjectType(ContentType.TEXT.ordinal()); // 目前默认为文本，后续可能支持其他类型
+            notification.setType(com.cloudblog.common.enums.NotificationType.CHAT.getValue());
+            notification.setObjectType(po.getContentType()); // 目前默认为文本，后续可能支持其他类型
             notification.setIsRead(0);
             notification.setCreateTime(LocalDateTime.now());
             notificationMapper.insert(notification);
@@ -127,6 +129,15 @@ public class NotificationServiceImpl implements NotificationService {
             throw new CloudBlogException("发送失败");
         }
         return AjaxResult.success("发送成功");
+    }
+
+    @Override
+    public AjaxResult readNotification(ReadNotificationPo po) {
+        if (po.getUserId() == null || po.getTargetUserId() == null) {
+            return AjaxResult.error("参数错误");
+        }
+        notificationMapper.readNotification(po, com.cloudblog.common.enums.NotificationType.CHAT.getValue());
+        return AjaxResult.success("success");
     }
 
     /**
@@ -203,7 +214,7 @@ public class NotificationServiceImpl implements NotificationService {
                         userFanList.forEach(focus -> {
                             if (focus.getUserId().equals(singleChat.getUserId())) {
                                 if (focus.getIsFollowEachOther().equals(1)) {
-                                    singleChat.setRelationship("互相关注");
+                                    singleChat.setRelationship("好友");
                                 } else {
                                     singleChat.setRelationship("粉丝");
                                 }
@@ -215,10 +226,13 @@ public class NotificationServiceImpl implements NotificationService {
                         // 判断关系(是否关注)
                         userFocusList.forEach(focus -> {
                             if (focus.getUserId().equals(singleChat.getUserId())) {
-                                singleChat.setRelationship("关注");
+                                singleChat.setRelationship("已关注");
                                 return;
                             }
                         });
+                    }
+                    if (singleChat.getRelationship() == null) {
+                        singleChat.setRelationship("陌生人");
                     }
                 }
             } else if (type == UserLikeAndCollectNoticeList.class) { // 点赞和收藏列表
