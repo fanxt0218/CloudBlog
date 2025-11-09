@@ -65,4 +65,12 @@ public class NotificationController {
     public AjaxResult readNotification(@RequestBody ReadNotificationPo po) {
         return notificationService.readNotification(po);
     }
+
+    /**
+     * 获取在线状态
+     */
+    @GetMapping("/getOnlineStatus")
+    public AjaxResult getOnlineStatus(@RequestParam("targetUserId") Long targetUserId) {
+        return notificationService.getOnlineStatus(targetUserId);
+    }
 }

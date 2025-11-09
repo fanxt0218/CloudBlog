@@ -2,7 +2,9 @@ package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.enums.ContentType;
+import com.cloudblog.common.enums.SocketMessageType;
 import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.pojo.DoMain.ChatMessage;
 import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
 import com.cloudblog.common.pojo.Dto.*;
@@ -17,6 +19,7 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.NotificationMapper;
 import com.cloudblog.content.service.FocusService;
 import com.cloudblog.content.service.NotificationService;
+import com.cloudblog.content.socket.WebSocket;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,8 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationMapper notificationMapper;
     @Autowired
     private FocusService focusService;
+    @Autowired
+    private WebSocket webSocket;
 
     @Override
     public AjaxResult getNotificationList(UserNotificationsPo po) {
@@ -124,6 +129,20 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setIsRead(0);
             notification.setCreateTime(LocalDateTime.now());
             notificationMapper.insert(notification);
+
+            // 主动推送消息(不是自己时才推送)
+            if (!po.getUserId().equals(po.getTargetId())) {
+                UserChatDetailVo.ChatMessage chatMessage = new UserChatDetailVo.ChatMessage();
+                chatMessage.setMessageId(notification.getId());
+                chatMessage.setContent(po.getContent());
+                chatMessage.setSenderId(po.getUserId());
+                chatMessage.setSendTime(notification.getCreateTime());
+                chatMessage.setContentType(po.getContentType());
+                webSocket.sendMessage(
+                        new SocketMessage<>(SocketMessageType.CHAT, chatMessage),
+                        po.getUserId(),
+                        po.getTargetId());
+            }
         } catch (Exception e) {
             log.error("发送失败：{}", e.getMessage());
             throw new CloudBlogException("发送失败");
@@ -138,6 +157,11 @@ public class NotificationServiceImpl implements NotificationService {
         }
         notificationMapper.readNotification(po, com.cloudblog.common.enums.NotificationType.CHAT.getValue());
         return AjaxResult.success("success");
+    }
+
+    @Override
+    public AjaxResult getOnlineStatus(Long targetUserId) {
+        return webSocket.getOnlineStatus(targetUserId)?AjaxResult.success("成功","在线"):AjaxResult.success("成功","离线");
     }
 
     /**

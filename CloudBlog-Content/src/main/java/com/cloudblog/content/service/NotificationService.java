@@ -23,4 +23,6 @@ public interface NotificationService {
     AjaxResult chat(ChatPo po);
 
     AjaxResult readNotification(ReadNotificationPo po);
+
+    AjaxResult getOnlineStatus(Long targetUserId);
 }
