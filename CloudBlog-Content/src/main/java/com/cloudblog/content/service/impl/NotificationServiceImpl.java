@@ -256,7 +256,11 @@ public class NotificationServiceImpl implements NotificationService {
                         });
                     }
                     if (singleChat.getRelationship() == null) {
-                        singleChat.setRelationship("陌生人");
+                        if (singleChat.getUserId().equals(userId)) {
+                            singleChat.setRelationship("自己");
+                        }else {
+                            singleChat.setRelationship("陌生人");
+                        }
                     }
                 }
             } else if (type == UserLikeAndCollectNoticeList.class) { // 点赞和收藏列表
