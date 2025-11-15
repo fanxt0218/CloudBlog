@@ -244,9 +244,11 @@
         where
             type = 1
                 and
-            (sender_id = #{po.userId} and recipient_id = #{po.targetUserId})
-           or
-            (sender_id = #{po.targetUserId} and recipient_id = #{po.userId})
+                (
+                (sender_id = #{po.userId} and recipient_id = #{po.targetUserId})
+                or
+                (sender_id = #{po.targetUserId} and recipient_id = #{po.userId})
+                )
         order by create_time
     </select>
 
