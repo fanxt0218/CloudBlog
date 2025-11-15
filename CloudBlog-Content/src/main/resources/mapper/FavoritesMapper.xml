@@ -7,6 +7,11 @@
             values (#{id}, '默认收藏夹', '默认收藏夹', now())
     </insert>
 
+    <insert id="addCollect">
+        insert into collect(user_id, favorites_id, post_id, create_time)
+            values (#{userId}, #{favoritesId}, #{postId}, now())
+    </insert>
+
     <update id="collecting">
         update collect set status = #{status} where user_id = #{userId} and post_id = #{postId}
     </update>

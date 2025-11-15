@@ -3,6 +3,7 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.UserChatList;
 import com.cloudblog.common.pojo.Dto.UserCommentList;
 import com.cloudblog.common.pojo.Dto.UserFanNoticeList;
@@ -37,7 +38,7 @@ public interface NotificationMapper extends BaseMapper<Notification> {
     List<UserCommentList> getCommentList(Long userId);
 
     /**
-     * 获取粉丝列表
+     * 获取粉丝通知列表
      * @param userId
      * @return
      */
@@ -68,4 +69,17 @@ public interface NotificationMapper extends BaseMapper<Notification> {
      * @param po
      */
     void readNotification(@Param("po") ReadNotificationPo po, @Param("type") Integer type);
+
+    /**
+     * 获取作者id
+     * @param targetId
+     * @param type
+     * @return
+     */
+    UserInfo getauthorId(@Param("targetId") Long targetId, @Param("type") Integer type);
+
+    /**
+     * 获取用户信息
+     */
+    UserInfo getUserInfoById(@Param("userId") Long userId);
 }

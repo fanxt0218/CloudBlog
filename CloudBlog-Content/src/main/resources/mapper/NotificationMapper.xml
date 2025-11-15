@@ -23,6 +23,7 @@
     </resultMap>
 
     <resultMap id="UserCommentResultMap" type="com.cloudblog.common.pojo.Dto.UserCommentList">
+        <id property="id" column="id"/>
         <id property="userId" column="user_id"/>
         <id property="userName" column="user_name"/>
         <id property="userImage" column="user_image"/>
@@ -39,6 +40,7 @@
         <id property="userName" column="user_name"/>
         <id property="userImage" column="user_image"/>
         <id property="createTime" column="create_time"/>
+        <id property="content" column="content"/>
         <id property="isRead" column="is_read"/>
     </resultMap>
 
@@ -46,6 +48,7 @@
         <id property="userId" column="user_id"/>
         <id property="userName" column="user_name"/>
         <id property="userImage" column="user_image"/>
+        <id property="content" column="content"/>
         <id property="objectType" column="object_type"/>
         <id property="objectId" column="object_id"/>
         <id property="objectTitle" column="object_title"/>
@@ -65,6 +68,22 @@
         <id property="sendTime" column="send_time"/>
         <id property="content" column="content"/>
         <id property="contentType" column="content_type"/>
+    </resultMap>
+
+    <resultMap id="UserInfoResultMap" type="com.cloudblog.common.pojo.DoMain.UserInfo">
+        <id property="id" column="id"/>
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="sex" column="sex"/>
+        <id property="image" column="image"/>
+        <id property="introduction" column="introduction"/>
+        <id property="region" column="region"/>
+        <id property="birthDate" column="birth_date"/>
+        <id property="profession" column="profession"/>
+        <id property="isVip" column="is_vip"/>
+        <id property="exp" column="exp"/>
+        <id property="createTime" column="create_time"/>
+        <id property="updateTime" column="update_time"/>
     </resultMap>
 
     <select id="getNotificationTypeList" resultType="com.cloudblog.common.pojo.DoMain.NotificationType" resultMap="NotificationTypeResultMap">
@@ -121,6 +140,7 @@
     <select id="getCommentList" resultType="com.cloudblog.common.pojo.Dto.UserCommentList"
             parameterType="java.lang.Long" resultMap="UserCommentResultMap">
         select
+            n.id as id,
             ui.user_id as user_id,
             ui.user_name as user_name,
             ui.image as user_image,
@@ -145,7 +165,7 @@
                 left join posts p on n.object_type = 0 and n.object_id = p.id
                 left join share s on n.object_type = 1 and n.object_id = s.id
                 left join comments c on n.object_type = 2 and n.object_id = c.id
-        where n.type = 2 and recipient_id = #{userId}
+        where n.type = 2 and recipient_id = #{userId} and sender_id != #{userId}
         order by n.create_time desc
     </select>
     <select id="getFanList" resultType="com.cloudblog.common.pojo.Dto.UserFanNoticeList"
@@ -155,6 +175,7 @@
             ui.user_name as user_name,
             ui.image as user_image,
             n.create_time as create_time,
+            n.content as content,
             n.is_read as is_read
         from
             notification n
@@ -192,6 +213,12 @@
                 left join share s on n.object_type = 1 and n.object_id = s.id
                 left join comments c on n.object_type = 2 and n.object_id = c.id
         where (n.type = 4 or n.type = 5) and recipient_id = 1
+        order by
+            case
+                when n.update_time is not null
+                    then n.update_time
+                else n.create_time
+            end desc
     </select>
 
     <select id="getChatUserInfo" resultType="com.cloudblog.common.pojo.Vo.UserChatDetailVo$ConversationInfo"
@@ -233,5 +260,66 @@
         and
             type = #{type}
     </update>
+
+    <select id="getauthorId" resultType="com.cloudblog.common.pojo.DoMain.UserInfo" resultMap="UserInfoResultMap">
+        select
+            ui.id as id,
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.sex as sex,
+            ui.image as image,
+            ui.introduction as introduction,
+            ui.region as region,
+            ui.birth_date as birth_date,
+            ui.profession as profession,
+            ui.is_vip as is_vip,
+            ui.exp as exp,
+            ui.create_time as create_time,
+            ui.update_time as update_time
+        from
+            <choose>
+                <when test="type == 0">
+                     posts
+                </when>
+                <when test="type == 1">
+                     share
+                </when>
+                <when test="type == 2">
+                     comments
+                </when>
+            </choose>
+        t
+        inner join
+            user_info ui
+        on
+        <choose>
+            <when test="type == 0 || type == 1">
+                t.author_id = ui.user_id
+            </when>
+            <when test="type == 2">
+                t.user_id = ui.user_id
+            </when>
+        </choose>
+        where t.id = #{targetId}
+    </select>
+
+    <select id="getUserInfoById" resultType="com.cloudblog.common.pojo.DoMain.UserInfo" resultMap="UserInfoResultMap">
+        select
+            id,
+            user_id,
+            user_name,
+            sex,
+            image,
+            introduction,
+            region,
+            birth_date,
+            profession,
+            is_vip,
+            exp,
+            create_time,
+            update_time
+        from user_info
+        where user_id = #{userId}
+    </select>
 
 </mapper>

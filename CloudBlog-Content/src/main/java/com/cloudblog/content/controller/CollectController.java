@@ -13,14 +13,15 @@ public class CollectController {
     private FavoritesService favoritesService;
 
     /**
-     * 收藏文章
+     * 收藏/取消收藏 文章
      */
     @PostMapping("/collecting")
     public AjaxResult collecting(
             @RequestParam Long userId,
             @RequestParam Long postId,
-            @RequestParam Integer status) {
-        return favoritesService.collecting(userId, postId,status);
+            @RequestParam Integer status,
+            @RequestParam(required = false) Integer favoriteId) {
+        return favoritesService.collecting(userId, postId,status, favoriteId);
     }
 
 }

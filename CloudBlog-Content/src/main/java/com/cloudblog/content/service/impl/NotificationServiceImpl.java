@@ -7,11 +7,9 @@ import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.pojo.DoMain.ChatMessage;
 import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.*;
-import com.cloudblog.common.pojo.Po.ChatPo;
-import com.cloudblog.common.pojo.Po.ReadNotificationPo;
-import com.cloudblog.common.pojo.Po.UserChatDetailPo;
-import com.cloudblog.common.pojo.Po.UserNotificationsPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
 import com.cloudblog.common.pojo.Vo.UserFocusListVo;
@@ -151,17 +149,161 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public AjaxResult readNotification(ReadNotificationPo po) {
+    public AjaxResult readNotification(ReadNotificationPo po, com. cloudblog. common. enums.NotificationType... notificationTypes) {
         if (po.getUserId() == null || po.getTargetUserId() == null) {
             return AjaxResult.error("参数错误");
         }
-        notificationMapper.readNotification(po, com.cloudblog.common.enums.NotificationType.CHAT.getValue());
+        for (com.cloudblog.common.enums.NotificationType notificationType : notificationTypes) {
+            notificationMapper.readNotification(po, notificationType.getValue());
+        }
         return AjaxResult.success("success");
     }
 
     @Override
     public AjaxResult getOnlineStatus(Long targetUserId) {
         return webSocket.getOnlineStatus(targetUserId)?AjaxResult.success("成功","在线"):AjaxResult.success("成功","离线");
+    }
+
+    @Override
+    public void focusUser(FocusUserPo po) {
+        Notification notification = new Notification();
+        notification.setSenderId(po.getUserId());
+        notification.setRecipientId(po.getFocusUserId());
+        notification.setType(com.cloudblog.common.enums.NotificationType.NEW_FAN.getValue());
+        notification.setContent("关注了你");
+        notification.setCreateTime(LocalDateTime.now());
+        notificationMapper.insert(notification);
+    }
+
+    @Override
+    public void likeNotification(Long userId, Long targetId, Integer status, Integer type) {
+        // 读取同种类型点赞未读数据
+        Notification notification = notificationMapper.selectOne(
+                new LambdaQueryWrapper<Notification>()
+                        .eq(Notification::getType, com.cloudblog.common.enums.NotificationType.NEW_LIKE.getValue())
+                        .eq(Notification::getObjectType, type)
+                        .eq(Notification::getObjectId, targetId)
+                        .eq(Notification::getIsRead, 0)
+        );
+
+        UserInfo userInfo = notificationMapper.getauthorId(targetId, type);
+        boolean isNeedInsert = false;
+
+        if (notification != null){
+            // 被点赞过
+            if (status == 0) {
+                // 未读
+                Integer isAggregated = notification.getIsAggregated();
+                if (isAggregated == null || isAggregated == 0) {
+                    // 未聚合，执行聚合操作
+                    notification.setIsAggregated(1);
+                    notification.setAggregatedCount(1);
+                }
+                notification.setAggregatedCount(notification.getAggregatedCount() + 1);
+                // 查找本次点赞人
+                UserInfo userInfoById = notificationMapper.getUserInfoById(userId);
+                notification.setContent(
+                        "、"+userInfoById.getUserName()+
+                        " 等"+notification.getAggregatedCount()+"人点赞了你的"+
+                        switch (type){
+                            case 0 -> "文章";
+                            case 1 -> "动态";
+                            case 2 -> "评论";
+                            default -> "内容";
+                        });
+                notification.setUpdateTime(LocalDateTime.now());
+                notificationMapper.updateById(notification);
+            }else {
+                // 已读,执行新增
+                isNeedInsert = true;
+            }
+        } else {
+            // 没有被点赞过
+            isNeedInsert = true;
+        }
+
+        if (isNeedInsert) {
+            // 查找目标用户信息
+            if (userInfo == null) {
+                return;
+            }
+            Notification tempNotification = new Notification();
+            tempNotification.setSenderId(userId);
+            tempNotification.setRecipientId(userInfo.getUserId());
+            tempNotification.setType(com.cloudblog.common.enums.NotificationType.NEW_LIKE.getValue());
+            tempNotification.setObjectType(type);
+            tempNotification.setObjectId(targetId);
+            tempNotification.setContent("点赞了你的" + switch (type) {
+                case 0 -> "文章";
+                case 1 -> "动态";
+                case 2 -> "评论";
+                default -> "内容";
+            });
+            tempNotification.setCreateTime(LocalDateTime.now());
+            tempNotification.setUserName(userInfo.getUserName());
+
+            notificationMapper.insert(tempNotification);
+        }
+
+    }
+
+    @Override
+    public void collectNotification(Long userId, Long postId, Integer status) {
+        // 读取同种类型点赞未读数据
+        Notification notification = notificationMapper.selectOne(
+                new LambdaQueryWrapper<Notification>()
+                        .eq(Notification::getType, com.cloudblog.common.enums.NotificationType.NEW_COLLECT.getValue())
+                        .eq(Notification::getObjectType, ContentType.POST.ordinal())
+                        .eq(Notification::getObjectId, postId)
+                        .eq(Notification::getIsRead, 0)
+        );
+
+        // 查找目标用户信息
+        UserInfo userInfo = notificationMapper.getauthorId(postId, ContentType.POST.ordinal());
+        boolean isNeedInsert = false;
+
+        if (notification != null){
+            // 被点赞过
+            if (status == 0) {
+                // 未读
+                Integer isAggregated = notification.getIsAggregated();
+                if (isAggregated == null || isAggregated == 0) {
+                    // 未聚合，执行聚合操作
+                    notification.setIsAggregated(1);
+                    notification.setAggregatedCount(1);
+                }
+                notification.setAggregatedCount(notification.getAggregatedCount() + 1);
+                notification.setUpdateTime(LocalDateTime.now());
+                // 查找本次点赞人
+                UserInfo userInfoById = notificationMapper.getUserInfoById(userId);
+                notification.setContent("、"+userInfoById.getUserName()+" 等"+notification.getAggregatedCount()+"人收藏了你的文章");
+                notificationMapper.updateById(notification);
+            }else {
+                // 已读,执行新增
+                isNeedInsert = true;
+            }
+        } else {
+            // 没有被点赞过
+            isNeedInsert = true;
+        }
+
+        if (isNeedInsert) {
+            if (userInfo == null) {
+                return;
+            }
+            Notification tempNotification = new Notification();
+            tempNotification.setSenderId(userId);
+            tempNotification.setRecipientId(userInfo.getUserId());
+            tempNotification.setType(com.cloudblog.common.enums.NotificationType.NEW_COLLECT.getValue());
+            tempNotification.setObjectType(ContentType.POST.ordinal());
+            tempNotification.setObjectId(postId);
+            tempNotification.setContent("收藏了你的文章");
+            tempNotification.setCreateTime(LocalDateTime.now());
+//            tempNotification.setUserName(userInfo.getUserName());
+
+            notificationMapper.insert(tempNotification);
+        }
+
     }
 
     /**
@@ -275,6 +417,26 @@ public class NotificationServiceImpl implements NotificationService {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 获取通知对象类型中文名
+     */
+    public String getNotificationTypeList(Integer type) {
+        switch (type){
+            case 1:
+                return "聊天";
+            case 2:
+                return "评论";
+            case 3:
+                return "粉丝";
+            case 4:
+                return "点赞";
+            case 5:
+                return "收藏";
+            default:
+                return "未知";
         }
     }
 

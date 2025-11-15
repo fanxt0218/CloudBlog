@@ -1,16 +1,19 @@
 package com.cloudblog.content.service.impl;
 
 import com.cloudblog.common.enums.FocusOperationType;
+import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.Po.FocusUserPo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
 import com.cloudblog.common.pojo.Vo.UserFocusListVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FocusMapper;
+import com.cloudblog.content.mapper.NotificationMapper;
 import com.cloudblog.content.service.FocusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -19,6 +22,8 @@ public class FocusServiceImpl implements FocusService {
 
     @Autowired
     private FocusMapper focusMapper;
+    @Autowired
+    private NotificationMapper notificationMapper;
 
     @Override
     public List<UserFocusListVo> getUserFocusList(Long userId) {
@@ -46,7 +51,14 @@ public class FocusServiceImpl implements FocusService {
             // 关注
             try {
                 focusMapper.focusUser(po);
-                // TODO 发送通知
+                // 发送通知
+                Notification notification = new Notification();
+                notification.setSenderId(po.getUserId());
+                notification.setRecipientId(po.getFocusUserId());
+                notification.setType(com.cloudblog.common.enums.NotificationType.NEW_FAN.getValue());
+                notification.setContent("关注了你");
+                notification.setCreateTime(LocalDateTime.now());
+                notificationMapper.insert(notification);
             } catch (Exception e) {
                 log.error("关注失败：{}", e.getMessage());
                 return AjaxResult.error("关注失败");

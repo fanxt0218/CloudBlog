@@ -63,7 +63,7 @@ public class NotificationController {
      */
     @PostMapping("/readNotification")
     public AjaxResult readNotification(@RequestBody ReadNotificationPo po) {
-        return notificationService.readNotification(po);
+        return notificationService.readNotification(po, com.cloudblog.common.enums.NotificationType.CHAT);
     }
 
     /**
@@ -72,5 +72,29 @@ public class NotificationController {
     @GetMapping("/getOnlineStatus")
     public AjaxResult getOnlineStatus(@RequestParam("targetUserId") Long targetUserId) {
         return notificationService.getOnlineStatus(targetUserId);
+    }
+
+    /**
+     * 已读消息(评论)
+     */
+    @PostMapping("/readCommentNotification")
+    public AjaxResult readCommentNotification(@RequestBody ReadNotificationPo po) {
+        return notificationService.readNotification(po, com.cloudblog.common.enums.NotificationType.COMMENT);
+    }
+
+    /**
+     * 已读消息(新增粉丝)
+     */
+    @PostMapping("/readFanNotification")
+    public AjaxResult readFanNotification(@RequestBody ReadNotificationPo po) {
+        return notificationService.readNotification(po, com.cloudblog.common.enums.NotificationType.NEW_FAN);
+    }
+
+    /**
+     * 已读消息(点赞和收藏)
+     */
+    @PostMapping("/readLikeAndCollectNotification")
+    public AjaxResult readLikeAndCollectNotification(@RequestBody ReadNotificationPo po) {
+        return notificationService.readNotification(po, com.cloudblog.common.enums.NotificationType.NEW_LIKE, com.cloudblog.common.enums.NotificationType.NEW_COLLECT);
     }
 }

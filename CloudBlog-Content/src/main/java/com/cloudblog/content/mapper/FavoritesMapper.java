@@ -1,6 +1,7 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cloudblog.common.pojo.DoMain.Collect;
 import com.cloudblog.common.pojo.DoMain.Favorites;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,4 +20,10 @@ public interface FavoritesMapper extends BaseMapper<Favorites> {
      * @return
      */
     void collecting(@Param("userId") Long userId, @Param("postId") Long postId, @Param("status") Integer status);
+
+    /**
+     * 添加收藏
+     * @param collect
+     */
+    void addCollect(Collect collect);
 }

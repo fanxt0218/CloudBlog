@@ -70,6 +70,7 @@ create table user_focus (
     user_id bigint comment '用户id',
     focus_user_id bigint comment '关注用户id',
     create_time datetime comment '创建时间',
+    source varchar(270) comment '来源',
 
     unique index uk_user_focus (user_id, focus_user_id),
     index idx_user_id (user_id),
@@ -333,7 +334,9 @@ create table notification_type (
 insert into notification_type (type_name, type_code, template, description) values
     ('聊天', 'user_chat', '**发来消息：***: ', '聊天信息'),
     ('评论', 'comment', '评论了你', '用户评论'),
-    ('新增粉丝', 'new_fan', '***关注了你', '新增粉丝');
+    ('新增粉丝', 'new_fan', '***关注了你', '新增粉丝'),
+    ('点赞', 'new_like', '**点赞了你的***', '点赞信息'),
+    ('关注', 'new_follow', '**关注了你的***', '关注信息');
 
 drop table if exists share;
 create table share (

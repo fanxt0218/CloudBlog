@@ -6,7 +6,11 @@ public enum NotificationType {
 
     COMMENT(2),
 
-    NEW_FAN(3);
+    NEW_FAN(3),
+
+    NEW_LIKE(4),
+
+    NEW_COLLECT(5);
 
     private int value;
 

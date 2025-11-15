@@ -1,13 +1,16 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.pojo.DoMain.Collect;
 import com.cloudblog.common.pojo.DoMain.Favorites;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FavoritesMapper;
 import com.cloudblog.content.service.FavoritesService;
+import com.cloudblog.content.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -16,6 +19,8 @@ public class FavoritesServiceImpl implements FavoritesService {
 
     @Autowired
     private FavoritesMapper favoritesMapper;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public AjaxResult getUserFavorites(Long userId) {
@@ -41,9 +46,27 @@ public class FavoritesServiceImpl implements FavoritesService {
     }
 
     @Override
-    public AjaxResult collecting(Long userId, Long postId, Integer status) {
-        favoritesMapper.collecting(userId, postId,status);
-        //TODO 通知、兴趣权重
+    public AjaxResult collecting(Long userId, Long postId, Integer status, Integer favoriteId) {
+        if (status == 1) {
+            favoritesMapper.collecting(userId, postId, status);
+        } else {
+            // 收藏
+            Collect collect = new Collect();
+            collect.setPostId(postId);
+            collect.setUserId(userId);
+            collect.setCreateTime(LocalDateTime.now());
+            if (favoriteId != null) {
+                collect.setFavoritesId(favoriteId);
+            } else {
+                // 获取默认收藏夹
+                Favorites favorites = getUserDefaultFavorites(userId);
+                collect.setFavoritesId(favorites.getId());
+            }
+            favoritesMapper.addCollect(collect);
+            // 通知
+            notificationService.collectNotification(userId, postId, status);
+            // TODO 兴趣权重
+        }
         return AjaxResult.success("操作成功");
     }
 }

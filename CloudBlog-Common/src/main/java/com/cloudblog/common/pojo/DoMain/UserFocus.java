@@ -21,4 +21,6 @@ public class UserFocus {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
+
+    private String source;
 }
