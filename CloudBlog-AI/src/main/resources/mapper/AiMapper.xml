@@ -12,6 +12,7 @@
         <result property="content" column="content"/>
         <result property="type" column="type"/>
         <result property="timestamp" column="timestamp"/>
+        <result property="file" column="file"/>
     </resultMap>
 
     <resultMap id="AiChatResultMap" type="com.cloudblog.common.pojo.DoMain.AiChat">
@@ -54,7 +55,8 @@
             conversation_id,
             content,
             type,
-            `timestamp`
+            `timestamp`,
+            file
         from chat_message
         where conversation_id = #{conversationId}
         order by id
