@@ -37,4 +37,10 @@ public interface FocusMapper extends BaseMapper<UserFocus> {
      * @param po
      */
     void cancelFocusUser(FocusUserPo po);
+
+    /**
+     * 获取关注状态
+     * @param po
+     */
+    Integer getFollowStatus(FocusUserPo po);
 }

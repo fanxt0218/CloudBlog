@@ -23,4 +23,12 @@ public class FocusController {
     public AjaxResult followUser(@RequestBody FocusUserPo po) {
         return focusService.followUser(po);
     }
+
+    /**
+     * 获取关注状态
+     */
+    @PostMapping("/getFollowStatus")
+    public AjaxResult getFollowStatus(@RequestBody FocusUserPo po) {
+        return focusService.getFollowStatus(po);
+    }
 }

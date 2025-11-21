@@ -56,7 +56,7 @@ public class FocusServiceImpl implements FocusService {
                 notification.setSenderId(po.getUserId());
                 notification.setRecipientId(po.getFocusUserId());
                 notification.setType(com.cloudblog.common.enums.NotificationType.NEW_FAN.getValue());
-                notification.setContent("关注了你");
+                notification.setContent("关注了你 来源["+po.getSource()+"]");
                 notification.setCreateTime(LocalDateTime.now());
                 notificationMapper.insert(notification);
             } catch (Exception e) {
@@ -73,5 +73,11 @@ public class FocusServiceImpl implements FocusService {
             }
         }
         return AjaxResult.success("操作成功");
+    }
+
+    @Override
+    public AjaxResult getFollowStatus(FocusUserPo po) {
+        Integer followStatus = focusMapper.getFollowStatus(po);
+        return followStatus <= 0 ? AjaxResult.success("未关注",false) : AjaxResult.success("已关注",true);
     }
 }

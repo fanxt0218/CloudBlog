@@ -29,4 +29,11 @@ public interface FocusService {
      * @return
      */
     AjaxResult followUser(FocusUserPo po);
+
+    /**
+     * 获取关注状态
+     * @param po
+     * @return
+     */
+    AjaxResult getFollowStatus(FocusUserPo po);
 }

@@ -56,8 +56,8 @@
     </select>
 
     <insert id="focusUser" parameterType="com.cloudblog.common.pojo.Po.FocusUserPo">
-        insert into user_focus (user_id, focus_user_id, create_time)
-        values (#{userId}, #{focusUserId}, now())
+        insert into user_focus (user_id, focus_user_id, create_time, source)
+        values (#{userId}, #{focusUserId}, now(), #{source})
     </insert>
 
     <delete id="cancelFocusUser" parameterType="com.cloudblog.common.pojo.Po.FocusUserPo">
@@ -65,5 +65,15 @@
         where user_id = #{userId}
           and focus_user_id = #{focusUserId}
     </delete>
+
+    <select id="getFollowStatus" resultType="java.lang.Integer" parameterType="com.cloudblog.common.pojo.Po.FocusUserPo">
+        select
+            count(*)
+        from
+            user_focus
+        where
+            user_id = #{userId}
+          and focus_user_id = #{focusUserId}
+    </select>
 
 </mapper>

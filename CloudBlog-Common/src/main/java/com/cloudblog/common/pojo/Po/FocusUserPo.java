@@ -14,4 +14,6 @@ public class FocusUserPo {
      * 1: 取消关注
      */
     private Integer status;
+
+    private String source;
 }
