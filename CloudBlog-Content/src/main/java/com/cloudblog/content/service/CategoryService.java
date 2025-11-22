@@ -1,5 +1,6 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.Po.CategoryDetailPo;
 import com.cloudblog.common.result.AjaxResult;
 
 public interface CategoryService {
@@ -10,4 +11,6 @@ public interface CategoryService {
      * @return
      */
     AjaxResult getCategoryInfo(Long userId);
+
+    AjaxResult getCategoryDetail(CategoryDetailPo po);
 }

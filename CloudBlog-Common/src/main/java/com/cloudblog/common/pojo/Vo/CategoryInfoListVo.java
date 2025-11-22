@@ -18,6 +18,8 @@ public class CategoryInfoListVo {
 
         private String image;
 
+        private String description;
+
         private Integer postCount;
     }
 }

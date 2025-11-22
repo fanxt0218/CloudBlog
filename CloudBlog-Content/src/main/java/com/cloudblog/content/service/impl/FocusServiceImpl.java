@@ -1,6 +1,7 @@
 package com.cloudblog.content.service.impl;
 
 import com.cloudblog.common.enums.FocusOperationType;
+import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.Po.FocusUserPo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
@@ -12,6 +13,7 @@ import com.cloudblog.content.service.FocusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +37,7 @@ public class FocusServiceImpl implements FocusService {
         return focusMapper.getUserFanList(userId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public AjaxResult followUser(FocusUserPo po) {
         if (po.getUserId() == null || po.getFocusUserId() == null) {
@@ -61,7 +64,7 @@ public class FocusServiceImpl implements FocusService {
                 notificationMapper.insert(notification);
             } catch (Exception e) {
                 log.error("关注失败：{}", e.getMessage());
-                return AjaxResult.error("关注失败");
+                CloudBlogException.cast("关注失败");
             }
         } else {
             // 取消关注
@@ -69,7 +72,7 @@ public class FocusServiceImpl implements FocusService {
                 focusMapper.cancelFocusUser(po);
             } catch (Exception e) {
                 log.error("取消关注失败：{}", e.getMessage());
-                return AjaxResult.error("取消关注失败");
+                CloudBlogException.cast("取消关注失败");
             }
         }
         return AjaxResult.success("操作成功");
