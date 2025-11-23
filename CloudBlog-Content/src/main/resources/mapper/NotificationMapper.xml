@@ -106,7 +106,14 @@
             u.id as user_id,
             ui.user_name as user_name,
             ui.image as user_image,
-            n.content as last_message,
+            CASE n.object_type
+                WHEN 3 THEN n.content
+                WHEN 4 THEN '[图片]'
+                WHEN 5 THEN '[文件]'
+                WHEN 6 THEN '[视频]'
+                WHEN 7 THEN '[语音]'
+                ELSE n.content
+                END as last_message,
             DATE_FORMAT(n.create_time, '%Y-%m-%d %H:%i:%s') as last_message_time,
             (SELECT COUNT(*)
              FROM notification
@@ -124,6 +131,7 @@
                     END as chat_user_id,
                 sender_id,
                 content,
+                object_type,
                 create_time,
                 ROW_NUMBER() OVER (PARTITION BY
                        CASE
