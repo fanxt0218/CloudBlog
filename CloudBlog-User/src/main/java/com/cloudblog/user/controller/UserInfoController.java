@@ -80,4 +80,14 @@ public class UserInfoController {
         return userInfoService.getUserShareList(userId, cursor, size, sortBy, tag);
     }
 
+    /**
+     * 获取首页推荐用户
+     */
+    @GetMapping("/scoreBasedUsers")
+    public AjaxResult getScoreBasedUserList(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false, defaultValue = "20") Integer size) {
+        return userInfoService.getIndexUserList(cursor, size);
+    }
+
 }

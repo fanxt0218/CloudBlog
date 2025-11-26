@@ -47,4 +47,6 @@ public interface UserInfoService {
     AjaxResult addInterest(AddInterestPo po);
 
     AjaxResult getDefaultFavoritesId(Long userId);
+
+    AjaxResult getIndexUserList(String cursor, Integer size);
 }

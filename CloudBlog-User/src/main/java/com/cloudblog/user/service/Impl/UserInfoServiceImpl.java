@@ -1,8 +1,10 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
+import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,6 +17,7 @@ import com.cloudblog.content.service.*;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
 import com.cloudblog.user.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,12 +26,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.cloudblog.common.result.AjaxResult.DATA_TAG;
 import static com.cloudblog.user.service.Impl.UserServiceImpl.*;
@@ -378,6 +379,56 @@ public class UserInfoServiceImpl implements UserInfoService {
         return AjaxResult.success(favoritesService.getUserDefaultFavorites(userId));
     }
 
+    @Override
+    public AjaxResult getIndexUserList(String cursor, Integer size) {
+        try {
+            // 默认参数处理
+            size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+            // 解析游标
+            Map<String, Object> cursorMap = parseCursor(cursor);
+            Double lastScore = null;
+            Long lastUserId = null;
+
+            if (cursorMap != null) {
+                Object scoreObj = cursorMap.get("score");
+                Object userIdObj = cursorMap.get("userId");
+
+                if (scoreObj != null && userIdObj != null) {
+                    lastScore = Double.parseDouble(scoreObj.toString());
+                    lastUserId = Long.parseLong(userIdObj.toString());
+                }
+            }
+
+            // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+            List<IndexUserListVo> users = userInfoMapper.getScoreBasedUserList(lastScore, lastUserId, size + 1);
+
+            // 构建PageResponse返回结果
+            PageResponse<IndexUserListVo> response = new PageResponse<>();
+            response.setPageSize(size);
+
+            // 判断是否还有更多数据
+            boolean hasNext = users.size() > size;
+            response.setHasNext(hasNext);
+
+            // 设置实际返回的数据列表
+            if (hasNext) {
+                // 移除多查的一个元素
+                response.setContent(users.subList(0, size));
+                // 生成下一个游标
+                IndexUserListVo lastUser = users.get(size - 1);
+                String nextCursor = generateCursor(lastUser);
+                response.setNextCursor(nextCursor);
+            } else {
+                response.setContent(users);
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            throw new CloudBlogException("获取用户列表失败", CommonError.INTERNAL_ERROR);
+        }
+    }
+
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
      * @param userId
@@ -430,6 +481,44 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         return email.matches( "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
                 "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
+    }
+
+    /**
+     * 解析游标字符串
+     * @param cursor 游标字符串
+     * @return 解析后的游标数据
+     */
+    private Map<String, Object> parseCursor(String cursor) {
+        if (cursor == null || cursor.isEmpty()) {
+            return null;
+        }
+
+        try {
+            String decoded = new String(Base64.getDecoder().decode(cursor), StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(decoded, Map.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 生成游标字符串
+     * @param user 当前用户
+     * @return 游标字符串
+     */
+    private String generateCursor(IndexUserListVo user) {
+        try {
+            Map<String, Object> cursorMap = new HashMap<>();
+            cursorMap.put("score", user.getScore());
+            cursorMap.put("userId", user.getUserId());
+
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(cursorMap);
+            return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
