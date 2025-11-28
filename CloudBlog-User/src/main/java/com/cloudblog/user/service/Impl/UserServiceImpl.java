@@ -17,6 +17,7 @@ import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private UserInfoMapper userInfoMapper;
     @Autowired
     private FavoritesService favoritesService;
+
 
     @Transactional
     @Override
@@ -79,6 +81,7 @@ public class UserServiceImpl implements UserService {
         userInfo.setUserId(user.getId());
         userInfo.setUserName(userPo.getUserName());
         userInfo.setCreateTime(LocalDateTime.now());
+        userInfo.setImage("profile/upload/avatar/default/defaultAvatar.png");
         userInfoMapper.insert(userInfo);
 
         // 初始化默认收藏夹
