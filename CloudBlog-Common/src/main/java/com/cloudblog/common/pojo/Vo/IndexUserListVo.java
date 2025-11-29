@@ -11,6 +11,8 @@ public class IndexUserListVo {
 
     private String avatar;
 
+    private Integer exp;
+
     private Integer level;
 
     private Integer isVip;
@@ -20,4 +22,6 @@ public class IndexUserListVo {
     private Long postCount;
 
     private Long fanCount;
+
+    private Long rankNum;
 }

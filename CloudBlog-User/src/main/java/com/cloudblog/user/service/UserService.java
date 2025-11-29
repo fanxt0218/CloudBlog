@@ -53,4 +53,10 @@ public interface UserService {
     AjaxResult cancellation(Long userId);
 
     AjaxResult login(LoginPo po);
+
+    /**
+     * 获取用户数量
+     * @return
+     */
+    Long getUsersCount();
 }

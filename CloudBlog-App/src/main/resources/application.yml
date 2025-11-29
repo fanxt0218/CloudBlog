@@ -47,6 +47,8 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 logging:
   level:
@@ -55,5 +57,7 @@ logging:
     org.mybatis: debug
     org.apache.ibatis.jdbc.ScriptRunner: debug
     org.apache.ibatis.transaction.managed.ManagedTransaction: debug
+    com.baomidou.mybatisplus.core.executor: debug
+    com.baomidou.mybatisplus.extension.plugins: debug
 
 

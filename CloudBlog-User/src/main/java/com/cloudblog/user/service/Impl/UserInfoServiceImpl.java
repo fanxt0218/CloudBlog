@@ -14,6 +14,7 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.common.utils.UploadUtil;
 import com.cloudblog.content.service.*;
+import com.cloudblog.user.config.UserStartupConfig;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
 import com.cloudblog.user.service.UserService;
@@ -121,8 +122,8 @@ public class UserInfoServiceImpl implements UserInfoService {
         Integer collectCount = collectMapper.getUserCollectCount(userId);
         // 评论数
         Integer commentCount = commentMapper.getUserCommentCount(userId);
-        //TODO 博客排名 后续做定时任务周期计算
-        Integer blogRank = 1;
+        // 博客排名
+        Long blogRank = UserStartupConfig.USER_RANKING_MAP.get(userId);
         // 创作历程
         List<UserAchievementVo.CreativeProcess> userCreativeProcess = getUserCreativeProcess(userId);
 
@@ -403,6 +404,10 @@ public class UserInfoServiceImpl implements UserInfoService {
             // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
             List<IndexUserListVo> users = userInfoMapper.getScoreBasedUserList(lastScore, lastUserId, size + 1);
 
+            users.forEach(user -> {
+                user.setLevel(getUserLevel(user.getExp()));
+            });
+
             // 构建PageResponse返回结果
             PageResponse<IndexUserListVo> response = new PageResponse<>();
             response.setPageSize(size);
@@ -425,8 +430,14 @@ public class UserInfoServiceImpl implements UserInfoService {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
+            log.error("获取用户列表失败：{}", e.getMessage());
             throw new CloudBlogException("获取用户列表失败", CommonError.INTERNAL_ERROR);
         }
+    }
+
+    @Override
+    public Long getUsersCount() {
+        return userService.getUsersCount();
     }
 
     /**

@@ -15,7 +15,7 @@ public class UserAchievementVo {
 
     private Integer collectCount;
 
-    private Integer rank;
+    private Long rank;
 
     List<CreativeProcess> creativeProcessList;
 

@@ -172,6 +172,11 @@ public class UserServiceImpl implements UserService {
         return AjaxResult.success("登录成功", loginVo);
     }
 
+    @Override
+    public Long getUsersCount() {
+        return userMapper.selectCount(null);
+    }
+
 
     /**
      * 校验用户名

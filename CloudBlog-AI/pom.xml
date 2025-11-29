@@ -72,6 +72,12 @@
             <version>5.2.5</version> <!-- 或最新版本 -->
         </dependency>
 
+        <!-- 分词 -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.ai</groupId>-->
+<!--            <artifactId>spring-ai-document-transformer</artifactId>-->
+<!--        </dependency>-->
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
