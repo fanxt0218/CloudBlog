@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
         userInfo.setUserId(user.getId());
         userInfo.setUserName(userPo.getUserName());
         userInfo.setCreateTime(LocalDateTime.now());
-        userInfo.setImage("profile/upload/avatar/default/defaultAvatar.png");
+        userInfo.setImage("/profile/avatar/default/defaultAvatar.png");
         userInfoMapper.insert(userInfo);
 
         // 初始化默认收藏夹
