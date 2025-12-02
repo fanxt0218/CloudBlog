@@ -411,3 +411,20 @@ create table chat_message (
 
     index idx_conversation_id (conversation_id)
 )comment 'AI聊天消息表';
+
+drop table if exists user_search_history;
+CREATE TABLE user_search_history (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    user_id         BIGINT NOT NULL COMMENT '用户ID',
+    keyword         VARCHAR(255) NOT NULL COMMENT '搜索关键词',
+    search_type     VARCHAR(50) DEFAULT NULL COMMENT '搜索类型（文章 / 用户 ）',
+    ip_address      VARCHAR(50) DEFAULT NULL COMMENT '用户IP',
+    device          VARCHAR(50) DEFAULT NULL COMMENT '设备类型',
+    result_count    INT DEFAULT 0 COMMENT '搜索结果数量',
+    create_time     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '搜索时间',
+    is_deleted      TINYINT DEFAULT 0 COMMENT '逻辑删除(0正常 1删除)',
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_keyword (keyword),
+    INDEX idx_time (create_time)
+) COMMENT='用户搜索历史表';
