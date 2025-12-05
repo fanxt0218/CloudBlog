@@ -141,6 +141,13 @@ create table tag_class (
     unique index uk_class_name (class_name)
 )comment '标签分类表';
 
+insert into tag_class (class_name, create_time) values
+('Java', now()),
+('Python', now()),
+('前端', now()),
+('后端', now()),
+('人工智能', now()),
+('开发工具', now());
 
 drop table if exists user_vip;
 create table user_vip (

@@ -10,6 +10,12 @@ public class UserPostVo {
 
     private Long id;
 
+    private Long userId;
+
+    private String userName;
+
+    private String avatar;
+
     private String title;
 
     private String introduction;
@@ -34,4 +40,6 @@ public class UserPostVo {
     private Long likeCount;
 
     private Long collectCount;
+
+    private Double interestScore;
 }

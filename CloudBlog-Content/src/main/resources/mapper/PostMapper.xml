@@ -30,6 +30,9 @@
 
     <resultMap id="UserPostResultMap" type="com.cloudblog.common.pojo.Vo.UserPostVo">
         <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
         <result property="title" column="title"/>
         <result property="introduction" column="introduction"/>
         <result property="image" column="image"/>
@@ -40,6 +43,7 @@
         <result property="browseCount" column="browse_count"/>
         <result property="likeCount" column="like_count"/>
         <result property="collectCount" column="collect_count"/>
+        <result property="interestScore" column="interest_score"/>
     </resultMap>
 
     <resultMap id="PostTagResultMap" type="com.cloudblog.common.pojo.DoMain.PostTag">
@@ -160,7 +164,11 @@
     </select>
 
     <select id="getPostListWithInterest" resultType="com.cloudblog.common.pojo.Vo.UserPostVo" resultMap="UserPostResultMap">
-        SELECT p.id AS id,
+        SELECT
+            p.id AS id,
+            ui.user_id AS user_id,
+            ui.user_name AS user_name,
+            ui.image AS avatar,
             p.title AS title,
             p.introduction AS introduction,
             p.image AS image,
@@ -198,6 +206,8 @@
             WHERE ui.user_id = #{userId}
             GROUP BY pt.post_id
         ) interest_score ON p.id = interest_score.post_id
+        LEFT JOIN
+            user_info ui ON p.author_id = ui.user_id
         WHERE p.status = 2 and p.post_type = #{postType}
         <if test="lastId != null and lastCreateTime != null">
             AND (
@@ -211,7 +221,11 @@
     </select>
 
     <select id="getPostListWithNoInterest" resultType="com.cloudblog.common.pojo.Vo.UserPostVo" resultMap="UserPostResultMap">
-        SELECT p.id AS id,
+        SELECT
+            p.id AS id,
+            ui.user_id AS user_id,
+            ui.user_name AS user_name,
+            ui.image AS avatar,
             p.title AS title,
             p.introduction AS introduction,
             p.image AS image,
@@ -241,6 +255,9 @@
             WHERE status = 0
             GROUP BY post_id
         ) collect_count ON p.id = collect_count.post_id
+        LEFT JOIN
+            user_info ui
+            ON p.author_id = ui.user_id
         <if test="tagId != null">
             INNER JOIN post_tag pt ON p.id = pt.post_id AND pt.tag_id = #{tagId}
         </if>
@@ -287,7 +304,7 @@
         select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
     </select>
 
-    <insert id="addPostBrowseCount" parameterType="java.lang.Long">
+    <insert id="addPostBrowseCount">
         insert into browse(post_id, user_id, type, create_time)
         values (#{postId}, #{userId}, 0, now())
     </insert>

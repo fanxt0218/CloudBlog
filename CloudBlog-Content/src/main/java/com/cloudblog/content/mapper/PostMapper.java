@@ -92,7 +92,8 @@ public interface PostMapper extends BaseMapper<Posts> {
             @Param("lastId") Long lastId,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i,
-            @Param("postType") Integer postType);
+            @Param("postType") Integer postType,
+            @Param("lastInterestScore") Double lastInterestScore);
 
     /**
      * 获取用户文章列表(不根据无兴趣推送)

@@ -116,7 +116,7 @@ public class PostServiceImpl implements PostService {
                 UserPostVo lastPost = posts.get(size - 1);
                 Posts post = new Posts();
                 BeanUtils.copyProperties(lastPost, post);
-                String nextCursor = generateCursor(post);
+                String nextCursor = generateCursor(post,null);
                 response.setNextCursor(nextCursor);
                 // 总元素数
                 Long totalCount = postMapper.getUserTotalCount(userId,PostType.POST.ordinal());
@@ -137,7 +137,7 @@ public class PostServiceImpl implements PostService {
         boolean withInterest = true;
         Object data = interestService.getInterestInfo(po.getUserId()).get("data");
         // 无兴趣/选择了tag/未登录=默认推荐
-        if (data == null || po.getTagId() != null || po.getUserId() == null) {
+        if (data == null || (po.getTagId() != null && po.getTagId() != 0) || po.getUserId() == null) {
             withInterest = false;
         }
         // 默认文章
@@ -153,6 +153,7 @@ public class PostServiceImpl implements PostService {
             Map<String, Object> cursorMap = parseCursor(cursor);
             Long lastId = null;
             LocalDateTime lastCreateTime = null;
+            double lastInterestScore = 0;
 
             if (cursorMap != null) {
                 lastId = ((Number) cursorMap.get("id")).longValue();
@@ -164,12 +165,20 @@ public class PostServiceImpl implements PostService {
                         lastCreateTime = (LocalDateTime) createTimeObj;
                     }
                 }
+                Object interestScoreObj = cursorMap.get("interestScore");
+                if (interestScoreObj != null) {
+                    if (interestScoreObj instanceof Number) {
+                        lastInterestScore = ((Number) interestScoreObj).doubleValue();
+                    } else if (interestScoreObj instanceof String) {
+                        lastInterestScore = Double.parseDouble((String) interestScoreObj);
+                    }
+                }
             }
             List<UserPostVo> posts;
             if (withInterest){
                 // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
                 // 兴趣推荐
-                posts = postMapper.getPostListWithInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getPostTye());
+                posts = postMapper.getPostListWithInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getPostTye(), lastInterestScore);
             }else {
                 // 默认推荐
                 posts = postMapper.getPostListWithNoInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getTagId(), po.getPostTye());
@@ -191,7 +200,7 @@ public class PostServiceImpl implements PostService {
                 UserPostVo lastPost = posts.get(size - 1);
                 Posts post = new Posts();
                 BeanUtils.copyProperties(lastPost, post);
-                String nextCursor = generateCursor(post);
+                String nextCursor = generateCursor(post, lastPost.getInterestScore());
                 response.setNextCursor(nextCursor);
             } else {
                 response.setContent(posts);
@@ -274,11 +283,14 @@ public class PostServiceImpl implements PostService {
      * @param post 当前文章
      * @return 游标字符串
      */
-    private String generateCursor(Posts post) {
+    private String generateCursor(Posts post, Double interestScore) {
         try {
             Map<String, Object> cursorMap = new HashMap<>();
             cursorMap.put("id", post.getId());
             cursorMap.put("createTime", post.getCreateTime().toString());
+            if (interestScore != null) {
+                cursorMap.put("interestScore", interestScore);
+            }
 
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(cursorMap);
