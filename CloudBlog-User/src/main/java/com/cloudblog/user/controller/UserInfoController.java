@@ -86,8 +86,9 @@ public class UserInfoController {
     @GetMapping("/scoreBasedUsers")
     public AjaxResult getScoreBasedUserList(
             @RequestParam(required = false) String cursor,
-            @RequestParam(required = false, defaultValue = "20") Integer size) {
-        return userInfoService.getIndexUserList(cursor, size);
+            @RequestParam(required = false, defaultValue = "20") Integer size,
+            @RequestParam(required = false) Integer type) {
+        return userInfoService.getIndexUserList(cursor, size, type);
     }
 
 }

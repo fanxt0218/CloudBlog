@@ -53,4 +53,127 @@
         ORDER BY score DESC, ui.user_id DESC
         LIMIT #{size}
     </select>
+
+    <select id="getPostCountBasedUserList" resultType="com.cloudblog.common.pojo.Vo.IndexUserListVo">
+        SELECT
+            ui.user_id AS userId,
+            ui.user_name AS userName,
+            ui.image AS avatar,
+            ui.exp AS exp,
+            ui.is_vip AS isVip,
+            IFNULL(post_count.post_count, 0) AS postCount,
+            IFNULL(fan_count.fan_count, 0) AS fanCount,
+            ROW_NUMBER() OVER (ORDER BY IFNULL(post_count.post_count, 0) DESC, ui.user_id DESC) AS rankNum
+        FROM user_info ui
+            LEFT JOIN (
+            SELECT
+                author_id AS user_id,
+                COUNT(*) AS post_count
+            FROM posts
+            WHERE status = 2
+                GROUP BY author_id
+                ) post_count ON ui.user_id = post_count.user_id
+            LEFT JOIN (
+            SELECT
+                focus_user_id AS user_id,
+                COUNT(*) AS fan_count
+            FROM user_focus
+                GROUP BY focus_user_id
+                ) fan_count ON ui.user_id = fan_count.user_id
+        <where>
+            <if test="lastPostCount != null and lastUserId != null">
+                AND (
+                    IFNULL(post_count.post_count, 0) &lt; #{lastPostCount}
+                OR (
+                    IFNULL(post_count.post_count, 0) = #{lastPostCount}
+                AND ui.user_id &lt; #{lastUserId}
+                    )
+                )
+            </if>
+        </where>
+        ORDER BY postCount DESC, ui.user_id DESC
+        LIMIT #{size}
+    </select>
+
+    <select id="getExpBasedUserList" resultType="com.cloudblog.common.pojo.Vo.IndexUserListVo">
+        SELECT
+            ui.user_id AS userId,
+            ui.user_name AS userName,
+            ui.image AS avatar,
+            ui.exp AS exp,
+            ui.is_vip AS isVip,
+            IFNULL(post_count.post_count, 0) AS postCount,
+            IFNULL(fan_count.fan_count, 0) AS fanCount,
+            ROW_NUMBER() OVER (ORDER BY ui.exp DESC, ui.user_id DESC) AS rankNum
+        FROM user_info ui
+        LEFT JOIN (
+            SELECT
+                author_id AS user_id,
+                COUNT(*) AS post_count
+            FROM posts
+            WHERE status = 2
+                GROUP BY author_id
+                ) post_count ON ui.user_id = post_count.user_id
+            LEFT JOIN (
+            SELECT
+                focus_user_id AS user_id,
+                COUNT(*) AS fan_count
+            FROM user_focus
+            GROUP BY focus_user_id
+            ) fan_count ON ui.user_id = fan_count.user_id
+        <where>
+            <if test="lastExp != null and lastUserId != null">
+                AND (
+                    ui.exp &lt; #{lastExp}
+                OR (
+                    ui.exp = #{lastExp}
+                AND ui.user_id &lt; #{lastUserId}
+                    )
+                )
+            </if>
+        </where>
+        ORDER BY ui.exp DESC, ui.user_id DESC
+        LIMIT #{size}
+    </select>
+
+    <select id="getFansCountBasedUserList" resultType="com.cloudblog.common.pojo.Vo.IndexUserListVo">
+        SELECT
+            ui.user_id AS userId,
+            ui.user_name AS userName,
+            ui.image AS avatar,
+            ui.exp AS exp,
+            ui.is_vip AS isVip,
+            IFNULL(post_count.post_count, 0) AS postCount,
+            IFNULL(fan_count.fan_count, 0) AS fanCount,
+            ROW_NUMBER() OVER (ORDER BY IFNULL(fan_count.fan_count, 0) DESC, ui.user_id DESC) AS rankNum
+        FROM user_info ui
+            LEFT JOIN (
+            SELECT
+                author_id AS user_id,
+                COUNT(*) AS post_count
+            FROM posts
+            WHERE status = 2
+                GROUP BY author_id
+                ) post_count ON ui.user_id = post_count.user_id
+            LEFT JOIN (
+            SELECT
+                focus_user_id AS user_id,
+                COUNT(*) AS fan_count
+            FROM user_focus
+                GROUP BY focus_user_id
+                ) fan_count ON ui.user_id = fan_count.user_id
+        <where>
+            <if test="lastFansCount != null and lastUserId != null">
+                AND (
+                    IFNULL(fan_count.fan_count, 0) &lt; #{lastFansCount}
+                OR (
+                    IFNULL(fan_count.fan_count, 0) = #{lastFansCount}
+                AND ui.user_id &lt; #{lastUserId}
+                    )
+                )
+            </if>
+        </where>
+        ORDER BY fanCount DESC, ui.user_id DESC
+        LIMIT #{size}
+    </select>
 </mapper>

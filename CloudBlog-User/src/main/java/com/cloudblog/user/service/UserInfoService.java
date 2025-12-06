@@ -48,7 +48,7 @@ public interface UserInfoService {
 
     AjaxResult getDefaultFavoritesId(Long userId);
 
-    AjaxResult getIndexUserList(String cursor, Integer size);
+    AjaxResult getIndexUserList(String cursor, Integer size, Integer type);
 
     /**
      * 获取用户总数

@@ -33,7 +33,7 @@ public class UserStartupConfig implements ApplicationRunner {
 
     private void loadUserRanking() {
         Long usersCount = userInfoService.getUsersCount();
-        AjaxResult indexUserList = userInfoService.getIndexUserList(null, Math.toIntExact(usersCount));
+        AjaxResult indexUserList = userInfoService.getIndexUserList(null, Math.toIntExact(usersCount), null);
         PageResponse<IndexUserListVo> data = (PageResponse<IndexUserListVo>) indexUserList.get("data");
         data.getContent().forEach(user -> {
             USER_RANKING_MAP.put(user.getUserId(), user.getRankNum());

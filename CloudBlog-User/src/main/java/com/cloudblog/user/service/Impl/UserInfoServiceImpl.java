@@ -1,7 +1,6 @@
 package com.cloudblog.user.service.Impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.Dto.PageResponse;
@@ -13,13 +12,13 @@ import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.common.utils.UploadUtil;
+import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.service.*;
 import com.cloudblog.user.config.UserStartupConfig;
 import com.cloudblog.user.mapper.*;
 import com.cloudblog.user.service.UserInfoService;
 import com.cloudblog.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.cloudblog.common.result.AjaxResult.DATA_TAG;
 import static com.cloudblog.user.service.Impl.UserServiceImpl.*;
@@ -381,8 +382,44 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public AjaxResult getIndexUserList(String cursor, Integer size) {
-        try {
+    public AjaxResult getIndexUserList(String cursor, Integer size, Integer type) {
+        if (type == null || (type != 1 && type != 2 && type != 3)) {
+            type = 0;
+        }
+        PageResponse<IndexUserListVo> response = new PageResponse<>();
+        try{
+            switch (type) {
+                case 0:
+                    response = this.getIndexUserListByCommon(cursor, size);
+                    break;
+                case 1:
+                    response = this.getIndexUserListByBlogCount(cursor, size);
+                    break;
+                case 2:
+                    response = this.getIndexUserListByExp(cursor, size);
+                    break;
+                case 3:
+                    response = this.getIndexUserListByFanCount(cursor, size);
+                    break;
+                default:
+                    break;
+            }
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            log.error("获取用户列表失败：{}", e.getMessage());
+            throw new CloudBlogException("获取用户列表失败", CommonError.INTERNAL_ERROR);
+        }
+    }
+
+    @Override
+    public Long getUsersCount() {
+        return userService.getUsersCount();
+    }
+
+    /**
+     * 获取首页用户列表(综合排名)
+     */
+    public PageResponse<IndexUserListVo> getIndexUserListByCommon(String cursor, Integer size) {
             // 默认参数处理
             size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
 
@@ -427,18 +464,153 @@ public class UserInfoServiceImpl implements UserInfoService {
             } else {
                 response.setContent(users);
             }
+            return response;
+    }
 
-            return AjaxResult.success(response);
-        } catch (Exception e) {
-            log.error("获取用户列表失败：{}", e.getMessage());
-            throw new CloudBlogException("获取用户列表失败", CommonError.INTERNAL_ERROR);
+    /**
+     * 获取首页用户列表(按文章数排名)
+     */
+    public PageResponse<IndexUserListVo> getIndexUserListByBlogCount(String cursor, Integer size) {
+        // 默认参数处理
+        size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+        // 解析游标
+        Map<String, Object> cursorMap = parseCursor(cursor);
+        Long lastPostCount = null;
+        Long lastUserId = null;
+
+        if (cursorMap != null) {
+            Object postCountObj = cursorMap.get("postCount");
+            Object userIdObj = cursorMap.get("userId");
+
+            if (postCountObj != null && userIdObj != null) {
+                lastPostCount = Long.parseLong(postCountObj.toString());
+                lastUserId = Long.parseLong(userIdObj.toString());
+            }
         }
+
+        // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+        List<IndexUserListVo> users = userInfoMapper.getPostCountBasedUserList(lastPostCount, lastUserId, size + 1);
+
+        // 设置等级
+        setLevel(users);
+
+        // 构建PageResponse返回结果
+        PageResponse<IndexUserListVo> response = new PageResponse<>();
+        response.setPageSize(size);
+
+        // 判断是否还有更多数据
+        boolean hasNext = users.size() > size;
+        response.setHasNext(hasNext);
+
+        // 设置实际返回的数据列表
+        if (hasNext) {
+            // 移除多查的一个元素
+            response.setContent(users.subList(0, size));
+            // 生成下一个游标
+            IndexUserListVo lastUser = users.get(size - 1);
+            String nextCursor = generatePostCountCursor(lastUser);
+            response.setNextCursor(nextCursor);
+        } else {
+            response.setContent(users);
+        }
+        return response;
     }
 
-    @Override
-    public Long getUsersCount() {
-        return userService.getUsersCount();
+    /**
+     * 获取首页用户列表(按经验值排名)
+     */
+    public PageResponse<IndexUserListVo> getIndexUserListByExp(String cursor, Integer size) {
+        // 默认参数处理
+        size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+        // 解析游标
+        Map<String, Object> cursorMap = parseCursor(cursor);
+        Integer lastExp = null;
+        Long lastUserId = null;
+
+        if (cursorMap != null) {
+            Object expObj = cursorMap.get("exp");
+            Object userIdObj = cursorMap.get("userId");
+
+            if (expObj != null && userIdObj != null) {
+                lastExp = Integer.parseInt(expObj.toString());
+                lastUserId = Long.parseLong(userIdObj.toString());
+            }
+        }
+
+        // 查询数据
+        List<IndexUserListVo> users = userInfoMapper.getExpBasedUserList(lastExp, lastUserId, size+1);
+        // 设置等级
+        setLevel(users);
+        // 构建PageResponse返回结果
+        PageResponse<IndexUserListVo> response = new PageResponse<>();
+        response.setPageSize(size);
+
+        // 判断是否还有更多数据
+        boolean hasNext = users.size() > size;
+        response.setHasNext(hasNext);
+
+        // 设置实际返回的数据列表
+        if (hasNext) {
+            // 移除多查的一个元素
+            response.setContent(users.subList(0, size));
+            // 生成下一个游标
+            IndexUserListVo lastUser = users.get(size - 1);
+            String nextCursor = generateExpCursor(lastUser);
+            response.setNextCursor(nextCursor);
+        } else {
+            response.setContent(users);
+        }
+        return response;
     }
+
+    /**
+     * 获取首页用户列表(按粉丝数排名)
+     */
+    public PageResponse<IndexUserListVo> getIndexUserListByFanCount(String cursor, Integer size) {
+        // 默认参数处理
+        size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+        // 解析游标
+        Map<String, Object> cursorMap = parseCursor(cursor);
+        Integer lastFansCount = null;
+        Long lastUserId = null;
+
+        if (cursorMap != null) {
+            Object fansCountObj = cursorMap.get("fansCount");
+            Object userIdObj = cursorMap.get("userId");
+
+            if (fansCountObj != null && userIdObj != null) {
+                lastFansCount = Integer.parseInt(fansCountObj.toString());
+                lastUserId = Long.parseLong(userIdObj.toString());
+            }
+        }
+        List<IndexUserListVo> users = userInfoMapper.getFansCountBasedUserList(lastFansCount, lastUserId, size+1);
+        // 设置等级
+        setLevel(users);
+        // 构建PageResponse返回结果
+        PageResponse<IndexUserListVo> response = new PageResponse<>();
+        response.setPageSize(size);
+
+        // 判断是否还有更多数据
+        boolean hasNext = users.size() > size;
+        response.setHasNext(hasNext);
+
+        // 设置实际返回的数据列表
+        if (hasNext) {
+            // 移除多查的一个元素
+            response.setContent(users.subList(0, size));
+            // 生成下一个游标
+            IndexUserListVo lastUser = users.get(size - 1);
+            String nextCursor = generateFansCountCursor(lastUser);
+            response.setNextCursor(nextCursor);
+        } else {
+            response.setContent(users);
+        }
+        return response;
+    }
+
 
     /**
      * 获取用户创作历程，目前是按照年计算。计算出每年创作的文章数
@@ -465,16 +637,20 @@ public class UserInfoServiceImpl implements UserInfoService {
      * @return
      */
     public Integer getUserLevel(Integer exp) {
-        Integer level = 1;
-        List<Level> levelList = levelService.getLevelList();
-        levelList.sort(Comparator.comparingInt(Level::getId));
-        for (Level singleLevel : levelList) {
-            if (exp < singleLevel.getExpThreshold()) {
-                break;
+        AtomicReference<Integer> level = new AtomicReference<>(1);
+        TreeMap<Integer, Integer> levelMap = ContentStartupConfig.Level_MAP;
+        AtomicBoolean isFound = new AtomicBoolean(false);
+        levelMap.forEach((singleLevel, expThreshold) -> {
+            if (isFound.get()) {
+                return;
             }
-            level = singleLevel.getLevel();
-        }
-        return level;
+            if (exp < expThreshold) {
+                isFound.set(true);
+                return;
+            }
+            level.set(singleLevel);
+        });
+        return level.get();
     }
 
     /**
@@ -530,6 +706,68 @@ public class UserInfoServiceImpl implements UserInfoService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 生成基于文章数的游标字符串
+     * @param user 当前用户
+     * @return 游标字符串
+     */
+    private String generatePostCountCursor(IndexUserListVo user) {
+        try {
+            Map<String, Object> cursorMap = new HashMap<>();
+            cursorMap.put("postCount", user.getPostCount());
+            cursorMap.put("userId", user.getUserId());
+
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(cursorMap);
+            return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 生成基于经验值获取的游标字符串
+     */
+    private String generateExpCursor(IndexUserListVo user) {
+        try {
+            Map<String, Object> cursorMap = new HashMap<>();
+            cursorMap.put("exp", user.getExp());
+            cursorMap.put("userId", user.getUserId());
+
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(cursorMap);
+            return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据粉丝数获取游标字符串
+     */
+    private String generateFansCountCursor(IndexUserListVo user) {
+        try {
+            Map<String, Object> cursorMap = new HashMap<>();
+            cursorMap.put("fansCount", user.getFanCount());
+            cursorMap.put("userId", user.getUserId());
+
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(cursorMap);
+            return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 等级赋值
+     */
+    private void setLevel(List<IndexUserListVo> users) {
+        users.forEach(user -> {
+            user.setLevel(getUserLevel(user.getExp()));
+        });
     }
 
 }
