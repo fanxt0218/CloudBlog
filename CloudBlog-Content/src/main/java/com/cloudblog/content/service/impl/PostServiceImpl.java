@@ -141,8 +141,8 @@ public class PostServiceImpl implements PostService {
             withInterest = false;
         }
         // 默认文章
-        if (po.getPostTye() == null) {
-            po.setPostTye(PostType.POST.ordinal());
+        if (po.getPostType() == null) {
+            po.setPostType(PostType.POST.ordinal());
         }
         // 执行查询
         try {
@@ -178,10 +178,10 @@ public class PostServiceImpl implements PostService {
             if (withInterest){
                 // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
                 // 兴趣推荐
-                posts = postMapper.getPostListWithInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getPostTye(), lastInterestScore);
+                posts = postMapper.getPostListWithInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getPostType(), lastInterestScore);
             }else {
                 // 默认推荐
-                posts = postMapper.getPostListWithNoInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getTagId(), po.getPostTye());
+                posts = postMapper.getPostListWithNoInterest(po.getUserId(), lastId, lastCreateTime, size + 1, po.getTagId(), po.getPostType());
 
             }
             // 构建PageResponse返回结果

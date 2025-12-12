@@ -12,5 +12,5 @@ public class PostPo {
     /**
      * 0:文章 1：资讯
      */
-    private Integer postTye;
+    private Integer postType;
 }
