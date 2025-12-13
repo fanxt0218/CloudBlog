@@ -12,4 +12,8 @@ public interface ShareService {
      * @param userId
      */
     void addShareBrowseCount(Long postId, Long userId);
+
+    AjaxResult getIndexShareList(String cursor, Integer size, Integer topicId);
+
+    AjaxResult getTopicList();
 }

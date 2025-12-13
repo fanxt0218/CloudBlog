@@ -86,6 +86,68 @@ public class ShareServiceImpl implements ShareService {
         shareMapper.addShareBrowseCount(postId, userId);
     }
 
+    @Override
+    public AjaxResult getIndexShareList(String cursor, Integer size, Integer topicId) {
+        try {
+            // 默认参数处理
+            size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+            topicId = (topicId == null || topicId <= 0) ? null : topicId;
+
+            // 解析游标
+            Map<String, Object> cursorMap = parseCursor(cursor);
+            Long lastId = null;
+            LocalDateTime lastCreateTime = null;
+
+            if (cursorMap != null) {
+                lastId = ((Number) cursorMap.get("id")).longValue();
+                Object createTimeObj = cursorMap.get("createTime");
+                if (createTimeObj != null) {
+                    if (createTimeObj instanceof String) {
+                        lastCreateTime = LocalDateTime.parse((String) createTimeObj);
+                    } else if (createTimeObj instanceof LocalDateTime) {
+                        lastCreateTime = (LocalDateTime) createTimeObj;
+                    }
+                }
+            }
+
+            // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+            List<UserShareVo> shares = shareMapper.getIndexPostList(lastId, lastCreateTime, size + 1, topicId);
+
+            // 构建PageResponse返回结果
+            PageResponse<UserShareVo> response = new PageResponse<>();
+            response.setPageSize(size);
+
+            // 判断是否还有更多数据
+            boolean hasNext = shares.size() > size;
+            response.setHasNext(hasNext);
+
+            // 设置实际返回的数据列表
+            if (hasNext) {
+                // 移除多查的一个元素
+                response.setContent(shares.subList(0, size));
+                // 生成下一个游标
+                UserShareVo lastShare = shares.get(size - 1);
+                Share share = new Share();
+                BeanUtils.copyProperties(lastShare, share);
+                String nextCursor = generateCursor(share);
+                response.setNextCursor(nextCursor);
+            } else {
+                response.setContent(shares);
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error("获取首页动态列表失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public AjaxResult getTopicList() {
+        return AjaxResult.success(shareMapper.getTopicList());
+    }
+
     /**
      * 解析游标字符串
      * @param cursor 游标字符串

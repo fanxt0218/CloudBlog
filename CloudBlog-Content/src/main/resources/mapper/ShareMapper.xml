@@ -12,6 +12,24 @@
         <result property="likeCount" column="like_count"/>
     </resultMap>
 
+    <resultMap id="IndexShareVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexShareVo">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="brief" column="brief"/>
+        <result property="image" column="image"/>
+        <result property="browseCount" column="browse_count"/>
+        <result property="likeCount" column="like_count"/>
+    </resultMap>
+
+    <resultMap id="IndexTopicVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexTopicVo">
+        <id property="id" column="id"/>
+        <result property="topicName" column="topic_name"/>
+    </resultMap>
+
     <select id="getUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo">
         SELECT s.id AS id,
                s.brief AS brief,
@@ -42,6 +60,53 @@
         </if>
         ORDER BY s.create_time DESC, s.id DESC
         LIMIT #{size}
+    </select>
+
+    <select id="getIndexPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo" resultMap="IndexShareVoResultMap">
+        SELECT
+            s.id AS id,
+            ui.user_id AS user_id,
+            ui.user_name AS user_name,
+            ui.image AS user_avatar,
+            s.topic_id AS topic_id,
+            s.brief AS brief,
+            s.image AS image,
+            s.create_time AS create_time,
+            s.content_type AS content_type,
+            IFNULL(browse_count.browse_count, 0) AS browse_count,
+            IFNULL(like_count.like_count, 0) AS like_count
+        FROM share s
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS browse_count
+            FROM browse
+            WHERE type = 1
+                GROUP BY post_id
+                ) browse_count ON s.id = browse_count.post_id
+            LEFT JOIN (
+                SELECT target_id AS post_id, COUNT(*) AS like_count
+                FROM likes
+                WHERE type = 1 AND status = 0
+                GROUP BY target_id
+            ) like_count ON s.id = like_count.post_id
+            LEFT JOIN user_info ui on ui.user_id = s.author_id
+        WHERE s.status = 2
+            <if test="lastId != null and lastCreateTime != null">
+                AND (
+                s.create_time &lt; #{lastCreateTime}
+                OR (s.create_time = #{lastCreateTime} AND s.id &lt; #{lastId})
+                )
+            </if>
+            <if test="topicId != null">
+                AND s.topic_id = #{topicId}
+            </if>
+        ORDER BY s.create_time DESC, s.id DESC
+        LIMIT #{size}
+    </select>
+    <select id="getTopicList" resultType="com.cloudblog.common.pojo.Vo.IndexTopicVo" resultMap="IndexTopicVoResultMap">
+        select
+            id,
+            topic_name
+        from topic
     </select>
 
     <insert id="addShareBrowseCount">
