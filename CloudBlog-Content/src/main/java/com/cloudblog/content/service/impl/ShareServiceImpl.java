@@ -3,6 +3,7 @@ package com.cloudblog.content.service.impl;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.Dto.PageResponse;
+import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.pojo.Vo.UserPostVo;
 import com.cloudblog.common.pojo.Vo.UserShareVo;
 import com.cloudblog.common.result.AjaxResult;
@@ -146,6 +147,11 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public AjaxResult getTopicList() {
         return AjaxResult.success(shareMapper.getTopicList());
+    }
+
+    @Override
+    public List<IndexFocusArticleVo> getFocusShareList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId) {
+        return shareMapper.getFocusShareList(lastTargetId, lastCreateTime, i, userId);
     }
 
     /**

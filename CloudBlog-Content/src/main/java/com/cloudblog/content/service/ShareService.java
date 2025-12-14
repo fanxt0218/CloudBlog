@@ -1,6 +1,10 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.result.AjaxResult;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface ShareService {
 
@@ -16,4 +20,14 @@ public interface ShareService {
     AjaxResult getIndexShareList(String cursor, Integer size, Integer topicId);
 
     AjaxResult getTopicList();
+
+    /**
+     * 获取关注动态
+     * @param lastTargetId
+     * @param lastCreateTime
+     * @param i
+     * @param userId
+     * @return
+     */
+    List<IndexFocusArticleVo> getFocusShareList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId);
 }

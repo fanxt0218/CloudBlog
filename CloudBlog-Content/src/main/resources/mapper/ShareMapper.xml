@@ -30,6 +30,19 @@
         <result property="topicName" column="topic_name"/>
     </resultMap>
 
+    <resultMap id="IndexFocusArticleVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo">
+        <id property="articleId" column="article_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="title" column="title"/>
+        <result property="intro" column="intro"/>
+        <result property="cover" column="cover"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="postType" column="post_type"/>
+    </resultMap>
+
     <select id="getUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserShareVo">
         SELECT s.id AS id,
                s.brief AS brief,
@@ -107,6 +120,33 @@
             id,
             topic_name
         from topic
+    </select>
+
+    <select id="getFocusShareList" resultType="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo" resultMap="IndexFocusArticleVoResultMap">
+        select
+            s.id as article_id,
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as avatar,
+            s.brief as intro,
+            s.image as cover,
+            s.create_time as create_time,
+        from
+            share s
+            left join user_info ui
+                on s.author_id = ui.user_id
+            left join user_focus uf
+                on s.author_id = uf.focus_user_id
+        where
+            s.status = 2  and uf.user_id = 3
+            <if test="lastTargetId != null and lastCreateTime != null">
+                and (
+                s.create_time &lt; #{lastCreateTime}
+                or (s.create_time = #{lastCreateTime} and s.id &lt; #{lastTargetId})
+                )
+            </if>
+        order by s.create_time desc, s.id desc
+        limit #{size}
     </select>
 
     <insert id="addShareBrowseCount">

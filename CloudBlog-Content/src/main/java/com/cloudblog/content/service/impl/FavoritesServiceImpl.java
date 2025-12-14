@@ -7,7 +7,9 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FavoritesMapper;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.content.service.NotificationService;
+import jdk.jfr.Label;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class FavoritesServiceImpl implements FavoritesService {
     @Autowired
     private FavoritesMapper favoritesMapper;
     @Autowired
+    @Lazy
     private NotificationService notificationService;
 
     @Override

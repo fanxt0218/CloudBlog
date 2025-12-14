@@ -36,4 +36,6 @@ public interface FocusService {
      * @return
      */
     AjaxResult getFollowStatus(FocusUserPo po);
+
+    AjaxResult getFocusArticleList(Long userId, Integer type, String cursor, Integer size);
 }

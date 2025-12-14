@@ -62,6 +62,19 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
+    <resultMap id="IndexFocusArticleVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo">
+        <id property="articleId" column="article_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="title" column="title"/>
+        <result property="intro" column="intro"/>
+        <result property="cover" column="cover"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="postType" column="post_type"/>
+    </resultMap>
+
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
         select p.id as id, title, image, is_vip, td.create_time as create_time, td.status as status from
             (select target_id, create_time, status from likes
@@ -302,6 +315,35 @@
 
     <select id="getUserTotalCount" resultType="java.lang.Long">
         select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
+    </select>
+
+    <select id="getFocusPostList" resultType="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo" resultMap="IndexFocusArticleVoResultMap">
+        select
+            p.id as article_id,
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as avatar,
+            p.title as title,
+            p.introduction as intro,
+            p.image as cover,
+            p.create_time as create_time,
+            p.post_type as post_type
+        from
+            posts p
+        left join user_info ui
+            on p.author_id = ui.user_id
+        left join user_focus uf
+            on p.author_id = uf.focus_user_id
+        where
+            p.status = 2 and uf.user_id = 3
+            <if test="lastTargetId != null and lastCreateTime != null">
+                and (
+                p.create_time &lt; #{lastCreateTime}
+                or (p.create_time = #{lastCreateTime} and p.id &lt; #{lastTargetId})
+                )
+            </if>
+        order by p.create_time desc, p.id desc
+        limit #{size}
     </select>
 
     <insert id="addPostBrowseCount">

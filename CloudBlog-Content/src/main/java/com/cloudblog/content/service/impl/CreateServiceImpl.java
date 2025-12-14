@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreateServiceImpl implements CreateService {
 
     private final String UploadImagePath = "/contentFile/image";
+
     @Override
     public AjaxResult uploadImage(MultipartFile file) {
         String path = UploadUtil.uploadFile(file, UploadImagePath);

@@ -13,10 +13,7 @@ import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.*;
-import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
-import com.cloudblog.common.pojo.Vo.UserCollectListVo;
-import com.cloudblog.common.pojo.Vo.UserLikeListVo;
-import com.cloudblog.common.pojo.Vo.UserPostVo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.FavoritesService;
@@ -257,6 +254,11 @@ public class PostServiceImpl implements PostService {
             interestService.upgradeUserInterest(upgrades);
         }
         return AjaxResult.success();
+    }
+
+    @Override
+    public List<IndexFocusArticleVo> getFocusPostList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId) {
+        return postMapper.getFocusPostList(lastTargetId, lastCreateTime, i, userId);
     }
 
     /**

@@ -2,11 +2,13 @@ package com.cloudblog.content.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cloudblog.common.pojo.Po.*;
+import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
 import com.cloudblog.common.pojo.Vo.UserCollectListVo;
 import com.cloudblog.common.pojo.Vo.UserLikeListVo;
 import com.cloudblog.common.result.AjaxResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostService {
@@ -55,4 +57,14 @@ public interface PostService {
      * @return
      */
     AjaxResult addBrowseCount(AddBrowseCountPo po);
+
+    /**
+     * 获取关注文章列表
+     * @param lastTargetId
+     * @param lastCreateTime
+     * @param i
+     * @param userId
+     * @return
+     */
+    List<IndexFocusArticleVo> getFocusPostList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId);
 }

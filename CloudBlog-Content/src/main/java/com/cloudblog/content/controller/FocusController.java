@@ -4,10 +4,7 @@ import com.cloudblog.common.pojo.Po.FocusUserPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.FocusService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/content/focus")
@@ -30,5 +27,18 @@ public class FocusController {
     @PostMapping("/getFollowStatus")
     public AjaxResult getFollowStatus(@RequestBody FocusUserPo po) {
         return focusService.getFollowStatus(po);
+    }
+
+    /**
+     * 获取关注人的作品列表
+     */
+    @GetMapping("/getFocusArticleList")
+    public AjaxResult getFocusArticleList(
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size
+    ) {
+        return focusService.getFocusArticleList(userId, type, cursor, size);
     }
 }
