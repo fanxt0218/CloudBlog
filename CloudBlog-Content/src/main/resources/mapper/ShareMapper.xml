@@ -130,15 +130,15 @@
             ui.image as avatar,
             s.brief as intro,
             s.image as cover,
-            s.create_time as create_time,
+            s.create_time as create_time
         from
             share s
             left join user_info ui
                 on s.author_id = ui.user_id
-            left join user_focus uf
+            inner join user_focus uf
                 on s.author_id = uf.focus_user_id
         where
-            s.status = 2  and uf.user_id = 3
+            s.status = 2  and uf.user_id = #{userId}
             <if test="lastTargetId != null and lastCreateTime != null">
                 and (
                 s.create_time &lt; #{lastCreateTime}

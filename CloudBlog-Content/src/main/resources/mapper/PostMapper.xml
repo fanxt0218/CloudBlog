@@ -332,10 +332,10 @@
             posts p
         left join user_info ui
             on p.author_id = ui.user_id
-        left join user_focus uf
+        inner join user_focus uf
             on p.author_id = uf.focus_user_id
         where
-            p.status = 2 and uf.user_id = 3
+            p.status = 2 and uf.user_id = #{userId}
             <if test="lastTargetId != null and lastCreateTime != null">
                 and (
                 p.create_time &lt; #{lastCreateTime}

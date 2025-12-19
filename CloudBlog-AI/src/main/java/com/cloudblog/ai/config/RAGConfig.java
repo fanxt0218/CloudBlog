@@ -30,10 +30,10 @@ public class RAGConfig {
     /**
      * 预加载
      */
-    @Bean
-    public CommandLineRunner preload(EmbeddingModel embeddingModel, VectorStore vectorStore) {
-        log.info("开始预加载");
-        Resource targetResource = new ClassPathResource("rag/preload.txt");
-        return args -> vectorStore.write(new TokenTextSplitter().transform(new TextReader(targetResource).read()));
-    }
+//    @Bean
+//    public CommandLineRunner preload(EmbeddingModel embeddingModel, VectorStore vectorStore) {
+//        log.info("开始预加载");
+//        Resource targetResource = new ClassPathResource("rag/preload.txt");
+//        return args -> vectorStore.write(new TokenTextSplitter().transform(new TextReader(targetResource).read()));
+//    }
 }
