@@ -1,14 +1,16 @@
 package com.cloudblog.content.service.impl;
 
 import com.cloudblog.common.enums.FocusOperationType;
+import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.Notification;
+import com.cloudblog.common.pojo.DoMain.Posts;
+import com.cloudblog.common.pojo.DoMain.UserFocus;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.FocusUserPo;
-import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
-import com.cloudblog.common.pojo.Vo.IndexUserListVo;
-import com.cloudblog.common.pojo.Vo.UserFanListVo;
-import com.cloudblog.common.pojo.Vo.UserFocusListVo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FocusMapper;
 import com.cloudblog.content.mapper.NotificationMapper;
@@ -18,6 +20,7 @@ import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -172,6 +175,65 @@ public class FocusServiceImpl implements FocusService {
         return AjaxResult.success(response);
     }
 
+    @Override
+    public AjaxResult getFocusAndFansList(Long userId, Integer type, String cursor, Integer size) {
+        try {
+            if (!type.equals(0) && !type.equals(1)) {
+                return AjaxResult.error("参数错误");
+            }
+            // 默认参数处理
+            size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+            // 解析游标
+            Map<String, Object> cursorMap = parseCursor(cursor);
+            Long lastUserId = null;
+            LocalDateTime lastCreateTime = null;
+
+            if (cursorMap != null) {
+                lastUserId = ((Number) cursorMap.get("userId")).longValue();
+                Object createTimeObj = cursorMap.get("createTime");
+                if (createTimeObj != null) {
+                    if (createTimeObj instanceof String) {
+                        lastCreateTime = LocalDateTime.parse((String) createTimeObj);
+                    } else if (createTimeObj instanceof LocalDateTime) {
+                        lastCreateTime = (LocalDateTime) createTimeObj;
+                    }
+                }
+            }
+
+            // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+            List<FocusAndFansListVo> users = focusMapper.getFocusAndFansList(userId, lastUserId, lastCreateTime, type ,size + 1);
+
+            users.forEach(user -> user.setListType(type));
+            // 构建PageResponse返回结果
+            PageResponse<FocusAndFansListVo> response = new PageResponse<>();
+            response.setPageSize(size);
+
+            // 判断是否还有更多数据
+            boolean hasNext = users.size() > size;
+            response.setHasNext(hasNext);
+
+            // 设置实际返回的数据列表
+            if (hasNext) {
+                // 移除多查的一个元素
+                response.setContent(users.subList(0, size));
+                // 生成下一个游标
+                FocusAndFansListVo lastUser = users.get(size - 1);
+                UserFocus user = new UserFocus();
+                BeanUtils.copyProperties(lastUser, user);
+                String nextCursor = generateCursor(user);
+                response.setNextCursor(nextCursor);
+            } else {
+                response.setContent(users);
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
+        }
+    }
+
     /**
      * 解析游标字符串
      * @param cursor 游标字符串
@@ -187,6 +249,26 @@ public class FocusServiceImpl implements FocusService {
             ObjectMapper mapper = new ObjectMapper();
 //            mapper.registerModule(new JavaTimeModule());
             return mapper.readValue(decoded, Map.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 生成游标字符串
+     * @param user 当前用户
+     * @return 游标字符串
+     */
+    private String generateCursor(UserFocus user) {
+        try {
+            Map<String, Object> cursorMap = new HashMap<>();
+            cursorMap.put("userId", user.getUserId());
+            cursorMap.put("createTime", user.getCreateTime().toString());
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            String json = mapper.writeValueAsString(cursorMap);
+            return Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             return null;
         }

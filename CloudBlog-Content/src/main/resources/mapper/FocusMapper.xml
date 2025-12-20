@@ -17,6 +17,15 @@
         <result property="isFollowEachOther" column="is_follow_each_other"/>
     </resultMap>
 
+    <resultMap id="FocusAndFansListResultMap" type="com.cloudblog.common.pojo.Vo.FocusAndFansListVo">
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="introduction" column="introduction"/>
+        <result property="createTime" column="create_time"/>
+        <result property="followStatus" column="follow_status"/>
+    </resultMap>
+
     <select id="getUserFocusList" resultType="com.cloudblog.common.pojo.Vo.UserFocusListVo"
             parameterType="java.lang.Long" resultMap="UserFocusResultMap">
         select
@@ -74,6 +83,48 @@
         where
             user_id = #{userId}
           and focus_user_id = #{focusUserId}
+    </select>
+
+    <select id="getFocusAndFansList" resultType="com.cloudblog.common.pojo.Vo.FocusAndFansListVo">
+        SELECT
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as avatar,
+            ui.introduction as introduction,
+            uf.create_time as create_time,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                        FROM user_focus uf2
+                            WHERE uf2.user_id = #{userId}
+                            AND uf2.focus_user_id = ui.user_id
+                    ) THEN 1
+                ELSE 0
+            END AS follow_status
+        FROM
+            user_focus uf
+            <choose>
+                <when test='type == 0'>
+                    INNER JOIN user_info ui ON uf.focus_user_id = ui.user_id
+                    <where>
+                        uf.user_id = #{userId}
+                        <if test="lastUserId != null and lastCreateTime != null">
+                            AND (uf.create_time &lt; #{lastCreateTime})
+                        </if>
+                    </where>
+                </when>
+                <otherwise>
+                    INNER JOIN user_info ui ON uf.user_id = ui.user_id
+                    <where>
+                        uf.focus_user_id = #{userId}
+                        <if test="lastUserId != null and lastCreateTime != null">
+                            AND (uf.create_time &lt; #{lastCreateTime})
+                        </if>
+                    </where>
+                </otherwise>
+            </choose>
+        ORDER BY uf.create_time DESC
+        LIMIT #{size}
     </select>
 
 </mapper>

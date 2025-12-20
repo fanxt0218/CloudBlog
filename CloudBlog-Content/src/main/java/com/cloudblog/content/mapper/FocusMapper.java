@@ -3,10 +3,13 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.UserFocus;
 import com.cloudblog.common.pojo.Po.FocusUserPo;
+import com.cloudblog.common.pojo.Vo.FocusAndFansListVo;
 import com.cloudblog.common.pojo.Vo.UserFanListVo;
 import com.cloudblog.common.pojo.Vo.UserFocusListVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -43,4 +46,21 @@ public interface FocusMapper extends BaseMapper<UserFocus> {
      * @param po
      */
     Integer getFollowStatus(FocusUserPo po);
+
+    /**
+     * 获取关注和粉丝列表
+     * @param userId
+     * @param lastUserId
+     * @param lastCreateTime
+     * @param type
+     * @param i
+     * @return
+     */
+    List<FocusAndFansListVo> getFocusAndFansList(
+            @Param("userId") Long userId,
+            @Param("lastUserId") Long lastUserId,
+            @Param("lastCreateTime") LocalDateTime lastCreateTime,
+            @Param("type") Integer type,
+            @Param("size") int i
+    );
 }

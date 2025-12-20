@@ -41,4 +41,17 @@ public class FocusController {
     ) {
         return focusService.getFocusArticleList(userId, type, cursor, size);
     }
+
+    /**
+     * 获取关注/粉丝列表
+     */
+    @GetMapping("/getFocusAndFansList")
+    public AjaxResult getFocusAndFansList(
+            @RequestParam Long userId,
+            @RequestParam(required = false,defaultValue = "0") Integer type,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false,defaultValue = "10") Integer size
+            ) {
+        return focusService.getFocusAndFansList(userId, type, cursor, size);
+    }
 }
