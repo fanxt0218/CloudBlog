@@ -34,4 +34,12 @@ public class ShareController {
     public AjaxResult getTopicList() {
         return shareService.getTopicList();
     }
+
+    /**
+     * 获取创作页话题列表
+     */
+    @GetMapping("/getCreateTopicList")
+    public AjaxResult getCreateTopicList() {
+        return shareService.getPublishPageTopicList();
+    }
 }

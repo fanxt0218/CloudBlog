@@ -18,6 +18,9 @@ public class Share {
     private Long authorId;
 
     private String content;
+
+    private Integer topicId;
+
     /**
      * 0: 纯文本，1:Markdown 2:html
      */

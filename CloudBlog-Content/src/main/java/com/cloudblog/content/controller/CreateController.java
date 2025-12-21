@@ -23,4 +23,13 @@ public class CreateController {
     public AjaxResult uploadImage(@RequestParam MultipartFile file) {
         return createService.uploadImage(file);
     }
+
+    /**
+     * 上传视频
+     */
+    @PostMapping("/uploadVideo")
+    public AjaxResult uploadVideo(@RequestParam MultipartFile file) {
+        return createService.uploadVideo(file);
+    }
+
 }

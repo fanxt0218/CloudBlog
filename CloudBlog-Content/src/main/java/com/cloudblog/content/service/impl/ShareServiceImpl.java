@@ -1,12 +1,13 @@
 package com.cloudblog.content.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.Share;
+import com.cloudblog.common.pojo.DoMain.Topic;
 import com.cloudblog.common.pojo.Dto.PageResponse;
-import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
-import com.cloudblog.common.pojo.Vo.UserPostVo;
-import com.cloudblog.common.pojo.Vo.UserShareVo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.mapper.ShareMapper;
 import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ShareServiceImpl implements ShareService {
@@ -152,6 +150,25 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public List<IndexFocusArticleVo> getFocusShareList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId) {
         return shareMapper.getFocusShareList(lastTargetId, lastCreateTime, i, userId);
+    }
+
+    @Override
+    public AjaxResult getPublishPageTopicList() {
+        // 查询缓存（暂时实现）
+        if (ContentStartupConfig.Topic_List != null && !ContentStartupConfig.Topic_List.isEmpty()) {
+            return AjaxResult.success(ContentStartupConfig.Topic_List);
+        }
+        List<IndexTopicVo> topicList = (List<IndexTopicVo>) this.getTopicList().get("data");
+
+        List<PublishPageTopicListVo> publishPageTopicListVos = new ArrayList<>();
+        // 循环计算填充属性
+        for (IndexTopicVo topic : topicList) {
+            PublishPageTopicListVo publishPageTopicVo = shareMapper.getPublishPageTopicList(topic.getId());
+            BeanUtils.copyProperties(topic, publishPageTopicVo);
+            publishPageTopicListVos.add(publishPageTopicVo);
+        }
+        ContentStartupConfig.Topic_List = new ArrayList<>(publishPageTopicListVos);
+        return AjaxResult.success(publishPageTopicListVos);
     }
 
     /**

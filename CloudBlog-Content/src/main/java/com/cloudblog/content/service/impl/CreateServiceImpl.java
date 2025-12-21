@@ -11,9 +11,17 @@ public class CreateServiceImpl implements CreateService {
 
     private final String UploadImagePath = "/contentFile/image";
 
+    private final String UploadVideoPath = "/contentFile/video";
+
     @Override
     public AjaxResult uploadImage(MultipartFile file) {
         String path = UploadUtil.uploadFile(file, UploadImagePath);
+        return AjaxResult.success("上传成功", path);
+    }
+
+    @Override
+    public AjaxResult uploadVideo(MultipartFile file) {
+        String path = UploadUtil.uploadFile(file, UploadVideoPath);
         return AjaxResult.success("上传成功", path);
     }
 }

@@ -149,6 +149,23 @@
         limit #{size}
     </select>
 
+    <select id="getPublishPageTopicList" resultType="com.cloudblog.common.pojo.Vo.PublishPageTopicListVo"
+            parameterType="java.lang.Integer">
+        select
+            t.image as cover,
+            t.description as description,
+            (select
+                 count(1)
+             from
+                 share s
+             where
+                 s.topic_id = t.id and s.status = 2) as participate_count
+        from
+            topic t
+        where
+            id = #{topicId}
+    </select>
+
     <insert id="addShareBrowseCount">
         insert into browse (user_id, post_id, type, create_time)
         values (#{userId}, #{postId}, 1, now())

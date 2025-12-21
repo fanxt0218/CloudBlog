@@ -30,4 +30,6 @@ public interface ShareService {
      * @return
      */
     List<IndexFocusArticleVo> getFocusShareList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId);
+
+    AjaxResult getPublishPageTopicList();
 }
