@@ -5,12 +5,14 @@ import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.Topic;
 import com.cloudblog.common.pojo.Dto.PageResponse;
+import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.mapper.ShareMapper;
 import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 public class ShareServiceImpl implements ShareService {
 
@@ -169,6 +172,49 @@ public class ShareServiceImpl implements ShareService {
         }
         ContentStartupConfig.Topic_List = new ArrayList<>(publishPageTopicListVos);
         return AjaxResult.success(publishPageTopicListVos);
+    }
+
+    @Override
+    public AjaxResult publish(PublishSharePo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.error("参数错误");
+        }
+        try {
+            Share share = new Share();
+            share.setAuthorId(po.getUserId());
+            share.setContent(po.getContent());
+            share.setTopicId(po.getTopicId());
+            share.setCreateTime(LocalDateTime.now());
+            share.setStatus(1);
+            // 生成简略描述
+            String brief = generateBrief(share.getContent());
+            share.setBrief(brief);
+            //TODO 目前只支持上传一张图片
+            if (po.getImageUrls() != null && !po.getImageUrls().isEmpty()) {
+                share.setImage(po.getImageUrls().get(0));
+            }
+            if (po.getVideoUrls() != null && !po.getVideoUrls().isEmpty()) {
+                share.setVideo(po.getVideoUrls().get(0));
+            }
+            shareMapper.insert(share);
+        } catch (Exception e) {
+
+            return AjaxResult.error("发布失败");
+        }
+        return AjaxResult.success("发布成功");
+    }
+
+    /**
+     * 生成简略描述
+     * @param content
+     * @return
+     */
+    private String generateBrief(String content) {
+        if (content.length() > 60) {
+            return content.substring(0, 60) + "...";
+        } else {
+            return content;
+        }
     }
 
     /**

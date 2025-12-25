@@ -352,6 +352,7 @@ create table share (
     content text comment '动态内容',
     brief varchar(255) comment '简略描述',
     image varchar(255) comment '图片地址(可能)',
+    video varchar(255) comment '视频地址(可能)',
     topic_id int comment '话题id',
     content_type tinyint comment '内容类型,0:Markdown 1:HTML 2:TEXT',
     status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',

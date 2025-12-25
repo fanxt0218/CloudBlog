@@ -37,4 +37,6 @@ public class Share {
     private String brief;
 
     private String image;
+
+    private String video;
 }

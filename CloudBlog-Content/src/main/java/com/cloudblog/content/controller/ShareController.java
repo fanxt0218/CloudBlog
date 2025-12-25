@@ -1,12 +1,10 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ShareService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/content/share")
@@ -41,5 +39,13 @@ public class ShareController {
     @GetMapping("/getCreateTopicList")
     public AjaxResult getCreateTopicList() {
         return shareService.getPublishPageTopicList();
+    }
+
+    /**
+     * 发布动态
+     */
+    @PostMapping("/publish")
+    public AjaxResult publish(@RequestBody PublishSharePo po) {
+        return shareService.publish(po);
     }
 }

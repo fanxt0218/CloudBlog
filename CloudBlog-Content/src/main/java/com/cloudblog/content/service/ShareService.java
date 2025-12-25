@@ -1,5 +1,6 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.result.AjaxResult;
 
@@ -32,4 +33,6 @@ public interface ShareService {
     List<IndexFocusArticleVo> getFocusShareList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId);
 
     AjaxResult getPublishPageTopicList();
+
+    AjaxResult publish(PublishSharePo po);
 }
