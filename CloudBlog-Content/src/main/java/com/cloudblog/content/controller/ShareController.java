@@ -48,4 +48,12 @@ public class ShareController {
     public AjaxResult publish(@RequestBody PublishSharePo po) {
         return shareService.publish(po);
     }
+
+    /**
+     * 查看动态
+     */
+    @GetMapping("/getShare")
+    public AjaxResult getShare(@RequestParam Long shareId) {
+        return shareService.getShare(shareId);
+    }
 }

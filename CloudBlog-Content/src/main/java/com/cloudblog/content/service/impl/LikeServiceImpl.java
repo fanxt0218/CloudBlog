@@ -41,4 +41,9 @@ public class LikeServiceImpl implements LikeService {
     public Integer getUserLikeCount(Long userId) {
         return likeMapper.getUserLikeCount(userId);
     }
+
+    @Override
+    public Long calculateLikeCount(Long contentId, Integer type) {
+        return likeMapper.calculateLikeCount(contentId, type);
+    }
 }

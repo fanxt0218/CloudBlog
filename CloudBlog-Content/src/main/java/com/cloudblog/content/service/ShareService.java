@@ -35,4 +35,6 @@ public interface ShareService {
     AjaxResult getPublishPageTopicList();
 
     AjaxResult publish(PublishSharePo po);
+
+    AjaxResult getShare(Long shareId);
 }

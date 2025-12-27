@@ -165,6 +165,18 @@
         where
             id = #{topicId}
     </select>
+    <select id="getAuthorInfo" resultType="com.cloudblog.common.pojo.DoMain.UserInfo"
+            parameterType="java.lang.Long">
+        select
+            user_name,
+            image
+        from
+            user_info
+        where
+            user_id = #{authorId}
+    </select>
+
+    <select id="getShareBrowseCount" resultType="java.lang.Long" parameterType="java.lang.Long"></select>
 
     <insert id="addShareBrowseCount">
         insert into browse (user_id, post_id, type, create_time)

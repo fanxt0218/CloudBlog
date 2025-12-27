@@ -25,8 +25,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryMapper categoryMapper;
-    @Autowired
-    private PostMapper postMapper;
 
     @Override
     public AjaxResult getCategoryInfo(Long userId) {

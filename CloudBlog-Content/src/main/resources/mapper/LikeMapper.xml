@@ -10,4 +10,15 @@
         select count(*) from likes where (target_id in (select id from posts where author_id = #{userId})
             or target_id in (select id from share where author_id = #{userId})) and status = 0
     </select>
+
+    <select id="calculateLikeCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            likes
+        where
+            target_id = #{contentId}
+            and type = #{type}
+            and status = 0
+    </select>
 </mapper>

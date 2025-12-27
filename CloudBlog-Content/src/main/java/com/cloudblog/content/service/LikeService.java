@@ -12,4 +12,12 @@ public interface LikeService {
      * @return
      */
     Integer getUserLikeCount(Long userId);
+
+    /**
+     * 计算点赞数量
+     * @param contentId
+     * @param type
+     * @return
+     */
+    Long calculateLikeCount(Long contentId, Integer type);
 }

@@ -1,20 +1,26 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.Topic;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.mapper.ShareMapper;
+import com.cloudblog.content.service.BrowseService;
+import com.cloudblog.content.service.CommentService;
+import com.cloudblog.content.service.LikeService;
 import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -27,6 +33,13 @@ public class ShareServiceImpl implements ShareService {
 
     @Autowired
     private ShareMapper shareMapper;
+    @Autowired
+    private BrowseService browseService;
+    @Autowired
+    @Lazy
+    private LikeService likeService;
+    @Autowired
+    private CommentService commentService;
 
     @Override
     public AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag) {
@@ -204,6 +217,28 @@ public class ShareServiceImpl implements ShareService {
         return AjaxResult.success("发布成功");
     }
 
+    @Override
+    public AjaxResult getShare(Long shareId) {
+        ShareViewVo shareViewVo = new ShareViewVo();
+        // 动态信息
+        Share share = shareMapper.selectOne(new LambdaQueryWrapper<Share>().eq(Share::getId, shareId));
+        // 用户信息
+        UserInfo authorInfo = shareMapper.getAuthorInfo(share.getAuthorId());
+        // 计算动态各项参数
+        calculateShareParameters(share, shareViewVo);
+        shareViewVo.setId(share.getId());
+        shareViewVo.setAuthorId(share.getAuthorId());
+        shareViewVo.setContent(share.getContent());
+        shareViewVo.setTopicId(share.getTopicId());
+        shareViewVo.setCreateTime(share.getCreateTime());
+        shareViewVo.setImageUrl(share.getImage());
+        shareViewVo.setVideoUrl(share.getVideo());
+
+        shareViewVo.setUserName(authorInfo.getUserName());
+        shareViewVo.setUserImage(authorInfo.getImage());
+        return AjaxResult.success(shareViewVo);
+    }
+
     /**
      * 生成简略描述
      * @param content
@@ -253,5 +288,19 @@ public class ShareServiceImpl implements ShareService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private void calculateShareParameters(Share share, ShareViewVo shareViewVo) {
+        Long shareId = share.getId();
+        // 计算浏览数
+        Long browseCount = browseService.calculateBrowseCount(shareId, ContentType.SHARE.ordinal());
+        // 计算点赞数
+        Long likeCount = likeService.calculateLikeCount(shareId, ContentType.SHARE.ordinal());
+        // 计算评论数
+        Long commentCount = commentService.calculateCommentCount(shareId, ContentType.SHARE.ordinal());
+
+        shareViewVo.setBrowseCount(browseCount);
+        shareViewVo.setLikeCount(likeCount);
+        shareViewVo.setCommentCount(commentCount);
     }
 }

@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cloudblog.user.mapper.CommentMapper">
+<mapper namespace="com.cloudblog.content.mapper.CommentMapper">
 
     <select id="getUserCommentCount" resultType="java.lang.Integer">
         select count(*) from comments where (post_id in (select id from posts where author_id = #{userId})
             or post_id in (select id from share where author_id = #{userId}))
-                    and parent_id = 0 and status = 0
+                                        and parent_id = 0 and status = 0
+    </select>
+
+    <select id="calculateCommentCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            comments
+        where
+            post_id = #{contentId}
+            and
+            type = #{type}
+            and
+            status = 0
     </select>
 </mapper>

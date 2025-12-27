@@ -13,6 +13,7 @@ import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.common.utils.UploadUtil;
 import com.cloudblog.content.config.ContentStartupConfig;
+import com.cloudblog.content.mapper.BrowseMapper;
 import com.cloudblog.content.service.*;
 import com.cloudblog.user.config.UserStartupConfig;
 import com.cloudblog.user.mapper.*;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,7 +55,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     private CollectMapper collectMapper;
     @Autowired
-    private CommentMapper commentMapper;
+    private CommentService commentService;
     @Autowired
     private LevelService levelService;
     @Autowired
@@ -122,7 +124,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         // 收藏数
         Integer collectCount = collectMapper.getUserCollectCount(userId);
         // 评论数
-        Integer commentCount = commentMapper.getUserCommentCount(userId);
+        Integer commentCount = commentService.getUserCommentCount(userId);
         // 博客排名
         Long blogRank = UserStartupConfig.USER_RANKING_MAP.get(userId);
         // 创作历程

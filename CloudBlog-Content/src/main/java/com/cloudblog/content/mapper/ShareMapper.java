@@ -2,6 +2,7 @@ package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Share;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.pojo.Vo.IndexTopicVo;
 import com.cloudblog.common.pojo.Vo.PublishPageTopicListVo;
@@ -62,4 +63,12 @@ public interface ShareMapper extends BaseMapper<Share> {
     List<IndexFocusArticleVo> getFocusShareList(@Param("lastTargetId") Long lastTargetId, @Param("lastCreateTime") LocalDateTime lastCreateTime, @Param("size") int i, @Param("userId") Long userId);
 
     PublishPageTopicListVo getPublishPageTopicList(Integer topicId);
+
+    /**
+     * 获取作者信息
+     * @param authorId
+     * @return
+     */
+    UserInfo getAuthorInfo(Long authorId);
+
 }
