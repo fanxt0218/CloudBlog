@@ -176,8 +176,6 @@
             user_id = #{authorId}
     </select>
 
-    <select id="getShareBrowseCount" resultType="java.lang.Long" parameterType="java.lang.Long"></select>
-
     <insert id="addShareBrowseCount">
         insert into browse (user_id, post_id, type, create_time)
         values (#{userId}, #{postId}, 1, now())
