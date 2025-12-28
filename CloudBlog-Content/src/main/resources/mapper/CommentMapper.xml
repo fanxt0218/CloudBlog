@@ -20,4 +20,127 @@
             and
             status = 0
     </select>
+
+    <select id="getRootComments" resultType="com.cloudblog.common.pojo.Vo.CommentListVo">
+        select
+            c.id as comment_id,
+            c.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as user_avatar,
+            cc.content as content,
+            c.create_time as create_time
+        from
+            comments c
+        left join
+                comment_content cc
+                on
+            c.id = cc.comment_id
+        left join
+            user_info ui
+            on
+            c.user_id = ui.user_id
+        where
+            post_id = #{contentId}
+            and
+            type = #{type}
+            and
+            parent_id = 0
+            and
+            status = 0
+    </select>
+
+    <select id="getChildrenComments" resultType="com.cloudblog.common.pojo.Vo.CommentListVo"
+            parameterType="java.lang.Long">
+        WITH RECURSIVE comment_tree AS (
+            -- 基础查询：获取直接子评论
+            SELECT
+                c.id as comment_id,
+                c.user_id as user_id,
+                ui.user_name as user_name,
+                ui.image as user_avatar,
+                cc.content as content,
+                c.create_time as create_time,
+                c.parent_id,
+                1 as level
+            FROM comments c
+                     LEFT JOIN comment_content cc ON c.id = cc.comment_id
+                     LEFT JOIN user_info ui ON c.user_id = ui.user_id
+            WHERE c.parent_id = #{parentId} AND c.status = 0
+
+            UNION ALL
+
+            -- 递归查询：获取子评论的子评论
+            SELECT
+                c2.id as comment_id,
+                c2.user_id as user_id,
+                ui.user_name as user_name,
+                ui.image as user_avatar,
+                cc.content as content,
+                c2.create_time as create_time,
+                c2.parent_id,
+                ct.level + 1 as level
+            FROM comments c2
+                     INNER JOIN comment_tree ct ON c2.parent_id = ct.comment_id
+                     LEFT JOIN comment_content cc ON c2.id = cc.comment_id
+                     LEFT JOIN user_info ui ON c2.user_id = ui.user_id
+            WHERE c2.status = 0
+        )
+        SELECT * FROM comment_tree ORDER BY level, comment_id
+    </select>
+
+    <select id="getCommentLikeCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            likes
+        where
+            target_id = #{commentId}
+            and
+            type = #{type}
+            and
+            status = 0
+    </select>
+
+    <select id="getCommentLikeUserInfo" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo">
+        select
+            user_id,
+            user_name,
+            image
+        from
+            user_info
+        where
+            user_id in (
+                select
+                    user_id
+                from
+                    likes
+                where
+                    target_id = #{commentId}
+                    and
+                    type = #{type}
+                    and
+                    status = 0
+            )
+    </select>
+
+    <select id="getChildrenCommentCount" resultType="java.lang.Long"
+            parameterType="java.lang.Long">
+        WITH RECURSIVE comment_tree AS (
+            -- 基础查询：获取直接子评论
+            SELECT
+                c.id
+            FROM comments c
+            WHERE c.parent_id = #{parentId} AND c.status = 0
+
+            UNION ALL
+
+            -- 递归查询：获取子评论的子评论
+            SELECT
+                c2.id
+            FROM comments c2
+                     INNER JOIN comment_tree ct ON c2.parent_id = ct.id
+            WHERE c2.status = 0
+        )
+        SELECT COUNT(*) FROM comment_tree
+    </select>
 </mapper>
