@@ -308,7 +308,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Long addNotification(Notification notification) {
-        return notificationMapper.insert(notification);
+        notificationMapper.insert(notification);
+        return notification.getId();
     }
 
     /**

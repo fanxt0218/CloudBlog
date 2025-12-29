@@ -49,5 +49,5 @@ public interface NotificationService {
     /**
      * 添加通知
      */
-    void addNotification(Notification notification);
+    Long addNotification(Notification notification);
 }
