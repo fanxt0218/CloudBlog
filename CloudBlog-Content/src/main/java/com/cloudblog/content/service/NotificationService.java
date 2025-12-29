@@ -1,5 +1,6 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.DoMain.NotificationType;
 import com.cloudblog.common.pojo.Dto.ChatContentType;
 import com.cloudblog.common.pojo.Po.*;
@@ -44,4 +45,9 @@ public interface NotificationService {
      * @param status
      */
     void collectNotification(Long userId, Long postId, Integer status);
+
+    /**
+     * 添加通知
+     */
+    void addNotification(Notification notification);
 }

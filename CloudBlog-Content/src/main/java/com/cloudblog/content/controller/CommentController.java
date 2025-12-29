@@ -1,12 +1,10 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.pojo.Po.CommentPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/content/comment")
@@ -26,5 +24,13 @@ public class CommentController {
             @RequestParam(required = false) Long userId
     ) {
         return AjaxResult.success(commentService.getComments(contentId, type, parentId, userId));
+    }
+
+    /**
+     * 评论
+     */
+    @PostMapping("/comment")
+    public AjaxResult comment(@RequestBody CommentPo po) {
+        return commentService.comment(po);
     }
 }

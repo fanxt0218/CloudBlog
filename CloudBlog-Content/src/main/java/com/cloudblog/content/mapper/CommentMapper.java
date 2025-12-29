@@ -2,6 +2,7 @@ package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Comments;
+import com.cloudblog.common.pojo.Dto.CommentSourceContent;
 import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
 import com.cloudblog.common.pojo.Vo.CommentListVo;
 import org.apache.ibatis.annotations.Param;
@@ -62,4 +63,40 @@ public interface CommentMapper extends BaseMapper<Comments> {
      * @return
      */
     Long getChildrenCommentCount(Long rootCommentId);
+
+    /**
+     * 评论
+     * @param comments
+     */
+    void comment(
+            @Param("comments") Comments comments
+    );
+
+    /**
+     * 添加评论内容
+     * @param id
+     * @param content
+     */
+    void addCommentContent(@Param("commentId") Long id, @Param("content") String content);
+
+    /**
+     * 获取评论内容源作者
+     * @param contentId
+     * @return
+     */
+    UserSimpleInfo getSourceAuthor(@Param("contentId") Long contentId, @Param("type") Integer type);
+
+    /**
+     * 获取评论内容作者
+     * @param commentId
+     * @return
+     */
+    UserSimpleInfo getCommentAuthor(@Param("commentId") Long commentId);
+
+    /**
+     * 获取评论内容源
+     * @param contentId
+     * @return
+     */
+    CommentSourceContent getSourceContent(@Param("contentId") Long contentId, @Param("type") Integer type);
 }

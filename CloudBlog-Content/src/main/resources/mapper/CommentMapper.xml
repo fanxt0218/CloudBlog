@@ -2,6 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.content.mapper.CommentMapper">
 
+    <resultMap id="sourceAuthorResultMap" type="com.cloudblog.common.pojo.Dto.UserSimpleInfo">
+        <id property="userId" column="user_id"/>
+        <id property="userName" column="user_name"/>
+        <id property="userImage" column="image"/>
+    </resultMap>
+
+    <resultMap id="commentSourceContentResultMap" type="com.cloudblog.common.pojo.Dto.CommentSourceContent">
+        <id property="contentId" column="content_id"/>
+        <id property="type" column="type"/>
+        <id property="brief" column="brief"/>
+    </resultMap>
+
+
     <select id="getUserCommentCount" resultType="java.lang.Integer">
         select count(*) from comments where (post_id in (select id from posts where author_id = #{userId})
             or post_id in (select id from share where author_id = #{userId}))
@@ -143,4 +156,85 @@
         )
         SELECT COUNT(*) FROM comment_tree
     </select>
+
+    <insert id="comment" parameterType="com.cloudblog.common.pojo.DoMain.Comments" useGeneratedKeys="true" keyProperty="id">
+        insert into comments
+            (post_id, user_id, parent_id, create_time, type)
+        values
+        (#{contentId}, #{userId}, #{targetCommentId}, now(), #{type})
+    </insert>
+
+    <insert id="addCommentContent">
+        insert into
+            comment_content
+            (comment_id, content)
+        values
+            (#{commentId}, #{content})
+    </insert>
+
+    <select id="getSourceAuthor" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo"
+            parameterType="java.lang.Long" resultMap="sourceAuthorResultMap">
+        select
+            user_id,
+            user_name,
+            image
+        from
+            user_info
+        where
+            user_id = (
+                select
+                    author_id
+                from
+                    comments
+                where
+                    post_id = #{contentId}
+                    and
+                    type = #{type}
+            )
+    </select>
+    <select id="getCommentAuthor" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo"
+            parameterType="java.lang.Long" resultMap="sourceAuthorResultMap">
+        select
+            user_id,
+            user_name,
+            image
+        from
+            user_info
+        where
+            user_id = (
+                select
+                    user_id
+                from
+                    comments
+                where
+                    id = #{commentId}
+            )
+    </select>
+
+    <select id="getSourceContent" resultType="com.cloudblog.common.pojo.Dto.CommentSourceContent" resultMap="commentSourceContentResultMap">
+        select
+            t.id as content_id,
+            <choose>
+                <when test="type == 0">
+                    t.title
+                </when>
+                <when test="type == 1">
+                    t.brief
+                </when>
+            </choose> as brief
+        from
+            <choose>
+                <when test="type == 0">
+                    post
+                </when>
+                <when test="type == 1">
+                    share
+                </when>
+            </choose>
+         t
+        where
+            t.id = #{contentId}
+    </select>
+
+
 </mapper>

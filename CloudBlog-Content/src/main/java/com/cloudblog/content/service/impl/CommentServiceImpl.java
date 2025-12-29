@@ -1,12 +1,28 @@
 package com.cloudblog.content.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.ContentType;
+import com.cloudblog.common.enums.NotificationType;
+import com.cloudblog.common.enums.SocketMessageType;
+import com.cloudblog.common.pojo.DoMain.Comments;
+import com.cloudblog.common.pojo.DoMain.Notification;
+import com.cloudblog.common.pojo.Dto.CommentSourceContent;
+import com.cloudblog.common.pojo.Dto.SocketMessage;
 import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
+import com.cloudblog.common.pojo.Po.CommentPo;
 import com.cloudblog.common.pojo.Vo.CommentListVo;
+import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
+import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.CommentMapper;
 import com.cloudblog.content.service.CommentService;
+import com.cloudblog.content.service.NotificationService;
+import com.cloudblog.content.socket.WebSocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -14,6 +30,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private WebSocket webSocket;
 
     @Override
     public Long calculateCommentCount(Long contentId, Integer type) {
@@ -43,6 +63,116 @@ public class CommentServiceImpl implements CommentService {
         // 处理点赞
         handleLike(commentList, userId, type);
         return commentList;
+    }
+
+    @Transactional
+    @Override
+    public AjaxResult comment(CommentPo po) {
+        Assert.notNull(po.getContentId(), "内容id不能为空");
+        Assert.notNull(po.getUserId(), "用户id不能为空");
+        Assert.notNull(po.getType(), "评论类型不能为空");
+        Comments comments = new Comments();
+        comments.setPostId(po.getContentId());
+        comments.setUserId(po.getUserId());
+        comments.setParentId(po.getTargetCommentId());
+        comments.setCreateTime(LocalDateTime.now());
+        // 如果目标评论id为空，代表一级评论
+        if (po.getTargetCommentId() != null && po.getTargetCommentId() != 0L) {
+            commentMapper.comment(comments);
+        } else {
+            comments.setParentId(0L);
+            commentMapper.comment(comments);
+        }
+        // 添加内容
+        commentMapper.addCommentContent(comments.getId(), po.getContent());
+
+        // 发送通知
+        Notification notification = new Notification();
+        UserSimpleInfo sourceAuthor = commentMapper.getSourceAuthor(po.getContentId(), po.getType());
+        CommentSourceContent sourceContent = commentMapper.getSourceContent(po.getContentId(), po.getType());
+
+        boolean ifSendSourceAuthor = true;
+        String authorMsg = "";
+
+        // 添加信息表(不为自己时才发送)
+        if (po.getUserId().equals(sourceAuthor.getUserId())) {
+            if (po.getTargetCommentId() == null || po.getTargetCommentId() == 0L) {
+                // 根评论
+                String contentPrefix = "评论了你的";
+                contentPrefix += switch (po.getType()) {
+                    case 0 -> "文章";
+                    case 1 -> "动态";
+                    default -> "内容";
+                };
+                contentPrefix += "    [" + sourceContent.getBrief()+"]";
+                authorMsg = contentPrefix;
+
+                notification.setContent(contentPrefix+"  "+po.getContent());
+            } else {
+                // 子评论
+                UserSimpleInfo targetUser = commentMapper.getCommentAuthor(po.getTargetCommentId());
+                if (!targetUser.getUserId().equals(po.getUserId())) {
+                    String contentPrefix = "回复@" + targetUser.getUserName() + "  " + po.getContent().substring(0, 20);
+                    contentPrefix += "    [" + sourceContent.getBrief()+"]";
+                    authorMsg = contentPrefix;
+                    notification.setContent(contentPrefix);
+
+                    // 发送给目标用户
+                    Notification targetUserMsg = new Notification();
+                    notification.setContent(po.getContent() + "    ["+ sourceContent.getBrief()+"]");
+                    notification.setRecipientId(targetUser.getUserId());
+                    notification.setSenderId(po.getUserId());
+                    notification.setType(NotificationType.COMMENT.getValue());
+                    notification.setObjectType(ContentType.TEXT.ordinal()); // 目前默认为文本，后续可能支持其他类型
+                    notification.setIsRead(0);
+                    notification.setCreateTime(LocalDateTime.now());
+                    notificationService.addNotification(targetUserMsg);
+
+                    // 推送消息
+                    UserChatDetailVo.ChatMessage chatMessage = new UserChatDetailVo.ChatMessage();
+                    chatMessage.setMessageId(comments.getId());
+                    chatMessage.setContent(po.getContent());
+                    chatMessage.setSenderId(po.getUserId());
+                    chatMessage.setSendTime(notification.getCreateTime());
+                    chatMessage.setContentType(ContentType.TEXT.ordinal());
+
+                    webSocket.sendMessage(
+                            new SocketMessage<>(SocketMessageType.COMMENT, chatMessage),
+                            po.getUserId(),
+                            targetUser.getUserId());
+                } else {
+                    ifSendSourceAuthor = false;
+                }
+            }
+        } else {
+            ifSendSourceAuthor = false;
+        }
+
+        // 发送给源作者
+        if (ifSendSourceAuthor) {
+            notification.setRecipientId(sourceAuthor.getUserId());
+            notification.setSenderId(po.getUserId());
+            notification.setType(NotificationType.COMMENT.getValue());
+            notification.setObjectType(ContentType.TEXT.ordinal()); // 目前默认为文本，后续可能支持其他类型
+            notification.setIsRead(0);
+            notification.setCreateTime(LocalDateTime.now());
+            notificationService.addNotification(notification);
+
+            //推送消息
+            UserChatDetailVo.ChatMessage chatMessage = new UserChatDetailVo.ChatMessage();
+            chatMessage.setMessageId(comments.getId());
+            chatMessage.setContent(authorMsg);
+            chatMessage.setSenderId(po.getUserId());
+            chatMessage.setSendTime(notification.getCreateTime());
+            chatMessage.setContentType(ContentType.TEXT.ordinal());
+            webSocket.sendMessage(
+                    new SocketMessage<>(SocketMessageType.COMMENT, chatMessage),
+                    po.getUserId(),
+                    sourceAuthor.getUserId()
+            );
+        }
+
+        return AjaxResult.success("评论成功");
     }
 
     private void handleLike(List<CommentListVo> comments, Long userId, Integer type) {

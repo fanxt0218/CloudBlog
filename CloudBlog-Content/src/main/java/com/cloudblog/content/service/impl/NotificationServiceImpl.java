@@ -306,6 +306,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     }
 
+    @Override
+    public Long addNotification(Notification notification) {
+        return notificationMapper.insert(notification);
+    }
+
     /**
      * 获取聊天列表
      * @param userId
