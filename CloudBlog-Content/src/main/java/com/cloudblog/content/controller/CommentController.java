@@ -33,4 +33,20 @@ public class CommentController {
     public AjaxResult comment(@RequestBody CommentPo po) {
         return commentService.comment(po);
     }
+
+    /**
+     * 删除评论
+     */
+    @PostMapping("/deleteComment")
+    public AjaxResult deleteComment(@RequestParam Long commentId) {
+        return commentService.deleteComment(commentId);
+    }
+
+    /**
+     * 计算评论数
+     */
+    @GetMapping("/calculateCommentCount")
+    public AjaxResult calculateCommentCount(@RequestParam Long contentId, @RequestParam Integer type) {
+        return AjaxResult.success(commentService.calculateCommentCount(contentId, type));
+    }
 }

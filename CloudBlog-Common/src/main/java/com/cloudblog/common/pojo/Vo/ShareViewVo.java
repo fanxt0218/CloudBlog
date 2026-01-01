@@ -32,4 +32,6 @@ public class ShareViewVo {
     private Long likeCount;
 
     private Long commentCount;
+
+    private boolean like;
 }

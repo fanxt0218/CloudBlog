@@ -20,4 +20,6 @@ public interface CommentService {
     List<CommentListVo> getComments(Long contentId, Integer type, Long parentId, Long userId);
 
     AjaxResult comment(CommentPo po);
+
+    AjaxResult deleteComment(Long commentId);
 }

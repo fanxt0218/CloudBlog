@@ -176,6 +176,25 @@
             user_id = #{authorId}
     </select>
 
+    <select id="getShareLikeUserInfo" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo">
+        select
+            user_id,
+            user_name,
+            image
+        from
+            user_info
+        where
+            user_id in
+            (
+            select
+                user_id
+            from likes
+            where target_id = #{shareId}
+                and type = #{contentType}
+                and status = 0
+            )
+    </select>
+
     <insert id="addShareBrowseCount">
         insert into browse (user_id, post_id, type, create_time)
         values (#{userId}, #{postId}, 1, now())

@@ -220,7 +220,7 @@
                 left join posts p on n.object_type = 0 and n.object_id = p.id
                 left join share s on n.object_type = 1 and n.object_id = s.id
                 left join comments c on n.object_type = 2 and n.object_id = c.id
-        where (n.type = 4 or n.type = 5) and recipient_id = 1
+        where (n.type = 4 or n.type = 5) and recipient_id = #{userId}
         order by
             case
                 when n.update_time is not null

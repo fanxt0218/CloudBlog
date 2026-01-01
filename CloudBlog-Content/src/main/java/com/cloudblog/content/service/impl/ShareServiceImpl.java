@@ -7,6 +7,7 @@ import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.Topic;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PageResponse;
+import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
@@ -218,7 +219,7 @@ public class ShareServiceImpl implements ShareService {
     }
 
     @Override
-    public AjaxResult getShare(Long shareId) {
+    public AjaxResult getShare(Long shareId, Long userId) {
         ShareViewVo shareViewVo = new ShareViewVo();
         // 动态信息
         Share share = shareMapper.selectOne(new LambdaQueryWrapper<Share>().eq(Share::getId, shareId));
@@ -236,7 +237,27 @@ public class ShareServiceImpl implements ShareService {
 
         shareViewVo.setUserName(authorInfo.getUserName());
         shareViewVo.setUserImage(authorInfo.getImage());
+
+        // 判断用户是否已点赞
+        if (userId != null) {
+            shareViewVo.setLike(handleLike(shareId, userId, ContentType.SHARE));
+        }
         return AjaxResult.success(shareViewVo);
+    }
+
+    /**
+     * 处理点赞
+     * @param shareId
+     * @param userId
+     * @param contentType
+     * @return
+     */
+    private boolean handleLike(Long shareId, Long userId, ContentType contentType) {
+        List<UserSimpleInfo> userInfo =  shareMapper.getShareLikeUserInfo(shareId, contentType);
+        if (userInfo != null && !userInfo.isEmpty()) {
+            return userInfo.stream().anyMatch(user -> user.getUserId().equals(userId));
+        }
+        return false;
     }
 
     /**

@@ -99,4 +99,18 @@ public interface CommentMapper extends BaseMapper<Comments> {
      * @return
      */
     CommentSourceContent getSourceContent(@Param("contentId") Long contentId, @Param("type") Integer type);
+
+    /**
+     * 获取用户信息
+     * @param userId
+     * @return
+     */
+    UserSimpleInfo selectUserById(Long userId);
+
+    /**
+     * 获取评论等级
+     * @param id
+     * @return
+     */
+    Integer getCommentLevel(Long id);
 }

@@ -1,9 +1,12 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cloudblog.common.enums.CommentStatus;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.NotificationType;
 import com.cloudblog.common.enums.SocketMessageType;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.Comments;
 import com.cloudblog.common.pojo.DoMain.Notification;
 import com.cloudblog.common.pojo.Dto.CommentSourceContent;
@@ -17,7 +20,9 @@ import com.cloudblog.content.mapper.CommentMapper;
 import com.cloudblog.content.service.CommentService;
 import com.cloudblog.content.service.NotificationService;
 import com.cloudblog.content.socket.WebSocket;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -25,12 +30,14 @@ import org.springframework.util.Assert;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private CommentMapper commentMapper;
     @Autowired
+    @Lazy
     private NotificationService notificationService;
     @Autowired
     private WebSocket webSocket;
@@ -61,7 +68,7 @@ public class CommentServiceImpl implements CommentService {
             commentList = commentMapper.getChildrenComments(parentId);
         }
         // 处理点赞
-        handleLike(commentList, userId, type);
+        handleLike(commentList, userId, ContentType.COMMENT.ordinal());
         return commentList;
     }
 
@@ -76,6 +83,7 @@ public class CommentServiceImpl implements CommentService {
         comments.setUserId(po.getUserId());
         comments.setParentId(po.getTargetCommentId());
         comments.setCreateTime(LocalDateTime.now());
+        comments.setType(po.getType());
         // 如果目标评论id为空，代表一级评论
         if (po.getTargetCommentId() != null && po.getTargetCommentId() != 0L) {
             commentMapper.comment(comments);
@@ -112,7 +120,7 @@ public class CommentServiceImpl implements CommentService {
                 // 子评论
                 UserSimpleInfo targetUser = commentMapper.getCommentAuthor(po.getTargetCommentId());
                 if (!targetUser.getUserId().equals(po.getUserId())) {
-                    String contentPrefix = "回复@" + targetUser.getUserName() + "  " + po.getContent().substring(0, 20);
+                    String contentPrefix = "回复@" + targetUser.getUserName() + "  " + (po.getContent().length() > 20 ? po.getContent().substring(0, 20) : po.getContent());
                     contentPrefix += "    [" + sourceContent.getBrief()+"]";
                     authorMsg = contentPrefix;
                     notification.setContent(contentPrefix);
@@ -172,7 +180,40 @@ public class CommentServiceImpl implements CommentService {
             );
         }
 
-        return AjaxResult.success("评论成功");
+        // 查询发布者信息
+        UserSimpleInfo sender = commentMapper.selectUserById(po.getUserId());
+        // 查询评论层级
+        Integer level = commentMapper.getCommentLevel(comments.getId());
+
+        CommentListVo commentListVo = CommentListVo.builder()
+                .commentId(comments.getId())
+                .userId(po.getUserId())
+                .userName(sender.getUserName())
+                .userAvatar(sender.getUserImage())
+                .content(po.getContent())
+                .createTime(comments.getCreateTime())
+                .childCount(0L)
+                .likeCount(0L)
+                .isLike(false)
+                .level(level)
+                .build();
+
+
+        return AjaxResult.success("评论成功", commentListVo);
+    }
+
+    @Override
+    public AjaxResult deleteComment(Long commentId) {
+        try {
+            Comments comments = new Comments();
+            comments.setId(commentId);
+            comments.setStatus(CommentStatus.DELETED.getCode());
+            commentMapper.updateById(comments);
+        } catch (Exception e) {
+            log.error("删除评论失败：{}", e.getMessage());
+            throw new CloudBlogException("删除评论失败: " + e.getMessage(), CommonError.INTERNAL_ERROR);
+        }
+        return AjaxResult.success("删除成功");
     }
 
     private void handleLike(List<CommentListVo> comments, Long userId, Integer type) {

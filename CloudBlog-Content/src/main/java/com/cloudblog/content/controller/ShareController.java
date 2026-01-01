@@ -53,7 +53,7 @@ public class ShareController {
      * 查看动态
      */
     @GetMapping("/getShare")
-    public AjaxResult getShare(@RequestParam Long shareId) {
-        return shareService.getShare(shareId);
+    public AjaxResult getShare(@RequestParam Long shareId, @RequestParam(required = false) Long userId) {
+        return shareService.getShare(shareId, userId);
     }
 }

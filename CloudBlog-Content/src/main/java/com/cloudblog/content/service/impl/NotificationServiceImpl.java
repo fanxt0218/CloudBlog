@@ -223,8 +223,8 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         if (isNeedInsert) {
-            // 查找目标用户信息
-            if (userInfo == null) {
+            // 查找目标用户信息(不向自己发送消息)
+            if (userInfo == null || userInfo.getUserId().equals(userId)) {
                 return;
             }
             Notification tempNotification = new Notification();

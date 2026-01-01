@@ -22,16 +22,26 @@
     </select>
 
     <select id="calculateCommentCount" resultType="java.lang.Long">
-        select
-            count(1)
-        from
-            comments
-        where
-            post_id = #{contentId}
-            and
-            type = #{type}
-            and
-            status = 0
+        WITH RECURSIVE comment_tree AS (
+            -- 基础查询：获取根评论
+            SELECT
+                c.id
+            FROM comments c
+            WHERE c.post_id = #{contentId}
+              AND c.type = #{type}
+              AND c.parent_id = 0
+              AND c.status = 0
+
+            UNION ALL
+
+            -- 递归查询：获取所有子评论
+            SELECT
+                c2.id
+            FROM comments c2
+                     INNER JOIN comment_tree ct ON c2.parent_id = ct.id
+            WHERE c2.status = 0
+        )
+        SELECT COUNT(*) FROM comment_tree
     </select>
 
     <select id="getRootComments" resultType="com.cloudblog.common.pojo.Vo.CommentListVo">
@@ -74,10 +84,14 @@
                 cc.content as content,
                 c.create_time as create_time,
                 c.parent_id,
-                1 as level
+                1 as level,
+                parent_c.id as parent_comment_id,
+                parent_ui.user_name as parent_user_name
             FROM comments c
                      LEFT JOIN comment_content cc ON c.id = cc.comment_id
                      LEFT JOIN user_info ui ON c.user_id = ui.user_id
+                     LEFT JOIN comments parent_c ON c.parent_id = parent_c.id
+                     LEFT JOIN user_info parent_ui ON parent_c.user_id = parent_ui.user_id
             WHERE c.parent_id = #{parentId} AND c.status = 0
 
             UNION ALL
@@ -91,11 +105,15 @@
                 cc.content as content,
                 c2.create_time as create_time,
                 c2.parent_id,
-                ct.level + 1 as level
+                ct.level + 1 as level,
+                parent_c.id as parent_comment_id,
+                parent_ui.user_name as parent_user_name
             FROM comments c2
                      INNER JOIN comment_tree ct ON c2.parent_id = ct.comment_id
                      LEFT JOIN comment_content cc ON c2.id = cc.comment_id
                      LEFT JOIN user_info ui ON c2.user_id = ui.user_id
+                     LEFT JOIN comments parent_c ON c2.parent_id = parent_c.id
+                     LEFT JOIN user_info parent_ui ON parent_c.user_id = parent_ui.user_id
             WHERE c2.status = 0
         )
         SELECT * FROM comment_tree ORDER BY level, comment_id
@@ -161,7 +179,7 @@
         insert into comments
             (post_id, user_id, parent_id, create_time, type)
         values
-        (#{contentId}, #{userId}, #{targetCommentId}, now(), #{type})
+        (#{comments.postId}, #{comments.userId}, #{comments.parentId}, now(), #{comments.type})
     </insert>
 
     <insert id="addCommentContent">
@@ -173,7 +191,7 @@
     </insert>
 
     <select id="getSourceAuthor" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo"
-            parameterType="java.lang.Long" resultMap="sourceAuthorResultMap">
+            resultMap="sourceAuthorResultMap">
         select
             user_id,
             user_name,
@@ -185,12 +203,18 @@
                 select
                     author_id
                 from
-                    comments
-                where
-                    post_id = #{contentId}
-                    and
-                    type = #{type}
-            )
+                    <choose>
+                        <when test="type == 0">
+                            posts
+                        </when>
+                        <when test="type == 1">
+                            share
+                        </when>
+                    </choose>
+                    t
+                    where
+                    t.id = #{contentId}
+                    )
     </select>
     <select id="getCommentAuthor" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo"
             parameterType="java.lang.Long" resultMap="sourceAuthorResultMap">
@@ -235,6 +259,44 @@
         where
             t.id = #{contentId}
     </select>
+
+    <select id="selectUserById" resultType="com.cloudblog.common.pojo.Dto.UserSimpleInfo"
+            parameterType="java.lang.Long">
+        select
+            user_id,
+            user_name,
+            image as user_image
+        from
+            user_info
+        where
+            user_id = #{userId}
+    </select>
+
+    <!-- 查询特定评论的层级深度 -->
+    <select id="getCommentLevel" resultType="java.lang.Integer">
+        WITH RECURSIVE comment_level AS (
+            -- 基础查询：获取目标评论
+            SELECT
+                id,
+                parent_id,
+                1 as level
+            FROM comments
+            WHERE id = #{id} AND status = 0
+
+            UNION ALL
+
+            -- 递归查询：向上追溯父评论
+            SELECT
+                c.id,
+                c.parent_id,
+                cl.level + 1 as level
+            FROM comments c
+                     INNER JOIN comment_level cl ON c.id = cl.parent_id
+            WHERE c.status = 0 AND c.parent_id != 0
+            )
+        SELECT MAX(level) FROM comment_level
+    </select>
+
 
 
 </mapper>

@@ -1,8 +1,10 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
+import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
 import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.pojo.Vo.IndexTopicVo;
 import com.cloudblog.common.pojo.Vo.PublishPageTopicListVo;
@@ -71,4 +73,11 @@ public interface ShareMapper extends BaseMapper<Share> {
      */
     UserInfo getAuthorInfo(Long authorId);
 
+    /**
+     * 获取动态点赞用户信息
+     * @param shareId
+     * @param contentType
+     * @return
+     */
+    List<UserSimpleInfo> getShareLikeUserInfo(@Param("shareId") Long shareId, @Param("contentType") ContentType contentType);
 }

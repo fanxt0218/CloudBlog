@@ -36,5 +36,5 @@ public interface ShareService {
 
     AjaxResult publish(PublishSharePo po);
 
-    AjaxResult getShare(Long shareId);
+    AjaxResult getShare(Long shareId, Long userId);
 }

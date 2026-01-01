@@ -5,7 +5,7 @@ public enum PostStatus {
     DRAFT(0, "草稿"),
     REVIEWING(1, "待审核"),
     PUBLISHED(2, "已发布"),
-    DELETED(2, "已删除");
+    DELETED(3, "已删除");
 
     private final Integer code;
     private final String message;

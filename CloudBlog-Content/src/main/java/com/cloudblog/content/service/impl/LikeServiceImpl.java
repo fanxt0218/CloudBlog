@@ -31,6 +31,7 @@ public class LikeServiceImpl implements LikeService {
             likes.setCreateTime(LocalDateTime.now());
             likeMapper.insert(likes);
             // 通知
+            // 判断目标是否是自己
             notificationService.likeNotification(userId, targetId, status, type);
             // TODO 兴趣权重
         }
