@@ -42,4 +42,11 @@ public interface InterestMapper extends BaseMapper<Tag> {
      * @param po
      */
     void addUserInterest(AddInterestPo po);
+
+     /**
+     * 添加文章标签
+     * @param tagIds
+     * @param id
+     */
+    void addPostTag(@Param("tagIds") List<Long> tagIds, @Param("postId") Long id);
 }

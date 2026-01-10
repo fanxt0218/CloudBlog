@@ -3,6 +3,7 @@ package com.cloudblog.content.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.enums.ContentStoreType;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.enums.PostType;
@@ -10,6 +11,7 @@ import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.PostTag;
 import com.cloudblog.common.pojo.DoMain.Posts;
+import com.cloudblog.common.pojo.DoMain.PostsContent;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Po.*;
@@ -21,8 +23,10 @@ import com.cloudblog.content.service.InterestService;
 import com.cloudblog.content.service.PostService;
 import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -43,6 +48,9 @@ public class PostServiceImpl implements PostService {
     private InterestService interestService;
     @Autowired
     private ShareService shareService;
+
+    @Value("${file.resource.content.defaultCover}")
+    private String defaultCoverPath;
 
     @Override
     public IPage<UserLikeListVo> getUserLikeList(UserLikeListPo po) {
@@ -259,6 +267,86 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<IndexFocusArticleVo> getFocusPostList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId) {
         return postMapper.getFocusPostList(lastTargetId, lastCreateTime, i, userId);
+    }
+
+    @Transactional
+    @Override
+    public AjaxResult publish(PublishPostPo po) {
+        Long postId;
+        try {
+            // 验证参数
+            validatePostPublishParam(po);
+            // 插入文章内容表
+            PostsContent postContent = new PostsContent();
+            postContent.setContent(po.getContent());
+            postContent.setContentType(ContentStoreType.HTML.ordinal());
+            postMapper.insertContent(postContent);
+            // 插入文章表
+            Posts posts = new Posts();
+            posts.setAuthorId(po.getUserId());
+            posts.setTitle(po.getTitle());
+            posts.setIntroduction(po.getIntro());
+            posts.setImage(po.getCover());
+            posts.setStatus(PostStatus.REVIEWING.getCode());
+            posts.setContentId(postContent.getId());
+            posts.setType(po.getType());
+            posts.setPostType(po.getPostType());
+            posts.setIsVip(po.getVip());
+            posts.setCategoryId(po.getCategoryId());
+            posts.setCreateTime(LocalDateTime.now());
+            postMapper.insert(posts);
+            postId = posts.getId();
+            // 插入文章标签表
+            interestService.addPostTag(po.getTagIds(), posts.getId());
+            // TODO 加经验值
+        } catch (Exception e) {
+            log.error("文章发布失败：{}", e.getMessage());
+            throw new CloudBlogException("文章发布失败: "+e.getMessage(), CommonError.INTERNAL_ERROR);
+        }
+        return AjaxResult.success("发布成功", postId);
+    }
+
+    /**
+     * 验证发布文章参数
+     * @param po 发布文章参数
+     */
+    private void validatePostPublishParam(PublishPostPo po) {
+        String errMsg = "";
+        boolean goOn = true;
+        if (po.getUserId() == null) {
+            errMsg = "用户ID不能为空";
+            goOn = false;
+        }
+        if (goOn && (po.getTitle() == null || po.getTitle().isEmpty())) {
+            errMsg = "标题不能为空";
+            goOn = false;
+        }
+        if (goOn && (po.getContent() == null || po.getContent().isEmpty())) {
+            errMsg = "内容不能为空";
+            goOn = false;
+        }
+        if (goOn && (po.getCover() == null || po.getCover().isEmpty())) {
+            po.setCover("/profile" + defaultCoverPath + "/defaultCover.png");
+        }
+        if (goOn && (po.getTagIds() == null || po.getTagIds().isEmpty())) {
+            errMsg = "文章标签不能为空";
+            goOn = false;
+        }
+        if (goOn && po.getCategoryId() == null) {
+            errMsg = "文章分类不能为空";
+            goOn = false;
+        }
+        if (goOn && po.getType() == null) {
+            errMsg = "可见范围不能为空";
+            goOn = false;
+        }
+        if (goOn && po.getPostType() == null) {
+            errMsg = "文章类型不能为空";
+            goOn = false;
+        }
+        if (!goOn) {
+            CloudBlogException.cast(errMsg);
+        }
     }
 
     /**

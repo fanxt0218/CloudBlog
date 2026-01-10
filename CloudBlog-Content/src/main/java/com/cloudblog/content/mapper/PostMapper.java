@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.PostTag;
 import com.cloudblog.common.pojo.DoMain.Posts;
+import com.cloudblog.common.pojo.DoMain.PostsContent;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Vo.*;
 import jakarta.annotation.security.PermitAll;
@@ -145,4 +146,10 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @return
      */
     List<IndexFocusArticleVo> getFocusPostList(@Param("lastTargetId") Long lastTargetId, @Param("lastCreateTime") LocalDateTime lastCreateTime, @Param("size") int i, @Param("userId") Long userId);
+
+    /**
+     * 添加文章内容
+     * @param postContent
+     */
+    Long insertContent(@Param("po") PostsContent postContent);
 }

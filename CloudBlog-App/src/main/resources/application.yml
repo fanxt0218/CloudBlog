@@ -7,6 +7,7 @@ file:
     path: D:/cloud_blog/upload
     content:
       avatar: /avatar
+      defaultCover: /system/create/defaultCover
 
 spring:
   profiles:

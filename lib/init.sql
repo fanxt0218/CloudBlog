@@ -173,7 +173,7 @@ create table posts (
     image varchar(255) comment '封面',
     status tinyint default 0 comment '状态,0:草稿 1:待审核 2:已发布 3:已删除',
     content_id bigint comment '内容id',
-    type int default 0 comment '类型(扩展)',
+    type int default 0 comment '可见范围,0:公开 1:自己可见 2:粉丝可见',
     post_type tinyint default 0 comment '文章类型(0:普通文章/博客 1:新闻/资讯)',
     is_vip tinyint default 0 comment '是否会员可见,0:否 1:是',
     category_id int comment '分类id',

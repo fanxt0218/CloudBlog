@@ -351,4 +351,9 @@
         values (#{postId}, #{userId}, 0, now())
     </insert>
 
+    <insert id="insertContent" parameterType="com.cloudblog.common.pojo.DoMain.PostsContent" useGeneratedKeys="true" keyProperty="id">
+        insert into posts_content (content_type, content)
+            values (#{po.contentType}, #{po.content})
+    </insert>
+
 </mapper>

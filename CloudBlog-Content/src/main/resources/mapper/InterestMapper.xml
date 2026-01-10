@@ -46,4 +46,11 @@
     <insert id="addUserInterest" parameterType="com.cloudblog.common.pojo.Po.AddInterestPo">
         insert into user_interest (user_id, tag_id, create_time) values (#{userId}, #{tagId}, now())
     </insert>
+
+    <insert id="addPostTag">
+        insert into post_tag (post_id, tag_id, create_time) values
+        <foreach item="tagId" collection="tagIds" separator=",">
+            (#{postId}, #{tagId}, now())
+        </foreach>
+    </insert>
 </mapper>

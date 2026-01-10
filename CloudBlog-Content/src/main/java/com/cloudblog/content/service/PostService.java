@@ -67,4 +67,11 @@ public interface PostService {
      * @return
      */
     List<IndexFocusArticleVo> getFocusPostList(Long lastTargetId, LocalDateTime lastCreateTime, int i, Long userId);
+
+    /**
+     * 发布文章
+     * @param po
+     * @return
+     */
+    AjaxResult publish(PublishPostPo po);
 }

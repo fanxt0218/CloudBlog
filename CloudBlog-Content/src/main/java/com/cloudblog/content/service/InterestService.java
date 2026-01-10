@@ -37,4 +37,11 @@ public interface InterestService {
      * @param po
      */
     void addInterest(AddInterestPo po);
+
+    /**
+     * 添加文章标签
+     * @param tagIds
+     * @param id
+     */
+    void addPostTag(List<Long> tagIds, Long id);
 }

@@ -2,6 +2,7 @@ package com.cloudblog.content.controller;
 
 import com.cloudblog.common.pojo.Po.AddBrowseCountPo;
 import com.cloudblog.common.pojo.Po.PostPo;
+import com.cloudblog.common.pojo.Po.PublishPostPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,5 +34,13 @@ public class PostController {
     @PostMapping("/addBrowseCount")
     public AjaxResult addBrowseCount(@RequestBody AddBrowseCountPo po) {
         return postService.addBrowseCount(po);
+    }
+
+    /**
+     * 发布文章
+     */
+    @PostMapping("/publish")
+    public AjaxResult publish(@RequestBody PublishPostPo po) {
+        return postService.publish(po);
     }
 }

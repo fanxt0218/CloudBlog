@@ -74,4 +74,9 @@ public class InterestServiceImpl implements InterestService {
 
         interestMapper.addUserInterest(po);
     }
+
+    @Override
+    public void addPostTag(List<Long> tagIds, Long id) {
+        interestMapper.addPostTag(tagIds, id);
+    }
 }
