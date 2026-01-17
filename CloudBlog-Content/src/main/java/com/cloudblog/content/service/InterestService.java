@@ -1,5 +1,6 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Po.AddInterestPo;
 import com.cloudblog.common.pojo.Po.RemoveInterestPo;
@@ -44,4 +45,11 @@ public interface InterestService {
      * @param id
      */
     void addPostTag(List<Long> tagIds, Long id);
+
+    /**
+     * 获取文章标签信息
+     * @param postId
+     * @return
+     */
+    List<Tag> getPostTagInfo(Long postId);
 }

@@ -49,4 +49,11 @@ public interface InterestMapper extends BaseMapper<Tag> {
      * @param id
      */
     void addPostTag(@Param("tagIds") List<Long> tagIds, @Param("postId") Long id);
+
+     /**
+     * 获取文章标签信息
+     * @param postId
+     * @return
+     */
+    List<Tag> getPostTagInfo(Long postId);
 }

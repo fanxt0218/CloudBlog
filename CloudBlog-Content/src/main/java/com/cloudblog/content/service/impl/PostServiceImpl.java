@@ -9,11 +9,9 @@ import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
-import com.cloudblog.common.pojo.DoMain.PostTag;
-import com.cloudblog.common.pojo.DoMain.Posts;
-import com.cloudblog.common.pojo.DoMain.PostsContent;
-import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.PageResponse;
+import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
@@ -306,6 +304,68 @@ public class PostServiceImpl implements PostService {
         return AjaxResult.success("发布成功", postId);
     }
 
+    @Override
+    public AjaxResult getPost(Long postId, Long userId) {
+        if (postId == null) {
+            return AjaxResult.error("参数错误");
+        }
+        PostViewVo postViewVo = new PostViewVo();
+
+        // 获取文章
+        Posts posts = postMapper.selectById(postId);
+        if (posts == null) {
+            return AjaxResult.error("文章不存在");
+        }
+        BeanUtils.copyProperties(posts, postViewVo);
+        postViewVo.setPostId(postId);
+
+        // 查询分类信息
+        if (posts.getCategoryId() != null) {
+            Category category = postMapper.getPostCategoryInfo(posts.getCategoryId());
+            postViewVo.setCategoryName(category.getCategoryName());
+            postViewVo.setCategoryCover(category.getImage());
+        }
+
+        // 获取文章标签信息
+        List<Tag> tagList = interestService.getPostTagInfo(postId);
+        postViewVo.setTagList(
+                tagList.stream()
+                        .map(tag -> new PostViewVo.PostTagInfo(tag.getId(), tag.getTagName()))
+                        .toList()
+        );
+
+        // 文章内容
+        PostsContent content = postMapper.getPostContent(posts.getContentId());
+        if (content == null) {
+            return AjaxResult.error("文章内容不存在");
+        }
+        postViewVo.setStoreType(content.getContentType());
+        postViewVo.setContent(content.getContent());
+        // 统计文章数据
+        PostDataInfo postDataInfo = statisticPostData(postId);
+        postViewVo.setBrowseCount(postDataInfo.getBrowseCount());
+        postViewVo.setLikeCount(postDataInfo.getLikeCount());
+        postViewVo.setCollectCount(postDataInfo.getCollectCount());
+        postViewVo.setCommentCount(postDataInfo.getCommentCount());
+
+        // 判断是否点赞、收藏(登录的情况下)
+        if (userId != null) {
+            postViewVo.setLiked(postMapper.isPostLiked(postId, userId).compareTo(0L) > 0 ? 1 : 0);
+            postViewVo.setCollected(postMapper.isPostCollected(postId, userId).compareTo(0L) > 0 ? 1 : 0);
+        } else {
+            postViewVo.setLiked(0);
+            postViewVo.setCollected(0);
+        }
+
+        return AjaxResult.success(postViewVo);
+    }
+
+    @Override
+    public AjaxResult getBrowseTopPostList(Integer postType) {
+        List<PostWithBrowseCountVo> posts = postMapper.getBrowseTopPostList(postType);
+        return AjaxResult.success(posts);
+    }
+
     /**
      * 验证发布文章参数
      * @param po 发布文章参数
@@ -388,6 +448,10 @@ public class PostServiceImpl implements PostService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public PostDataInfo statisticPostData(Long postId) {
+        return postMapper.CalculatePostData(postId);
     }
 
 }

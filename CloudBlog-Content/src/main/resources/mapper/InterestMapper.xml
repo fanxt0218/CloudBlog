@@ -25,6 +25,17 @@
             description
         from tag_class
     </select>
+    <select id="getPostTagInfo" resultType="com.cloudblog.common.pojo.DoMain.Tag">
+        select
+            t.id as id,
+            t.tag_name as tag_name
+        from
+            post_tag pt
+            inner join
+            tag t on pt.tag_id = t.id
+        where
+            post_id = #{postId}
+    </select>
 
     <update id="upgradeUserInterest" parameterType="java.util.List">
         UPDATE user_interest

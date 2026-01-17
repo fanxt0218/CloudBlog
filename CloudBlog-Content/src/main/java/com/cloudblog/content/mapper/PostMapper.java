@@ -3,10 +3,8 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cloudblog.common.pojo.DoMain.PostTag;
-import com.cloudblog.common.pojo.DoMain.Posts;
-import com.cloudblog.common.pojo.DoMain.PostsContent;
-import com.cloudblog.common.pojo.DoMain.UserInterest;
+import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Vo.*;
 import jakarta.annotation.security.PermitAll;
 import org.apache.ibatis.annotations.Param;
@@ -152,4 +150,48 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @param postContent
      */
     Long insertContent(@Param("po") PostsContent postContent);
+
+    /**
+     *  获取文章分类信息
+     * @param categoryId
+     * @return
+     */
+    Category getPostCategoryInfo(Integer categoryId);
+
+    /**
+     * 获取文章内容
+     * @param contentId
+     * @return
+     */
+    PostsContent getPostContent(Long contentId);
+
+    /**
+     * 计算文章数据
+     * @param id
+     * @return
+     */
+    PostDataInfo CalculatePostData(Long id);
+
+    /**
+     * 判断文章是否被点赞
+     * @param postId
+     * @param userId
+     * @return
+     */
+    Long isPostLiked(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    /**
+     * 判断文章是否被收藏
+     * @param postId
+     * @param userId
+     * @return
+     */
+    Comparable<Long> isPostCollected(Long postId, Long userId);
+
+    /**
+     * 获取文章浏览量top10
+     * @param postType
+     * @return
+     */
+    List<PostWithBrowseCountVo> getBrowseTopPostList(Integer postType);
 }

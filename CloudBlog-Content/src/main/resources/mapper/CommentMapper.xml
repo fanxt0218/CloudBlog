@@ -249,7 +249,7 @@
         from
             <choose>
                 <when test="type == 0">
-                    post
+                    posts
                 </when>
                 <when test="type == 1">
                     share

@@ -74,4 +74,14 @@ public interface PostService {
      * @return
      */
     AjaxResult publish(PublishPostPo po);
+
+    /**
+     * 获取文章
+     * @param postId
+     * @param userId
+     * @return
+     */
+    AjaxResult getPost(Long postId, Long userId);
+
+    AjaxResult getBrowseTopPostList(Integer postType);
 }

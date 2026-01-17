@@ -43,4 +43,20 @@ public class PostController {
     public AjaxResult publish(@RequestBody PublishPostPo po) {
         return postService.publish(po);
     }
+
+    /**
+     * 浏览文章
+     */
+    @GetMapping("/getPost")
+    public AjaxResult getPost(@RequestParam Long postId, @RequestParam(required = false) Long userId) {
+        return postService.getPost(postId, userId);
+    }
+
+    /**
+     * 浏览量最高文章列表
+     */
+    @GetMapping("/getBrowseCountList")
+    public AjaxResult getBrowseTopPostList(@RequestParam Integer postType) {
+        return postService.getBrowseTopPostList(postType);
+    }
 }

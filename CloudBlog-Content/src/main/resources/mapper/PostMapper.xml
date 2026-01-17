@@ -346,6 +346,102 @@
         limit #{size}
     </select>
 
+    <select id="getPostCategoryInfo" resultType="com.cloudblog.common.pojo.DoMain.Category">
+        select
+            id,
+            category_name,
+            image
+        from
+            category
+        where
+            id = #{categoryId}
+    </select>
+
+    <select id="getPostContent" resultType="com.cloudblog.common.pojo.DoMain.PostsContent">
+        select
+            id,
+            content_type,
+            content
+        from
+            posts_content
+        where
+            id = #{contentId}
+    </select>
+
+    <select id="CalculatePostData" resultType="com.cloudblog.common.pojo.Dto.PostDataInfo">
+        SELECT
+            p.id AS post_id,
+            (SELECT COUNT(*) FROM likes WHERE target_id = p.id AND type = 0 AND status = 0) AS like_count,
+            (SELECT COUNT(*) FROM collect WHERE post_id = p.id AND status = 0) AS collect_count,
+            (SELECT COUNT(*) FROM browse WHERE post_id = p.id) AS browse_count,
+            (SELECT COUNT(*) FROM comments WHERE post_id = p.id AND type = 0 AND status = 0) AS comment_count
+        FROM
+            posts p
+        WHERE
+            p.id = #{postId}
+    </select>
+
+    <select id="isPostLiked" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            likes
+        where
+            target_id = #{postId}
+            and
+            user_id = #{userId}
+            and
+            type = 0
+            and
+            status = 0
+    </select>
+
+    <select id="isPostCollected" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            collect
+        where
+            post_id = #{postId}
+            and
+            user_id = #{userId}
+            and
+            status = 0
+    </select>
+
+    <select id="getBrowseTopPostList" resultType="com.cloudblog.common.pojo.Vo.PostWithBrowseCountVo">
+        select
+            p.id as id,
+            p.title as title,
+            p.introduction as introduction,
+            p.image as image,
+            p.status as status,
+            p.content_id as content_id,
+            p.type as type,
+            p.post_type as post_type,
+            p.is_vip as is_vip,
+            p.category_id as category_id,
+            p.create_time as create_time,
+            p.update_time as update_time,
+            count(b.post_id) as browse_count
+        from
+            posts p
+                left join
+            browse b
+            on p.id = b.post_id and b.type = 0
+        where
+            p.type = 0
+          and
+            p.post_type = #{postType}
+          and
+            p.status = 2
+        group by
+            p.id
+        order by
+            count(b.post_id) desc
+            limit 10
+    </select>
+
     <insert id="addPostBrowseCount">
         insert into browse(post_id, user_id, type, create_time)
         values (#{postId}, #{userId}, 0, now())
