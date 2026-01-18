@@ -75,6 +75,14 @@
         <result property="postType" column="post_type"/>
     </resultMap>
 
+    <update id="updateContent">
+        update
+            posts_content
+        set content = #{po.content},
+            content_type= #{po.contentType}
+        where id = #{po.id}
+    </update>
+
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
         select p.id as id, title, image, is_vip, td.create_time as create_time, td.status as status from
             (select target_id, create_time, status from likes

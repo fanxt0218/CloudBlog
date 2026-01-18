@@ -59,4 +59,20 @@ public class PostController {
     public AjaxResult getBrowseTopPostList(@RequestParam Integer postType) {
         return postService.getBrowseTopPostList(postType);
     }
+
+    /**
+     * 保存草稿
+     */
+    @PostMapping("/saveDraft")
+    public AjaxResult saveDraft(@RequestBody PublishPostPo po) {
+        return postService.saveDraft(po);
+    }
+
+    /**
+     * 查看草稿列表
+     */
+    @GetMapping("/getDraftList")
+    public AjaxResult getDraftList(@RequestParam Long userId) {
+        return postService.getUserDraftList(userId);
+    }
 }

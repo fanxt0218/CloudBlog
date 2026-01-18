@@ -9,6 +9,8 @@ public class PublishPostPo {
 
     private Long userId;
 
+    private Long postId;
+
     private String title;
 
     private String content;

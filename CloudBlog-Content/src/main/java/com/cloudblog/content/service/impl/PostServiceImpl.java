@@ -1,6 +1,8 @@
 package com.cloudblog.content.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentStoreType;
@@ -274,6 +276,12 @@ public class PostServiceImpl implements PostService {
         try {
             // 验证参数
             validatePostPublishParam(po);
+            // 判断是否基于草稿发布
+            if (po.getPostId() != null && po.getPostId() > 0) {
+                // 执行更新
+                publishDraft(po);
+                return AjaxResult.success("发布成功");
+            }
             // 插入文章内容表
             PostsContent postContent = new PostsContent();
             postContent.setContent(po.getContent());
@@ -364,6 +372,94 @@ public class PostServiceImpl implements PostService {
     public AjaxResult getBrowseTopPostList(Integer postType) {
         List<PostWithBrowseCountVo> posts = postMapper.getBrowseTopPostList(postType);
         return AjaxResult.success(posts);
+    }
+
+    @Override
+    public AjaxResult saveDraft(PublishPostPo po) {
+        if (po.getPostId() != null && po.getPostId() > 0) {
+            // 更新草稿
+            PostsContent postContent = new PostsContent();
+            postContent.setId(po.getPostId());
+            postContent.setContent(po.getContent());
+            postContent.setContentType(ContentStoreType.HTML.ordinal());
+            postMapper.updateContent(postContent);
+
+            Posts posts = new Posts();
+            posts.setAuthorId(po.getUserId());
+            posts.setTitle(po.getTitle().isEmpty()? "无标题" : po.getTitle());
+            posts.setIntroduction(po.getIntro());
+            posts.setStatus(PostStatus.DRAFT.getCode());
+            posts.setContentId(postContent.getId());
+            posts.setUpdateTime(LocalDateTime.now());
+            postMapper.update(posts, new LambdaUpdateWrapper<Posts>().eq(Posts::getId, po.getPostId()));
+            Long postId = po.getPostId();
+            return AjaxResult.success("保存成功", postId);
+        }
+        // 插入文章内容表
+        PostsContent postContent = new PostsContent();
+        postContent.setContent(po.getContent());
+        postContent.setContentType(ContentStoreType.HTML.ordinal());
+        postMapper.insertContent(postContent);
+        // 插入文章表
+        Posts posts = new Posts();
+        posts.setAuthorId(po.getUserId());
+        posts.setTitle(po.getTitle().isEmpty()? "无标题" : po.getTitle());
+        posts.setIntroduction(po.getIntro());
+        posts.setStatus(PostStatus.DRAFT.getCode());
+        posts.setContentId(postContent.getId());
+        posts.setCreateTime(LocalDateTime.now());
+        postMapper.insert(posts);
+        Long postId = posts.getId();
+        return AjaxResult.success("保存成功", postId);
+    }
+
+    @Override
+    public AjaxResult getUserDraftList(Long userId) {
+        if (userId == null) {
+            return AjaxResult.error("参数错误");
+        }
+        List<Posts> posts = postMapper.selectList(new LambdaQueryWrapper<Posts>()
+                .eq(Posts::getAuthorId, userId)
+                .eq(Posts::getStatus, PostStatus.DRAFT.getCode())
+        );
+        List<DraftVo> res = posts.stream().map(p -> new DraftVo(p.getId(), p.getTitle(), p.getUpdateTime())).toList();
+        return AjaxResult.success(res);
+    }
+
+    /**
+     * 发布文章（基于草稿）
+     */
+    @Transactional
+    protected void publishDraft(PublishPostPo po) {
+        try {
+            // 获取草稿信息
+            Posts draft = postMapper.selectById(po.getPostId());
+            // 更新文章内容表
+            PostsContent postContent = new PostsContent();
+            postContent.setId(draft.getContentId());
+            postContent.setContent(po.getContent());
+            postContent.setContentType(ContentStoreType.HTML.ordinal());
+            postMapper.updateContent(postContent);
+            // 更新文章表
+            Posts posts = new Posts();
+            posts.setAuthorId(po.getUserId());
+            posts.setTitle(po.getTitle());
+            posts.setIntroduction(po.getIntro());
+            posts.setImage(po.getCover());
+            posts.setStatus(PostStatus.REVIEWING.getCode());
+            posts.setContentId(postContent.getId());
+            posts.setType(po.getType());
+            posts.setPostType(po.getPostType());
+            posts.setIsVip(po.getVip());
+            posts.setCategoryId(po.getCategoryId());
+            posts.setCreateTime(LocalDateTime.now());
+            postMapper.update(posts, new LambdaUpdateWrapper<Posts>().eq(Posts::getId, draft.getId()));
+            // 插入文章标签表
+            interestService.addPostTag(po.getTagIds(), po.getPostId());
+        } catch (Exception e) {
+            log.error("文章发布失败：{}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     /**

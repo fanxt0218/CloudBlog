@@ -84,4 +84,8 @@ public interface PostService {
     AjaxResult getPost(Long postId, Long userId);
 
     AjaxResult getBrowseTopPostList(Integer postType);
+
+    AjaxResult saveDraft(PublishPostPo po);
+
+    AjaxResult getUserDraftList(Long userId);
 }

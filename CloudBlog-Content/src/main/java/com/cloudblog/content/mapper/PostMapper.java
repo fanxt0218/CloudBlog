@@ -194,4 +194,10 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @return
      */
     List<PostWithBrowseCountVo> getBrowseTopPostList(Integer postType);
+
+    /**
+     * 更新文章内容
+     * @param postContent
+     */
+    void updateContent(@Param("po") PostsContent postContent);
 }
