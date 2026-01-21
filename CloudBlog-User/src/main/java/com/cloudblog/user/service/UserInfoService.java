@@ -26,7 +26,7 @@ public interface UserInfoService {
 
     AjaxResult getCategoryInfo(Long userId);
 
-    AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag);
+    AjaxResult getUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag);
 
     AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag);
 

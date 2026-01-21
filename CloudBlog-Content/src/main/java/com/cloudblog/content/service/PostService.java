@@ -88,4 +88,16 @@ public interface PostService {
     AjaxResult saveDraft(PublishPostPo po);
 
     AjaxResult getUserDraftList(Long userId);
+
+    /**
+     * 获取其他用户文章列表(他人用户主页)
+     * @param userId
+     * @param loginUserId
+     * @param cursor
+     * @param size
+     * @param sortBy
+     * @param tag
+     * @return
+     */
+    AjaxResult getOtherUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag);
 }

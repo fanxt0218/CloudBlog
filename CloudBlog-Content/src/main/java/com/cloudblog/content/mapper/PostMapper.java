@@ -200,4 +200,20 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @param postContent
      */
     void updateContent(@Param("po") PostsContent postContent);
+
+    /**
+     * 获取其他用户文章列表
+     * @param userId
+     * @param loginUserId
+     * @param lastId
+     * @param lastCreateTime
+     * @param i
+     * @return
+     */
+    List<UserPostVo> getOtherUserPostList(
+            @Param("userId") Long userId,
+            @Param("loginUserId") Long loginUserId,
+            @Param("lastId") Long lastId,
+            @Param("lastCreateTime") LocalDateTime lastCreateTime,
+            @Param("size") int i);
 }

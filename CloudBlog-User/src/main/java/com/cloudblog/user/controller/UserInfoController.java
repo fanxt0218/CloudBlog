@@ -60,11 +60,12 @@ public class UserInfoController {
     @GetMapping("/getUserPostList")
     public AjaxResult getUserPostList(
             @RequestParam Long userId,
+            @RequestParam(required = false) Long loginUserId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String tag) {
-        return userInfoService.getUserPostList(userId, cursor, size, sortBy, tag);
+        return userInfoService.getUserPostList(userId, loginUserId, cursor, size, sortBy, tag);
     }
 
     /**

@@ -212,8 +212,12 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public AjaxResult getUserPostList(Long userId, String cursor, Integer size, String sortBy, String tag) {
-        return postService.getUserPostList(userId, cursor, size, sortBy, tag);
+    public AjaxResult getUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag) {
+
+        return loginUserId == null ?
+                postService.getUserPostList(userId, cursor, size, sortBy, tag)
+                :
+                postService.getOtherUserPostList(userId, loginUserId, cursor, size, sortBy, tag);
     }
 
     @Override

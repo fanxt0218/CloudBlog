@@ -173,7 +173,7 @@
             WHERE status = 0
             GROUP BY post_id
         ) collect_count ON p.id = collect_count.post_id
-        WHERE p.author_id = #{userId} AND p.status = 2
+        WHERE p.author_id = #{userId} AND p.status = 2 (AND p.type = 0 OR p.type = 2)
         <if test="lastId != null and lastCreateTime != null">
             AND (
             p.create_time &lt; #{lastCreateTime}
@@ -229,7 +229,7 @@
         ) interest_score ON p.id = interest_score.post_id
         LEFT JOIN
             user_info ui ON p.author_id = ui.user_id
-        WHERE p.status = 2 and p.post_type = #{postType}
+        WHERE p.status = 2 and p.post_type = #{postType} and p.type = 0
         <if test="lastId != null and lastCreateTime != null">
             AND (
             (IFNULL(interest_score.total_weight, 0) &lt; #{lastInterestScore})
@@ -282,7 +282,7 @@
         <if test="tagId != null">
             INNER JOIN post_tag pt ON p.id = pt.post_id AND pt.tag_id = #{tagId}
         </if>
-        WHERE p.status = 2 and p.post_type = #{postType}
+        WHERE p.status = 2 and p.post_type = #{postType} and p.type = 0
         <if test="lastId != null and lastCreateTime != null">
             AND (
             p.create_time &lt; #{lastCreateTime}
@@ -343,7 +343,7 @@
         inner join user_focus uf
             on p.author_id = uf.focus_user_id
         where
-            p.status = 2 and uf.user_id = #{userId}
+            p.status = 2 and uf.user_id = #{userId} and (p.type = 0 or p.type = 2)
             <if test="lastTargetId != null and lastCreateTime != null">
                 and (
                 p.create_time &lt; #{lastCreateTime}
@@ -449,6 +449,54 @@
             count(b.post_id) desc
             limit 10
     </select>
+
+    <select id="getOtherUserPostList" resultType="com.cloudblog.common.pojo.Vo.UserPostVo" resultMap="UserPostResultMap">
+        SELECT
+        p.id AS id,
+        p.title AS title,
+        p.introduction AS introduction,
+        p.image AS image,
+        p.type AS type,
+        p.post_type AS post_type,
+        p.create_time AS create_time,
+        p.update_time AS update_time,
+        IFNULL(browse_count.browse_count, 0) AS browse_count,
+        IFNULL(like_count.like_count, 0) AS like_count,
+        IFNULL(collect_count.collect_count, 0) AS collect_count
+        FROM posts p
+        LEFT JOIN (
+        SELECT post_id, COUNT(*) AS browse_count
+        FROM browse
+        WHERE type = 0
+        GROUP BY post_id
+        ) browse_count ON p.id = browse_count.post_id
+        LEFT JOIN (
+        SELECT target_id AS post_id, COUNT(*) AS like_count
+        FROM likes
+        WHERE type = 0 AND status = 0
+        GROUP BY target_id
+        ) like_count ON p.id = like_count.post_id
+        LEFT JOIN (
+        SELECT post_id, COUNT(*) AS collect_count
+        FROM collect
+        WHERE status = 0
+        GROUP BY post_id
+        ) collect_count ON p.id = collect_count.post_id
+        LEFT JOIN user_info ui ON p.author_id = ui.user_id
+        LEFT JOIN user_focus uf ON p.author_id = uf.focus_user_id AND uf.user_id = #{loginUserId}
+        WHERE p.author_id = #{userId} AND p.status = 2 AND (p.type = 0 OR p.type = 2)
+        <!-- 如果是type=0的文章，需要确保当前登录用户已经关注了作者 -->
+        AND (p.type = 2 OR (p.type = 0 AND uf.focus_user_id IS NOT NULL))
+        <if test="lastId != null and lastCreateTime != null">
+            AND (
+            p.create_time &lt; #{lastCreateTime}
+            OR (p.create_time = #{lastCreateTime} AND p.id &lt; #{lastId})
+            )
+        </if>
+        ORDER BY p.create_time DESC, p.id DESC
+        LIMIT #{size}
+    </select>
+
 
     <insert id="addPostBrowseCount">
         insert into browse(post_id, user_id, type, create_time)

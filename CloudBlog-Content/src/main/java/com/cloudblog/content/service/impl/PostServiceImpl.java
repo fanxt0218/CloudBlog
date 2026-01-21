@@ -426,6 +426,63 @@ public class PostServiceImpl implements PostService {
         return AjaxResult.success(res);
     }
 
+    @Override
+    public AjaxResult getOtherUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag) {
+        try {
+            // 默认参数处理
+            size = (size == null || size <= 0) ? 10 : Math.min(size, 100); // 限制最大100条
+
+            // 解析游标
+            Map<String, Object> cursorMap = parseCursor(cursor);
+            Long lastId = null;
+            LocalDateTime lastCreateTime = null;
+
+            if (cursorMap != null) {
+                lastId = ((Number) cursorMap.get("id")).longValue();
+                Object createTimeObj = cursorMap.get("createTime");
+                if (createTimeObj != null) {
+                    if (createTimeObj instanceof String) {
+                        lastCreateTime = LocalDateTime.parse((String) createTimeObj);
+                    } else if (createTimeObj instanceof LocalDateTime) {
+                        lastCreateTime = (LocalDateTime) createTimeObj;
+                    }
+                }
+            }
+
+            // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
+            List<UserPostVo> posts = postMapper.getOtherUserPostList(userId, loginUserId, lastId, lastCreateTime, size + 1);
+
+            // 构建PageResponse返回结果
+            PageResponse<UserPostVo> response = new PageResponse<>();
+            response.setPageSize(size);
+
+            // 判断是否还有更多数据
+            boolean hasNext = posts.size() > size;
+            response.setHasNext(hasNext);
+
+            // 设置实际返回的数据列表
+            if (hasNext) {
+                // 移除多查的一个元素
+                response.setContent(posts.subList(0, size));
+                // 生成下一个游标
+                UserPostVo lastPost = posts.get(size - 1);
+                Posts post = new Posts();
+                BeanUtils.copyProperties(lastPost, post);
+                String nextCursor = generateCursor(post,null);
+                response.setNextCursor(nextCursor);
+                // 总元素数
+                Long totalCount = postMapper.getUserTotalCount(userId,PostType.POST.ordinal());
+                response.setTotalElements(totalCount);
+            } else {
+                response.setContent(posts);
+            }
+
+            return AjaxResult.success(response);
+        } catch (Exception e) {
+            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
+        }
+    }
+
     /**
      * 发布文章（基于草稿）
      */
