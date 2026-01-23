@@ -10,6 +10,8 @@ public class UserCollectListVo {
 
     private Long postId;
 
+    private Long authorId;
+
     private String title;
 
     private String image;

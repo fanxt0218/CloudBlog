@@ -4,6 +4,7 @@
 
     <resultMap id="UserLikeResultMap" type="com.cloudblog.common.pojo.Vo.UserLikeListVo">
         <id property="postId" column="id"/>
+        <result property="authorId" column="author_id"/>
         <result property="title" column="title"/>
         <result property="image" column="image"/>
         <result property="isVip" column="is_vip"/>
@@ -13,6 +14,7 @@
 
     <resultMap id="UserCollectResultMap" type="com.cloudblog.common.pojo.Vo.UserCollectListVo">
         <id property="postId" column="id"/>
+        <result property="authorId" column="author_id"/>
         <result property="title" column="title"/>
         <result property="image" column="image"/>
         <result property="isVip" column="is_vip"/>
@@ -22,6 +24,7 @@
 
     <resultMap id="UserBrowseResultMap" type="com.cloudblog.common.pojo.Vo.UserBrowseListVo">
         <id property="postId" column="id"/>
+        <result property="authorId" column="author_id"/>
         <result property="title" column="title"/>
         <result property="image" column="image"/>
         <result property="isVip" column="is_vip"/>
@@ -84,7 +87,7 @@
     </update>
 
     <select id="getUserLikeList" resultType="com.cloudblog.common.pojo.Vo.UserLikeListVo" resultMap="UserLikeResultMap">
-        select p.id as id, title, image, is_vip, td.create_time as create_time, td.status as status from
+        select p.id as id, p.author_id as author_id, title, image, is_vip, td.create_time as create_time, td.status as status from
             (select target_id, create_time, status from likes
                 <where>
                     type = #{type} and user_id = #{userId} and status = 0
@@ -99,6 +102,7 @@
     <select id="getUserCollectList" resultType="com.cloudblog.common.pojo.Vo.UserCollectListVo" resultMap="UserCollectResultMap">
         select
             p.id as id,
+            p.author_id as author_id,
             title,
             image,
             is_vip,
@@ -121,6 +125,7 @@
     <select id="getUserBrowseHistory" resultType="com.cloudblog.common.pojo.Vo.UserBrowseListVo" resultMap="UserBrowseResultMap">
         select
             id,
+            author_id,
             title,
             image,
             is_vip,
