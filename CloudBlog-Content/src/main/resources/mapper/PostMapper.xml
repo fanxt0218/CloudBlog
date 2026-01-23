@@ -119,7 +119,8 @@
     </select>
 
     <select id="getUserBrowseHistory" resultType="com.cloudblog.common.pojo.Vo.UserBrowseListVo" resultMap="UserBrowseResultMap">
-        select id,
+        select
+            id,
             title,
             image,
             is_vip,
@@ -173,7 +174,7 @@
             WHERE status = 0
             GROUP BY post_id
         ) collect_count ON p.id = collect_count.post_id
-        WHERE p.author_id = #{userId} AND p.status = 2 (AND p.type = 0 OR p.type = 2)
+        WHERE p.author_id = #{userId} AND p.status = 2
         <if test="lastId != null and lastCreateTime != null">
             AND (
             p.create_time &lt; #{lastCreateTime}

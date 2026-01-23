@@ -280,7 +280,7 @@ public class PostServiceImpl implements PostService {
             if (po.getPostId() != null && po.getPostId() > 0) {
                 // 执行更新
                 publishDraft(po);
-                return AjaxResult.success("发布成功");
+                return AjaxResult.success("发布成功", po.getPostId());
             }
             // 插入文章内容表
             PostsContent postContent = new PostsContent();
