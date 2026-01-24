@@ -77,6 +77,9 @@ public class InterestServiceImpl implements InterestService {
 
     @Override
     public void addPostTag(List<Long> tagIds, Long id) {
+        // 查询原有标签进行过滤
+        List<Tag> tags = interestMapper.getPostTagInfo(id);
+        tagIds.removeAll(tags.stream().map(Tag::getId).map(Long::valueOf).toList());
         interestMapper.addPostTag(tagIds, id);
     }
 

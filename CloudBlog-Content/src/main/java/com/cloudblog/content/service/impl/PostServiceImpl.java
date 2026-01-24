@@ -377,9 +377,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public AjaxResult saveDraft(PublishPostPo po) {
         if (po.getPostId() != null && po.getPostId() > 0) {
+            // 查询源文
+            Posts sourcePost = postMapper.selectById(po.getPostId());
             // 更新草稿
             PostsContent postContent = new PostsContent();
-            postContent.setId(po.getPostId());
+            postContent.setId(sourcePost.getContentId());
             postContent.setContent(po.getContent());
             postContent.setContentType(ContentStoreType.HTML.ordinal());
             postMapper.updateContent(postContent);

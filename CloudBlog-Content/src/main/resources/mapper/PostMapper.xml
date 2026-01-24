@@ -78,7 +78,7 @@
         <result property="postType" column="post_type"/>
     </resultMap>
 
-    <update id="updateContent">
+    <update id="updateContent" useGeneratedKeys="true" keyProperty="id">
         update
             posts_content
         set content = #{po.content},

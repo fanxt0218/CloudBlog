@@ -17,6 +17,10 @@ public class PostViewVo {
 
     private String title;
 
+    private String introduction;
+
+    private String image;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
