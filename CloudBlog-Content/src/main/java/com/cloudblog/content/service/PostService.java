@@ -7,7 +7,9 @@ import com.cloudblog.common.pojo.Vo.UserBrowseListVo;
 import com.cloudblog.common.pojo.Vo.UserCollectListVo;
 import com.cloudblog.common.pojo.Vo.UserLikeListVo;
 import com.cloudblog.common.result.AjaxResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -100,4 +102,6 @@ public interface PostService {
      * @return
      */
     AjaxResult getOtherUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag);
+
+    AjaxResult syncES() throws IOException, InterruptedException;
 }

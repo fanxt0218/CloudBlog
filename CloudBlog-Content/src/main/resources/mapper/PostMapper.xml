@@ -503,6 +503,27 @@
         LIMIT #{size}
     </select>
 
+    <select id="selectAllPostWithContent" resultType="com.cloudblog.common.pojo.Dto.ESPost">
+        select
+            p.id as id,
+            p.author_id as author_id,
+            p.title as title,
+            p.introduction as introduction,
+            pc.content as content,
+            p.status as status,
+            p.type as type,
+            p.post_type as post_type,
+            p.is_vip as is_vip,
+            p.category_id as category_id,
+            p.create_time as create_time,
+            p.update_time as update_time
+        from
+            posts p
+                left join
+            posts_content pc
+            on p.content_id = pc.id
+    </select>
+
 
     <insert id="addPostBrowseCount">
         insert into browse(post_id, user_id, type, create_time)

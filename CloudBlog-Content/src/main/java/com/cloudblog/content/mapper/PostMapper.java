@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Vo.*;
 import jakarta.annotation.security.PermitAll;
@@ -216,4 +217,10 @@ public interface PostMapper extends BaseMapper<Posts> {
             @Param("lastId") Long lastId,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i);
+
+    /**
+     * 获取所有文章列表
+     * @return
+     */
+    IPage<ESPost> selectAllPostWithContent(Page<ESPost> page);
 }

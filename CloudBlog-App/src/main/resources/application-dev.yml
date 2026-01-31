@@ -8,3 +8,7 @@ blog:
     base-url: https://ollama.com
     embedding:
       base-url: http://localhost:11434
+  es:
+    host: 192.168.19.129
+    port: 9200
+    protocol: http

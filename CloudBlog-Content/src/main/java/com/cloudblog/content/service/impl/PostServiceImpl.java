@@ -1,10 +1,10 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.config.ESConfig;
 import com.cloudblog.common.enums.ContentStoreType;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.PostStatus;
@@ -12,28 +12,45 @@ import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.ESUtil;
+import com.cloudblog.common.utils.HtmlUtil;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.content.service.InterestService;
 import com.cloudblog.content.service.PostService;
 import com.cloudblog.content.service.ShareService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +65,13 @@ public class PostServiceImpl implements PostService {
     private InterestService interestService;
     @Autowired
     private ShareService shareService;
+    @Autowired
+    private RestHighLevelClient esClient;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    @Qualifier("exportTaskExecutor")
+    private ThreadPoolTaskExecutor exportTaskExecutor;
 
     @Value("${file.resource.content.defaultCover}")
     private String defaultCoverPath;
@@ -305,6 +329,11 @@ public class PostServiceImpl implements PostService {
             // 插入文章标签表
             interestService.addPostTag(po.getTagIds(), posts.getId());
             // TODO 加经验值
+            // 同步ES
+            ESPost esPost = new ESPost();
+            BeanUtils.copyProperties(posts, esPost);
+            esPost.setContent(po.getContent());
+            updatePost(List.of(esPost));
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
             throw new CloudBlogException("文章发布失败: "+e.getMessage(), CommonError.INTERNAL_ERROR);
@@ -485,6 +514,82 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    @Override
+    public AjaxResult syncES() throws IOException, InterruptedException {
+        // 同步ES;
+        // 1. 参数设置
+        int pageSize = 50; // 每页大小
+        Long total = postMapper.selectCount(null);
+        long totalPages = (total + pageSize - 1) / pageSize; // 计算总页数
+
+        // 结果
+        StringBuffer processLog = new StringBuffer();
+
+        // 初始化线程间通信组件
+        // 有界队列，用于生产者和消费者之间传递数据
+        BlockingQueue<List<ESPost>> dataQueue = new LinkedBlockingQueue<>((int) totalPages);
+        // 计数器，用于等待所有数据查询任务完成
+        CountDownLatch countDownLatch = new CountDownLatch((int) totalPages);
+        Thread syncThread = new Thread(() -> {
+            try {
+                long handleCount = 0;
+                while (handleCount < totalPages) {
+                    BulkRequest bulkRequest = new BulkRequest();
+                    List<ESPost> docs = dataQueue.poll(2, TimeUnit.SECONDS);
+                    for (ESPost doc : docs) {
+                        IndexRequest request = new IndexRequest("posts_index")
+                                .id(doc.getId().toString())
+                                .source(objectMapper.writeValueAsString(doc), XContentType.JSON);
+                        bulkRequest.add(request);
+                    }
+
+                    BulkResponse response = esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+                    handleCount++;
+
+                    if (response.hasFailures()) {
+                        log.warn("批量同步部分失败：{}", response.buildFailureMessage());
+                        processLog.append("批量同步部分失败：").append(response.buildFailureMessage()).append("\n");
+                    } else {
+                        log.info("批次批量同步成功，共：{}", docs.size());
+                        processLog.append("批次批量同步成功，共：").append(docs.size()).append("\n");
+                    }
+                }
+            } catch (Exception e) {
+                log.error("数据同步出现错误", e);
+                processLog.append("数据同步出现错误").append(e.getMessage()).append("\n");
+            }
+        });
+
+        syncThread.start();
+
+        for (int pageNum = 1; pageNum <= totalPages; pageNum++) {
+            final int currentPage = pageNum;
+            exportTaskExecutor.execute(() -> {
+                try {
+                    int offset = (currentPage - 1) * pageSize;
+                    log.info("开始查询第 {} 页数据, offset: {}", currentPage, offset);
+                    Page<ESPost> page = new Page<>(currentPage, pageSize);
+                    List<ESPost> pageData = postMapper.selectAllPostWithContent(page).getRecords();
+                    // 处理正文
+                    // posts.forEach(post -> post.setContent(HtmlUtil.removeHtmlTag(post.getContent())));
+                    // 将查询到的数据放入队列
+                    dataQueue.put(pageData);
+                    log.info("第 {} 页数据查询完成，共 {} 条", currentPage, pageData.size());
+                } catch (Exception e) {
+                    log.error("查询第 {} 页数据时发生异常", currentPage, e);
+                } finally {
+                    // 无论成功与否，都需要计数减一
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        countDownLatch.await();
+        // 等待同步线程完成
+        syncThread.join();
+        return AjaxResult.success("同步完成", processLog.toString());
+    }
+
     /**
      * 发布文章（基于草稿）
      */
@@ -515,6 +620,11 @@ public class PostServiceImpl implements PostService {
             postMapper.update(posts, new LambdaUpdateWrapper<Posts>().eq(Posts::getId, draft.getId()));
             // 插入文章标签表
             interestService.addPostTag(po.getTagIds(), po.getPostId());
+            // 同步 ES
+            ESPost esPost = new ESPost();
+            BeanUtils.copyProperties(posts, esPost);
+            esPost.setContent(po.getContent());
+            updatePost(List.of(esPost));
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
             throw new RuntimeException(e);
@@ -608,5 +718,19 @@ public class PostServiceImpl implements PostService {
     public PostDataInfo statisticPostData(Long postId) {
         return postMapper.CalculatePostData(postId);
     }
+
+    /**
+     * 更新ES文章
+     */
+    public void updatePost(List<ESPost> posts) throws IOException {
+        for (ESPost post : posts) {
+            IndexRequest request = new IndexRequest("posts_index")
+                    .id(post.getId().toString())   // 用数据库ID做ES文档ID
+                    .source(objectMapper.writeValueAsString(post), XContentType.JSON);
+
+            esClient.index(request, RequestOptions.DEFAULT);
+        }
+    }
+
 
 }

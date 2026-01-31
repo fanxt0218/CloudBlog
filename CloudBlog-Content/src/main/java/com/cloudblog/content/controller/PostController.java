@@ -8,6 +8,8 @@ import com.cloudblog.content.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/content/post")
 public class PostController {
@@ -74,5 +76,13 @@ public class PostController {
     @GetMapping("/getDraftList")
     public AjaxResult getDraftList(@RequestParam Long userId) {
         return postService.getUserDraftList(userId);
+    }
+
+    /**
+     * 同步ES
+     */
+    @PostMapping("/syncES")
+    public AjaxResult syncES() throws IOException, InterruptedException {
+        return postService.syncES();
     }
 }
