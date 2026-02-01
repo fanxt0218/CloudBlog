@@ -507,6 +507,8 @@
         select
             p.id as id,
             p.author_id as author_id,
+            ui.user_name as author_name,
+            ui.exp as exp,
             p.title as title,
             p.introduction as introduction,
             pc.content as content,
@@ -516,12 +518,46 @@
             p.is_vip as is_vip,
             p.category_id as category_id,
             p.create_time as create_time,
-            p.update_time as update_time
+            p.update_time as update_time,
+            IFNULL(browse_count.browse_count, 0) AS view_count,
+            IFNULL(like_count.like_count, 0) AS like_count,
+            IFNULL(collect_count.collect_count, 0) AS collect_count,
+            COALESCE(comment_count.comment_count, 0) as comment_count
         from
             posts p
                 left join
             posts_content pc
-            on p.content_id = pc.id
+                on p.content_id = pc.id
+                left join
+            user_info ui
+                on p.author_id = ui.user_id
+                LEFT JOIN
+            (
+                SELECT post_id, COUNT(*) AS browse_count
+                FROM browse
+                WHERE type = 0
+                GROUP BY post_id
+            ) browse_count ON p.id = browse_count.post_id
+                LEFT JOIN (
+                SELECT target_id AS post_id, COUNT(*) AS like_count
+                FROM likes
+                WHERE type = 0 AND status = 0
+                GROUP BY target_id
+            ) like_count ON p.id = like_count.post_id
+                LEFT JOIN (
+                SELECT post_id, COUNT(*) AS collect_count
+                FROM collect
+                WHERE status = 0
+                GROUP BY post_id
+            ) collect_count ON p.id = collect_count.post_id
+                LEFT JOIN (
+                SELECT post_id AS post_id, COUNT(*) AS comment_count
+                FROM comments
+                WHERE type = 0 AND status = 0
+                GROUP BY post_id
+            ) comment_count ON p.id = comment_count.post_id
+        where
+            p.status = 2
     </select>
 
 

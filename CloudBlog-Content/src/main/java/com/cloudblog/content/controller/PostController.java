@@ -85,4 +85,21 @@ public class PostController {
     public AjaxResult syncES() throws IOException, InterruptedException {
         return postService.syncES();
     }
+
+
+    /**
+     * 搜索文章
+     */
+    @GetMapping("/search")
+    public AjaxResult search(
+            @RequestParam String searchKey,
+            @RequestParam(required = false) String publishTime,
+            @RequestParam(required = false) String level,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer isVipOnly,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String cursor
+            ) throws IOException {
+        return postService.search(searchKey, publishTime, level, sort, isVipOnly, size, cursor);
+    }
 }

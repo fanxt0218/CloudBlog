@@ -51,6 +51,7 @@ elasticsearch:
     host: ${blog.es.host}
     port: ${blog.es.port}
     protocol: ${blog.es.protocol}
+    index: ${blog.es.index}
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**.xml

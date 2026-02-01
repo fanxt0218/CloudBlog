@@ -17,6 +17,12 @@ public class ESPost {
 
     private Long authorId;
 
+    private Integer exp;
+
+    private Integer authorLevel;
+
+    private String authorName;
+
     private String title;
 
     private String introduction;
@@ -38,4 +44,12 @@ public class ESPost {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updateTime;
+
+    private Long viewCount;
+
+    private Long likeCount;
+
+    private Long commentCount;
+
+    private Long collectCount;
 }

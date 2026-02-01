@@ -1,0 +1,51 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "ik_analyzer": {
+          "type": "custom",
+          "tokenizer": "ik_max_word"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id":          { "type": "long" },
+      "authorId":    { "type": "long" },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "introduction": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "categoryId":  { "type": "integer" },
+      "status":      { "type": "integer" },
+      "type":        { "type": "integer" },
+      "postType":    { "type": "integer" },
+      "isVip":       { "type": "integer" },
+      "createTime":  { "type": "date" },
+      "updateTime":  { "type": "date" },
+      "viewCount": { "type": "long" },
+      "likeCount": { "type": "long" },
+      "commentCount": { "type": "long" },
+      "authorLevel": { "type": "integer" },
+      "authorName": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "keyword": { "type": "keyword" }
+        }
+      }
+    }
+  }
+}

@@ -104,4 +104,6 @@ public interface PostService {
     AjaxResult getOtherUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag);
 
     AjaxResult syncES() throws IOException, InterruptedException;
+
+    AjaxResult search(String searchKey, String publishTime, String level, String sort, Integer isVipOnly, Integer size, String cursor) throws IOException;
 }

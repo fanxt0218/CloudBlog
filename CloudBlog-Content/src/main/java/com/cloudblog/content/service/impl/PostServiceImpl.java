@@ -20,6 +20,7 @@ import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.ESUtil;
 import com.cloudblog.common.utils.HtmlUtil;
+import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.content.service.InterestService;
@@ -31,9 +32,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,6 +69,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -75,6 +95,8 @@ public class PostServiceImpl implements PostService {
 
     @Value("${file.resource.content.defaultCover}")
     private String defaultCoverPath;
+    @Value("${elasticsearch.server.index}")
+    private String indexName;
 
     @Override
     public IPage<UserLikeListVo> getUserLikeList(UserLikeListPo po) {
@@ -519,7 +541,7 @@ public class PostServiceImpl implements PostService {
         // 同步ES;
         // 1. 参数设置
         int pageSize = 50; // 每页大小
-        Long total = postMapper.selectCount(null);
+        Long total = postMapper.selectCount(new LambdaQueryWrapper<>(Posts.class).eq(Posts::getStatus, PostStatus.PUBLISHED.getCode()));
         long totalPages = (total + pageSize - 1) / pageSize; // 计算总页数
 
         // 结果
@@ -572,6 +594,10 @@ public class PostServiceImpl implements PostService {
                     List<ESPost> pageData = postMapper.selectAllPostWithContent(page).getRecords();
                     // 处理正文
                     // posts.forEach(post -> post.setContent(HtmlUtil.removeHtmlTag(post.getContent())));
+                    // 等级赋值
+                    pageData.forEach(post -> {
+                        post.setAuthorLevel(getUserLevel(post.getExp()));
+                    });
                     // 将查询到的数据放入队列
                     dataQueue.put(pageData);
                     log.info("第 {} 页数据查询完成，共 {} 条", currentPage, pageData.size());
@@ -588,6 +614,143 @@ public class PostServiceImpl implements PostService {
         // 等待同步线程完成
         syncThread.join();
         return AjaxResult.success("同步完成", processLog.toString());
+    }
+
+    @Override
+    public AjaxResult search(String searchKey, String publishTime, String level, String sort, Integer isVipOnly, Integer size, String cursor) throws IOException {
+        SearchRequest request = new SearchRequest(indexName);
+
+        SearchSourceBuilder source = new SearchSourceBuilder();
+
+        // ===== 查询条件 =====
+        BoolQueryBuilder bool = QueryBuilders.boolQuery();
+
+        // 关键词匹配（加权）
+        MultiMatchQueryBuilder mm = QueryBuilders.multiMatchQuery(searchKey)
+                .field("title", 5)
+                .field("introduction", 3)
+                .field("content", 1);
+
+        bool.must(mm);
+        bool.filter(QueryBuilders.termQuery("status", 2)); // 只查已发布
+
+        // 是否会员文章
+        if (isVipOnly != null && isVipOnly == 1) {
+            bool.filter(QueryBuilders.termQuery("isVip", 1));
+        }
+
+        // 处理发布时间
+        if (publishTime != null && !publishTime.isEmpty()) {
+            Map<String,String> timeRange = ESUtil.convertTimeRange(publishTime);
+            RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("createTime")
+                    .gte(timeRange.get("startTime"))
+                    .lte(timeRange.get("endTime"));
+            bool.filter(rangeQuery);
+        }
+
+        // 处理等级
+        if (level != null && !level.isEmpty()) {
+            Map<String, Integer> levelRange = ESUtil.convertLevel(level);
+            RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("authorLevel")
+                    .gte(levelRange.get("minLevel"));
+            bool.filter(rangeQuery);
+        }
+
+        source.query(bool);
+
+        // 处理排序
+        if (sort.equals("new")) {
+            source.sort("createTime", SortOrder.DESC);
+            source.sort("id", SortOrder.DESC); // 防止重复
+        } else if (sort.equals("hot")) {
+            ScriptSortBuilder hotSort = SortBuilders.scriptSort(
+                    new Script(
+                            "doc['viewCount'].value * 0.1 + " +
+                                    "doc['likeCount'].value * 0.3 + " +
+                                    "doc['commentCount'].value * 0.2 + " +
+                                    "doc['collectCount'].value * 0.2"
+                    ),
+                    ScriptSortBuilder.ScriptSortType.NUMBER
+            );
+            hotSort.order(SortOrder.DESC);
+            source.sort(hotSort);
+            source.sort("id", SortOrder.DESC);
+        } else {
+            FunctionScoreQueryBuilder fsq = QueryBuilders.functionScoreQuery(
+                    bool,
+                    new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{
+                            new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                                    ScoreFunctionBuilders.fieldValueFactorFunction("viewCount").factor(0.1f)
+                            ),
+                            new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                                    ScoreFunctionBuilders.fieldValueFactorFunction("likeCount").factor(0.3f)
+                            ),
+                            new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                                    ScoreFunctionBuilders.fieldValueFactorFunction("commentCount").factor(0.2f)
+                            ),
+                            new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                                    ScoreFunctionBuilders.gaussDecayFunction("createTime", "now", "7d", "0d", 0.5)
+                            )
+                    }
+            ).boostMode(CombineFunction.SUM);
+
+            source.query(fsq);
+
+            source.sort(SortBuilders.scoreSort().order(SortOrder.DESC));
+            source.sort("id", SortOrder.DESC);
+        }
+
+        // 处理分页
+        size = size == null || size <= 0 ? 10 : size;
+        source.size(size);
+
+        if (cursor != null && !cursor.isEmpty()) {
+            // 将字符串转为数组
+            String[] cursorArr = cursor.split(",");
+            source.searchAfter(cursorArr);
+        }
+
+        // 处理高亮
+        HighlightBuilder hb = new HighlightBuilder();
+        hb.field("title").field("introduction");
+        source.highlighter(hb);
+
+        request.source(source);
+
+        SearchResponse response = esClient.search(request, RequestOptions.DEFAULT);
+
+        SearchHit[] hits = response.getHits().getHits();
+        boolean hasNext = hits.length == size;
+
+        // 解析结果
+        PageResponse<ESPost> res = new PageResponse<>();
+        List<ESPost> resList = new ArrayList<>();
+        for (SearchHit hit : response.getHits().getHits()) {
+            ESPost esPost = objectMapper.convertValue(hit.getSourceAsMap(), ESPost.class);
+
+            // 处理高亮
+            Map<String, HighlightField> hf = hit.getHighlightFields();
+            if (hf.get("title") != null) {
+                esPost.setTitle(hf.get("title").fragments()[0].string());
+            }
+            if (hf.get("introduction") != null) {
+                esPost.setIntroduction(hf.get("introduction").fragments()[0].string());
+            }
+
+            resList.add(esPost);
+        }
+        res.setContent(resList);
+        res.setTotalElements(Long.parseLong(String.valueOf(hits.length)));
+        if (hasNext) {
+            res.setHasNext(true);
+            Object[] nextSearchAfter = hits[hits.length - 1].getSortValues();
+            res.setNextCursor(Arrays.toString(nextSearchAfter));
+        } else {
+            res.setHasNext(false);
+            res.setNextCursor(null);
+        }
+
+        return AjaxResult.success(res);
     }
 
     /**
@@ -732,5 +895,25 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-
+    /**
+     * 获取用户等级
+     * @param exp
+     * @return
+     */
+    private Integer getUserLevel(Integer exp) {
+        AtomicReference<Integer> level = new AtomicReference<>(1);
+        TreeMap<Integer, Integer> levelMap = ContentStartupConfig.Level_MAP;
+        AtomicBoolean isFound = new AtomicBoolean(false);
+        levelMap.forEach((singleLevel, expThreshold) -> {
+            if (isFound.get()) {
+                return;
+            }
+            if (exp < expThreshold) {
+                isFound.set(true);
+                return;
+            }
+            level.set(singleLevel);
+        });
+        return level.get();
+    }
 }
