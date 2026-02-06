@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.SearchMapper">
+
+    <select id="getUserSearchHistory" resultType="com.cloudblog.common.pojo.DoMain.UserSearchHistory">
+        select
+            *
+        from
+            user_search_history
+        where
+            user_id = #{userId}
+            and
+            is_deleted = 0
+    </select>
+
+    <insert id="addSearchRecord" keyProperty="id" useGeneratedKeys="true">
+        insert into user_search_history
+        (user_id, keyword, search_type, create_time)
+        values
+        (#{po.userId}, #{po.keyword},#{po.searchType}, #{po.createTime})
+    </insert>
+
+</mapper>

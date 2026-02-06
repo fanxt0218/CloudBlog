@@ -29,6 +29,7 @@ import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -64,6 +65,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -659,10 +661,10 @@ public class PostServiceImpl implements PostService {
         source.query(bool);
 
         // 处理排序
-        if (sort.equals("new")) {
+        if (sort != null && sort.equals("new")) {
             source.sort("createTime", SortOrder.DESC);
             source.sort("id", SortOrder.DESC); // 防止重复
-        } else if (sort.equals("hot")) {
+        } else if (sort != null && sort.equals("hot")) {
             ScriptSortBuilder hotSort = SortBuilders.scriptSort(
                     new Script(
                             "doc['viewCount'].value * 0.1 + " +
@@ -715,6 +717,9 @@ public class PostServiceImpl implements PostService {
         hb.field("title").field("introduction");
         source.highlighter(hb);
 
+        // ===== 统计总数 =====
+        source.trackTotalHits(true);
+
         request.source(source);
 
         SearchResponse response = esClient.search(request, RequestOptions.DEFAULT);
@@ -727,6 +732,23 @@ public class PostServiceImpl implements PostService {
         List<ESPost> resList = new ArrayList<>();
         for (SearchHit hit : response.getHits().getHits()) {
             ESPost esPost = objectMapper.convertValue(hit.getSourceAsMap(), ESPost.class);
+
+            // 处理时间格式 - 支持多种可能的格式
+            Object createTimeObj = esPost.getCreateTime();
+            if (createTimeObj != null) {
+                LocalDateTime parsedTime;
+                String timeStr = createTimeObj.toString();
+
+                if (timeStr.contains("T")) {
+                    // 如果包含 'T'，则认为是 ISO 格式
+                    parsedTime = LocalDateTime.parse(timeStr);
+                } else {
+                    // 否则是自定义格式 yyyy-MM-dd HH:mm:ss
+                    parsedTime = LocalDateTime.parse(timeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                esPost.setCreateTime(parsedTime);
+            }
 
             // 处理高亮
             Map<String, HighlightField> hf = hit.getHighlightFields();
@@ -748,6 +770,14 @@ public class PostServiceImpl implements PostService {
         } else {
             res.setHasNext(false);
             res.setNextCursor(null);
+        }
+
+        TotalHits totalHits = response.getHits().getTotalHits();
+        if (totalHits != null) {
+            res.setTotalElements(totalHits.value);
+            log.info("查询总数约为{}", totalHits.relation.name());
+        } else {
+            res.setTotalElements(0L);
         }
 
         return AjaxResult.success(res);
