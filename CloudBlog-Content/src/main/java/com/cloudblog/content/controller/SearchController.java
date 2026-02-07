@@ -1,6 +1,7 @@
 package com.cloudblog.content.controller;
 
 import com.cloudblog.common.pojo.DoMain.UserSearchHistory;
+import com.cloudblog.common.pojo.Po.DeleteSearchHistoryPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,22 @@ public class SearchController {
     @PostMapping("/addSearchRecord")
     public AjaxResult addSearchRecord(@RequestBody UserSearchHistory po) {
         return searchService.addSearchRecord(po);
+    }
+
+    /**
+     * 删除搜索记录
+     */
+    @PostMapping("/deleteSearchRecord")
+    public AjaxResult deleteSearchRecord(@RequestBody DeleteSearchHistoryPo po) {
+        return searchService.deleteSearchRecord(po);
+    }
+
+    /**
+     * 清空搜索记录
+     */
+    @PostMapping("/clearSearchRecord")
+    public AjaxResult clearSearchRecord(@RequestParam Long userId) {
+        return searchService.clearUserSearchRecord(userId);
     }
 
     /**

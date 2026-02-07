@@ -426,6 +426,7 @@
     <select id="getBrowseTopPostList" resultType="com.cloudblog.common.pojo.Vo.PostWithBrowseCountVo">
         select
             p.id as id,
+            p.author_id as author_id,
             p.title as title,
             p.introduction as introduction,
             p.image as image,

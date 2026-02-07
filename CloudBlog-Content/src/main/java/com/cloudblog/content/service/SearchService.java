@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.DoMain.UserSearchHistory;
+import com.cloudblog.common.pojo.Po.DeleteSearchHistoryPo;
 import com.cloudblog.common.result.AjaxResult;
 
 public interface SearchService {
@@ -12,4 +13,8 @@ public interface SearchService {
     AjaxResult searchUser(Long userId, String keyword);
 
     AjaxResult getHotSearch();
+
+    AjaxResult deleteSearchRecord(DeleteSearchHistoryPo po);
+
+    AjaxResult clearUserSearchRecord(Long userId);
 }

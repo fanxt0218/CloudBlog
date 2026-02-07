@@ -11,6 +11,8 @@
             user_id = #{userId}
             and
             is_deleted = 0
+        order by
+            create_time desc
     </select>
 
     <insert id="addSearchRecord" keyProperty="id" useGeneratedKeys="true">
@@ -72,5 +74,25 @@
             browse_stats.view_count desc,
             ui.user_id desc
     </select>
+
+    <delete id="deleteSearchRecord">
+        update user_search_history
+        set
+            is_deleted = 1
+        where
+            id in (
+                <foreach item="item" collection="ids" separator=",">
+                    #{item}
+                </foreach>
+            )
+    </delete>
+
+    <update id="clearUserSearchRecord">
+        update user_search_history
+        set
+            is_deleted = 1
+        where
+            user_id = #{userId}
+    </update>
 
 </mapper>

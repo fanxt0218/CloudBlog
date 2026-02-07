@@ -28,4 +28,18 @@ public interface SearchMapper {
      * @return
      */
     List<SearchUserVo> searchUser(String keyword);
+
+    /**
+     * 删除用户搜索记录
+     * @param ids
+     * @return
+     */
+    int deleteSearchRecord(@Param("ids") List<Long> ids);
+
+    /**
+     * 清空用户搜索记录
+     * @param userId
+     * @return
+     */
+    int clearUserSearchRecord(Long userId);
 }

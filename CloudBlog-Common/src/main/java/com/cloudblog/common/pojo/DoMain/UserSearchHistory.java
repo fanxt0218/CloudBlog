@@ -1,5 +1,6 @@
 package com.cloudblog.common.pojo.DoMain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class UserSearchHistory {
 
     private Integer resultCount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
     private Integer isDeleted;
