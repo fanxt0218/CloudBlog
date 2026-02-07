@@ -1,8 +1,14 @@
 package com.cloudblog.common.pojo.Po;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FocusUserPo {
 
     private Long userId;

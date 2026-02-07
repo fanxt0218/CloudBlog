@@ -8,4 +8,8 @@ public interface SearchService {
     AjaxResult getSearchHistory(Long userId);
 
     AjaxResult addSearchRecord(UserSearchHistory po);
+
+    AjaxResult searchUser(Long userId, String keyword);
+
+    AjaxResult getHotSearch();
 }

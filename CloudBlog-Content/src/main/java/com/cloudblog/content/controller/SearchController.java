@@ -28,4 +28,22 @@ public class SearchController {
     public AjaxResult addSearchRecord(@RequestBody UserSearchHistory po) {
         return searchService.addSearchRecord(po);
     }
+
+    /**
+     * 搜索用户
+     */
+    @GetMapping("/searchUser")
+    public AjaxResult searchUser(
+            @RequestParam(required = false) Long userId,
+            @RequestParam String keyword) {
+        return searchService.searchUser(userId, keyword);
+    }
+
+    /**
+     * 获取热搜词（暂时假实现）
+     */
+    @GetMapping("/getHotSearch")
+    public AjaxResult getHotSearch() {
+        return searchService.getHotSearch();
+    }
 }

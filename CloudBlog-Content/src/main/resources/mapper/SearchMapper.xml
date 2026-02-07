@@ -20,4 +20,57 @@
         (#{po.userId}, #{po.keyword},#{po.searchType}, #{po.createTime})
     </insert>
 
+    <select id="searchUser" resultType="com.cloudblog.common.pojo.Vo.SearchUserVo">
+        select
+            ui.user_id as user_id,
+            ui.user_name as user_name,
+            ui.image as image,
+            ui.introduction as introduction,
+            IFNULL(post_stats.content_count, 0) as contentCount,
+            IFNULL(browse_stats.view_count, 0) as viewCount,
+            IFNULL(like_stats.liked_count, 0) as likedCount
+        from
+            user_info ui
+                left join (
+                -- 统计用户文章总数
+                select
+                    author_id,
+                    count(*) as content_count
+                from posts
+                where status = 2
+                group by author_id
+            ) post_stats on ui.user_id = post_stats.author_id
+                left join (
+                -- 统计用户文章总浏览量
+                select
+                    p.author_id,
+                    count(b.id) as view_count
+                from posts p
+                         left join browse b on p.id = b.post_id and b.type = 0
+                where p.status = 2
+                group by p.author_id
+            ) browse_stats on ui.user_id = browse_stats.author_id
+                left join (
+                -- 统计用户文章总被点赞数
+                select
+                    p.author_id,
+                    count(l.id) as liked_count
+                from posts p
+                         left join likes l on p.id = l.target_id and l.type = 0 and l.status = 0
+                where p.status = 2
+                group by p.author_id
+            ) like_stats on ui.user_id = like_stats.author_id
+        where
+            (
+                ui.user_name like concat('%', #{keyword}, '%')
+                    or
+                ui.introduction like concat('%', #{keyword}, '%')
+                )
+          and ui.user_id is not null
+        order by
+            post_stats.content_count desc,
+            browse_stats.view_count desc,
+            ui.user_id desc
+    </select>
+
 </mapper>
