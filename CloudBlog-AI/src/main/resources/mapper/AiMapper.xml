@@ -5,6 +5,7 @@
     <resultMap id="AiChatListResultMap" type="com.cloudblog.common.pojo.Dto.AiChatList">
         <id property="conversationId" column="conversation_id"/>
         <result property="createTime" column="create_time"/>
+        <result property="title" column="title"/>
     </resultMap>
 
     <resultMap id="AiChatDetailResultMap" type="com.cloudblog.common.pojo.Dto.AiChatDetail">
@@ -40,7 +41,8 @@
             parameterType="java.lang.Long" resultMap="AiChatListResultMap">
         select
             conversation_id,
-            create_time
+            create_time,
+            title
         from
             conversation
         where
@@ -64,6 +66,19 @@
 
     <select id="getChatByConversationId" resultType="com.cloudblog.common.pojo.DoMain.Conversation"
             parameterType="java.lang.String" resultMap="ConversationResultMap">
+        select
+            id,
+            user_id,
+            conversation_id,
+            create_time,
+            update_time
+        from
+            conversation
+        where
+            conversation_id = #{conversationId}
+    </select>
+
+    <select id="getConversationById" resultType="com.cloudblog.common.pojo.DoMain.Conversation">
         select
             id,
             user_id,
@@ -115,5 +130,11 @@
             now()
         )
     </insert>
+
+    <update id="setConversationTitle">
+        update conversation
+        set title = #{title}
+        where conversation_id = #{conversationId}
+    </update>
 
 </mapper>

@@ -1,4 +1,4 @@
-package com.cloudblog.common.utils;
+package com.cloudblog.common.utils.prompt;
 
 public class SystemPromptGenerator {
 

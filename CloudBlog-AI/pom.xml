@@ -71,6 +71,12 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version> <!-- 或最新版本 -->
         </dependency>
+        <!--  旧版excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.5</version>
+        </dependency>
 
         <!-- 分词 -->
 <!--        <dependency>-->

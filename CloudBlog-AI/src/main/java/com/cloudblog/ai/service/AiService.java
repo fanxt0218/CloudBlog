@@ -1,5 +1,7 @@
 package com.cloudblog.ai.service;
 
+import com.cloudblog.common.pojo.DoMain.Conversation;
+import com.cloudblog.common.pojo.Po.CreateAssistPo;
 import com.cloudblog.common.result.AjaxResult;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,4 +57,15 @@ public interface AiService {
      * @return
      */
     String uploadFile(Long userId, String conversationId, MultipartFile file);
+
+    Conversation getConversationById(String conversationId);
+
+    /**
+     * 设置会话标题
+     * @param conversationId
+     * @param res
+     */
+    void setConversationTitle(String conversationId, String res);
+
+    String processCreateAssistUserMessage(CreateAssistPo po);
 }

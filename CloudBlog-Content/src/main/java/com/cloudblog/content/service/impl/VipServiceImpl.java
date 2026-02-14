@@ -26,6 +26,12 @@ public class VipServiceImpl implements VipService {
             return AjaxResult.error("用户ID不能为空");
         }
         UserVipInfoVo userVipInfoVo = vipMapper.getUserVipInfo(userId);
+        if (userVipInfoVo == null) {
+            // 表示未开通过会员
+            userVipInfoVo = new UserVipInfoVo();
+            userVipInfoVo.setUserId(userId);
+            userVipInfoVo.setStatus(1); // 失效状态
+        }
         return AjaxResult.success(userVipInfoVo);
     }
 

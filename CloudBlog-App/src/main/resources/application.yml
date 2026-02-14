@@ -23,7 +23,7 @@ spring:
       base-url: ${blog.openai.base-url}
       chat:
         options:
-          model: qwen3-vl:235b
+          model: gemini-3-flash-preview
       #          model: deepseek-v3.1:671b
       embedding:
         base-url: ${blog.openai.embedding.base-url}

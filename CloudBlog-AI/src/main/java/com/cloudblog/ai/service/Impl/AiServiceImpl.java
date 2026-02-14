@@ -7,6 +7,7 @@ import com.cloudblog.common.pojo.DoMain.AiChat;
 import com.cloudblog.common.pojo.DoMain.Conversation;
 import com.cloudblog.common.pojo.Dto.AiChatDetail;
 import com.cloudblog.common.pojo.Dto.AiChatList;
+import com.cloudblog.common.pojo.Po.CreateAssistPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.UploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,5 +82,37 @@ public class AiServiceImpl implements AiService {
         }
         String uploadPath = "/file" + "/" + userId + "/" + conversationId;
         return UploadUtil.uploadFile(file,uploadPath);
+    }
+
+    @Override
+    public Conversation getConversationById(String conversationId) {
+        return aiMapper.getConversationById(conversationId);
+    }
+
+    @Override
+    public void setConversationTitle(String conversationId, String res) {
+        aiMapper.setConversationTitle(conversationId, res);
+    }
+
+    @Override
+    public String processCreateAssistUserMessage(CreateAssistPo po) {
+        if (null == po.getType()) {
+            return po.getMessage();
+        }
+        if (po.getType().equals("1")) {
+            // 大纲生成
+            return po.getMessage();
+        } else if (po.getType().equals("2")){
+            // 代码生成
+            return po.getMessage();
+        } else if (po.getType().equals("3")){
+            // 修改建议
+            String prefix = po.getMessage();
+            String end = "给出修改建议,以下是我的文章内容:\n"+
+                    "标题："+ po.getTitle()+ "\n"+
+                    "正文："+ po.getContent();
+            return prefix+end;
+        }
+        return po.getMessage();
     }
 }

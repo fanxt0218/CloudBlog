@@ -402,6 +402,7 @@ create table conversation (
     conversation_id varchar(36) comment '会话id',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    title varchar(255) comment '会话标题',
 
     unique index uk_user_friend (user_id, conversation_id),
     index idx_user_id (user_id),

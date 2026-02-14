@@ -10,6 +10,8 @@ public class AiChatList {
 
     private String conversationId;
 
+    private String title;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 }

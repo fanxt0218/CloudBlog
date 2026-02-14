@@ -1,8 +1,15 @@
 package com.cloudblog.ai.controller;
 
 import com.cloudblog.ai.service.AiService;
+import com.cloudblog.ai.util.FileUtil;
+import com.cloudblog.common.pojo.DoMain.Conversation;
+import com.cloudblog.common.pojo.Dto.AiChatDetail;
+import com.cloudblog.common.pojo.Dto.QRContent;
+import com.cloudblog.common.pojo.Po.CreateAssistPo;
 import com.cloudblog.common.result.AjaxResult;
-import com.cloudblog.common.utils.SystemPromptGenerator;
+import com.cloudblog.common.utils.prompt.CreateAssistPrompt;
+import com.cloudblog.common.utils.prompt.SummaryPrompt;
+import com.cloudblog.common.utils.prompt.SystemPromptGenerator;
 import com.cloudblog.common.utils.UploadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -13,7 +20,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -45,8 +50,9 @@ public class AIController {
     public AIController(ChatClient.Builder chatClient, VectorStore vectorStore, ChatMemory chatMemory) {
         this.chatClient = chatClient
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                        QuestionAnswerAdvisor.builder(vectorStore).build())
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+//                        QuestionAnswerAdvisor.builder(vectorStore).build()
+                )
                 .defaultSystem(SystemPromptGenerator.generateSystemPrompt()).build();
     }
 
@@ -64,7 +70,7 @@ public class AIController {
         StringBuilder AssistantMessageCollector = new StringBuilder();
 
         // 流式响应
-        Flux<String> originStream = processImagePrompt(message, UploadUtil.UPLOAD_PATH + filePath)  // 处理多模态输入
+        Flux<String> originStream = processImagePrompt(message, filePath)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content();
@@ -77,6 +83,10 @@ public class AIController {
                 .doOnError(error -> {
                     // 流处理过程中发生错误，记录日志
                     log.error("Error processing AI stream for conversation {}: {}", conversationId, error.getMessage());
+                })
+                .doFinally(signalType -> {
+                    // 设置会话标题
+//                    setConversationTitle(conversationId);
                 });
     }
 
@@ -87,7 +97,7 @@ public class AIController {
      */
     @GetMapping("/chatList")
     public AjaxResult chatList(@RequestParam Long userId) {
-        return AjaxResult.success(aiService.getChatList(userId));
+        return aiService.getChatList(userId);
     }
 
     /**
@@ -97,7 +107,7 @@ public class AIController {
      */
     @GetMapping("/chatDetail")
     public AjaxResult getChatDetail(@RequestParam String conversationId) {
-        return AjaxResult.success("上传成功", aiService.getChatDetail(conversationId));
+        return aiService.getChatDetail(conversationId);
     }
 
     /**
@@ -126,6 +136,51 @@ public class AIController {
     }
 
     /**
+     * 设置会话标题
+     */
+    @PostMapping("/setConversationTitle")
+    public AjaxResult setConversationTitle(@RequestParam String conversationId) {
+        // 判断该会话有没有标题
+        Conversation conversation = aiService.getConversationById(conversationId);
+        if (conversation != null && conversation.getTitle() == null) {
+            // 取第一条对话内容
+            ArrayList<AiChatDetail> his = (ArrayList) (aiService.getChatDetail(conversationId).get("data"));
+            QRContent qr = new QRContent();
+            for (AiChatDetail hi : his) {
+                if (qr.getQ() != null && hi.getType().equals("USER")) {
+                    break;
+                }
+                if (hi.getType().equals("ASSISTANT") && null == qr.getR()) {
+                    qr.setR(hi.getContent());
+                }
+                if (hi.getType().equals("USER") && null == qr.getQ()) {
+                    qr.setQ(hi.getContent());
+                }
+            }
+            // AI自动生成标题
+            log.info("要总结的内容："+ qr.toString());
+            String message = "我将提供一个包含问答或只有问题的内容，你需要根据这些内容总结出一段简短的总结，尽量控制在10个字之内\n" + qr.toString();
+            String prompt = new SummaryPrompt().getPrompt();
+            String res = tempChat(message, prompt, null);
+            aiService.setConversationTitle(conversationId, res);
+        }
+        return AjaxResult.success();
+    }
+
+    /**
+     * 进行AI创作辅助
+     */
+    @PostMapping("/createAssist")
+    public Flux<String> CreateAssist(@RequestBody CreateAssistPo po) {
+        return chatClient
+                .prompt(new CreateAssistPrompt().getPrompt())
+                .user(aiService.processCreateAssistUserMessage(po))
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, po.getCurrentConversation()))
+                .stream()
+                .content();
+    }
+
+    /**
      * 处理多模态输入
      * @param message
      * @param filePath
@@ -138,6 +193,7 @@ public class AIController {
 
         // 1. 如果有文件，提取其内容作为上下文
         if (filePath != null && !filePath.isEmpty()) {
+            filePath = UploadUtil.UPLOAD_PATH + filePath.replaceAll("/profile","");
             // 获取文件
             File file = new File(filePath);
             String mimeType = guessMimeType(filePath);
@@ -185,6 +241,7 @@ public class AIController {
             case "jpg", "jpeg" -> MediaType.IMAGE_JPEG_VALUE;
             case "gif" -> MediaType.IMAGE_GIF_VALUE;
             case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "xlsx", "xls" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             default -> MediaType.APPLICATION_OCTET_STREAM_VALUE;
         };
     }
@@ -223,11 +280,24 @@ public class AIController {
                      XWPFWordExtractor extractor = new XWPFWordExtractor(doc)) {
                     return extractor.getText();
                 }
+            } else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(mimeType)) { // .xlsx
+                return FileUtil.extractExcelText(inputStream);
             } else {
                 // 返回一个友好的提示，告知不支持此文件类型
                 return "不支持的文件类型: " + mimeType;
             }
         }
+    }
+
+    /**
+     * 进行临时AI对话
+     */
+    private String tempChat(String message, String prompt, String filePath) {
+        return chatClient
+                .prompt(prompt)
+                .user(message)
+                .call()
+                .content();
     }
 
 
