@@ -2,10 +2,13 @@ package com.cloudblog.ai.controller;
 
 import com.cloudblog.ai.service.AiService;
 import com.cloudblog.ai.util.FileUtil;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.Conversation;
 import com.cloudblog.common.pojo.Dto.AiChatDetail;
 import com.cloudblog.common.pojo.Dto.QRContent;
 import com.cloudblog.common.pojo.Po.CreateAssistPo;
+import com.cloudblog.common.pojo.Po.CreateSummaryPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.prompt.CreateAssistPrompt;
 import com.cloudblog.common.utils.prompt.SummaryPrompt;
@@ -165,6 +168,23 @@ public class AIController {
             aiService.setConversationTitle(conversationId, res);
         }
         return AjaxResult.success();
+    }
+
+    /**
+     * 总结摘要
+     */
+    @PostMapping("/summary")
+    public AjaxResult summary(@RequestBody CreateSummaryPo po) {
+        String message = "这是一篇文章，根据其中的标题和内容进行总结，要求语义简洁明了，旨在帮助读者快速了解文章要点，字数控制在255字以内/\n" + po.getContent();
+        String prompt = new SummaryPrompt().addRule("你本次的工作是帮助用户进行文章摘要").getPrompt();
+        String res = "";
+        try {
+            res = tempChat(message, prompt, null);
+        } catch (Exception e) {
+            log.error("总结失败,{}", e.getMessage());
+            CloudBlogException.cast(e.getMessage() , CommonError.INTERNAL_ERROR);
+        }
+        return AjaxResult.success("总结完成",res);
     }
 
     /**

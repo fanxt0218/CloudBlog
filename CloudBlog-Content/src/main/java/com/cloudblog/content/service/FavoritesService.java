@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.DoMain.Favorites;
+import com.cloudblog.common.pojo.Po.CreateNewFavoritesPo;
 import com.cloudblog.common.result.AjaxResult;
 
 public interface FavoritesService {
@@ -16,4 +17,8 @@ public interface FavoritesService {
     Favorites getUserDefaultFavorites(Long userId);
 
     AjaxResult collecting(Long userId, Long postId, Integer status, Integer favoriteId);
+
+    AjaxResult newFavorites(CreateNewFavoritesPo po);
+
+    AjaxResult getTargetHasCollectedFavorites(Long userId, Long postId);
 }

@@ -3,6 +3,7 @@ package com.cloudblog.content.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cloudblog.common.pojo.DoMain.Collect;
 import com.cloudblog.common.pojo.DoMain.Favorites;
+import com.cloudblog.common.pojo.Po.CreateNewFavoritesPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FavoritesMapper;
 import com.cloudblog.content.service.FavoritesService;
@@ -51,7 +52,7 @@ public class FavoritesServiceImpl implements FavoritesService {
     @Override
     public AjaxResult collecting(Long userId, Long postId, Integer status, Integer favoriteId) {
         if (status == 1) {
-            favoritesMapper.collecting(userId, postId, status);
+            favoritesMapper.collecting(userId, postId, status, favoriteId);
         } else {
             // 收藏
             Collect collect = new Collect();
@@ -71,5 +72,41 @@ public class FavoritesServiceImpl implements FavoritesService {
             // TODO 兴趣权重
         }
         return AjaxResult.success("操作成功");
+    }
+
+    @Override
+    public AjaxResult newFavorites(CreateNewFavoritesPo po) {
+        if (po.getUserId() == null) {
+            return AjaxResult.warn("用户ID不能为空");
+        }
+        if (po.getName() == null) {
+            return AjaxResult.warn("收藏夹名称不能为空");
+        }
+        // 检查现在有几个收藏夹
+        // TODO 后面可能会有收藏夹状态，要根据状态过滤
+        int count = Math.toIntExact(favoritesMapper.selectCount(new LambdaQueryWrapper<Favorites>().eq(Favorites::getUserId, po.getUserId())));
+
+        if (count >= 5) {
+            return AjaxResult.warn("最多只能拥有5个收藏夹");
+        }
+
+        // 创建收藏夹
+        Favorites favorites = new Favorites();
+        favorites.setUserId(po.getUserId());
+        favorites.setDescription(po.getDescription());
+        favorites.setFavoritesName(po.getName());
+        favorites.setCreateTime(LocalDateTime.now());
+        favoritesMapper.insert(favorites);
+        return AjaxResult.success("创建成功", favorites);
+    }
+
+    @Override
+    public AjaxResult getTargetHasCollectedFavorites(Long userId, Long postId) {
+        if (userId == null || postId == null) {
+            return AjaxResult.warn("用户ID或文章ID不能为空");
+        }
+
+        List<Integer> favoriteIds = favoritesMapper.getTargetHasCollectedFavorites(userId, postId);
+        return AjaxResult.success(favoriteIds);
     }
 }

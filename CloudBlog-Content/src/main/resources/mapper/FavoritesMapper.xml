@@ -13,6 +13,26 @@
     </insert>
 
     <update id="collecting">
-        update collect set status = #{status} where user_id = #{userId} and post_id = #{postId}
+        update
+            collect
+        set
+            status = #{status}
+        where
+            user_id = #{userId}
+            and
+            post_id = #{postId}
+            and
+            favorites_id = #{favoriteId}
     </update>
+
+    <select id="getTargetHasCollectedFavorites" resultType="java.lang.Integer">
+        select
+            favorites_id
+        from
+            collect
+        where
+            user_id = #{userId}
+            and post_id = #{postId}
+            and status = 0
+    </select>
 </mapper>
