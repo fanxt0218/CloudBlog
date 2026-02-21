@@ -20,6 +20,17 @@ public class GlobalExceptionHandler {
     private ErrorMapper errorMapper;
 
     /**
+     * 认证异常
+     */
+    @ResponseBody
+    @ExceptionHandler(UnauthorizedException.class)
+    public AjaxResult handleUnauthorizedException(UnauthorizedException e) {
+        log.error("UnauthorizedException: {}", e.getMessage());
+        errorMapper.insert(new Error(CommonError.AUTHORIZED_ERROR, e.getMessage(), Arrays.toString(e.getStackTrace())));
+        return AjaxResult.error(e.getCode(), e.getMessage());
+    }
+
+    /**
      * 自定义异常
      */
     @ResponseBody

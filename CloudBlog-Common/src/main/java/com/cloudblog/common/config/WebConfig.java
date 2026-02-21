@@ -1,5 +1,6 @@
 package com.cloudblog.common.config;
 
+import com.cloudblog.common.interceptor.UserInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -7,10 +8,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -53,5 +51,12 @@ public class WebConfig implements WebMvcConfigurer {
         MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
         jacksonConverter.setDefaultCharset(StandardCharsets.UTF_8);
         converters.add(jacksonConverter);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry){
+        registry.addInterceptor(new UserInterceptor());
+//                .addPathPatterns("/**")
+//                .excludePathPatterns("/user/login", "/user/register", "/user/logout");
     }
 }

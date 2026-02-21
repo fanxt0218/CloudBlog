@@ -58,6 +58,18 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+# rsa密钥生成命令 keytool -genkeypair -alias cloudblog -keyalg RSA -keypass cloudblog -keystore cloudblog.jks -storepass cloudblog
+# CN=fanxiaotong, OU=cloudblog, O=cloudblog, L=china, ST=hebei, C=cn
+cloudblog:
+  jwt:
+    location: classpath:cloudblog.jks
+    alias: ${blog.jwt.alias}
+    password: ${blog.jwt.password}
+    tokenTTL: ${blog.jwt.tokenTTL}
+  auth:
+    excludePaths:
+      - /user/**
+
 logging:
   level:
     com.cloudblog.user.mapper: debug

@@ -3,7 +3,8 @@ package com.cloudblog.common.exception;
 public enum CommonError {
 
     UNKNOWN_ERROR("未知错误"),
-    INTERNAL_ERROR("系统错误");
+    INTERNAL_ERROR("系统错误"),
+    AUTHORIZED_ERROR("认证错误");
 
     private String errMessage;
 

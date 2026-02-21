@@ -11,16 +11,19 @@ import com.cloudblog.common.pojo.Vo.LoginVo;
 import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.GenerateUserInfo;
+import com.cloudblog.common.utils.JwtTool;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.service.UserService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
@@ -32,6 +35,13 @@ public class UserServiceImpl implements UserService {
     private UserInfoMapper userInfoMapper;
     @Autowired
     private FavoritesService favoritesService;
+
+    // 根据bean名称注入
+    @Resource(name="commonJwtUtil")
+    private JwtTool jwtTool;
+
+    @Value("${cloudblog.jwt.tokenTTL}")
+    private Duration tokenTTL;
 
 
     @Transactional
@@ -164,10 +174,11 @@ public class UserServiceImpl implements UserService {
         // 更新登录时间
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.update(user, new LambdaUpdateWrapper<User>().eq(User::getId, user.getId()));
-        // TODO 完善鉴权，返回token
+        // 完善鉴权，返回token
+        String token = jwtTool.createToken(user.getId(), tokenTTL);
         LoginVo loginVo = LoginVo.builder()
                 .userId(user.getId())
-                .token("")
+                .token(token)
                 .build();
         return AjaxResult.success("登录成功", loginVo);
     }

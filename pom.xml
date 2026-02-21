@@ -18,6 +18,7 @@
         <module>CloudBlog-Common</module>
         <module>CloudBlog-Content</module>
         <module>CloudBlog-AI</module>
+        <module>CloudBlog-Auth</module>
     </modules>
     <properties>
         <java.version>17</java.version>
@@ -26,6 +27,7 @@
         <mybatis-plus.spring>3.5.14</mybatis-plus.spring>
         <lombok.version>1.18.26</lombok.version>
         <pagehelper.version>1.4.7</pagehelper.version>
+        <hutool.version>5.8.22</hutool.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -57,6 +59,18 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-parent</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

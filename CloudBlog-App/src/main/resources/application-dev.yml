@@ -13,3 +13,7 @@ blog:
     port: 9200
     protocol: http
     index: posts_index
+  jwt:
+    alias: cloudblog
+    password: cloudblog
+    tokenTTL: 30m
