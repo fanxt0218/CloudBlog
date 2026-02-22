@@ -188,7 +188,12 @@ public class PostServiceImpl implements PostService {
     public AjaxResult getIndexPostList(PostPo po, String cursor, Integer size, String sortBy, String tag) {
         // 判断是否有用户id（是否登录），以此去配置推荐算法
         boolean withInterest = true;
-        Object data = interestService.getInterestInfo(po.getUserId()).get("data");
+        Object data;
+        if (po.getUserId() == null) {
+            data = null;
+        } else {
+            data = interestService.getInterestInfo(po.getUserId()).get("data");
+        }
         // 无兴趣/选择了tag/未登录=默认推荐
         if (data == null || (po.getTagId() != null && po.getTagId() != 0) || po.getUserId() == null) {
             withInterest = false;

@@ -68,7 +68,21 @@ cloudblog:
     tokenTTL: ${blog.jwt.tokenTTL}
   auth:
     excludePaths:
+      - /profile/**     # 静态资源
       - /user/**
+      - /userInfo/detail/**
+      - /userInfo/homePage/**
+      - /content/category/**
+      - /content/checkCode/**
+      - /content/comment/**
+      - /content/focus/getFollowStatus
+      - /content/focus/getFocusAndFansList
+      - /content/Interest/**
+      - /content/level/**
+      - /content/post/**
+      - /search/**
+      - /content/share/**
+      - /content/vip/getUserVipInfo
 
 logging:
   level:

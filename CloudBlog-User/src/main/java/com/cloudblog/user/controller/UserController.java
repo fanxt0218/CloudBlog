@@ -38,5 +38,13 @@ public class UserController {
         return userService.login(po);
     }
 
+    /**
+     * 验证码登录
+     */
+    @PostMapping("/checkCodeLogin")
+    public AjaxResult checkCodeLogin(@RequestParam String target, @RequestParam String checkCode, @RequestParam String type) {
+        return userService.checkcodeLogin(target, checkCode, type);
+    }
+
 
 }

@@ -16,7 +16,7 @@ public class CheckCodeController {
      */
     @PostMapping("/generateCheckCode")
     public AjaxResult generateCheckCode(
-            @RequestParam Long userId,
+            @RequestParam(required = false) Long userId,
             @RequestParam String target,
             @RequestParam String type
             ) {
@@ -29,7 +29,7 @@ public class CheckCodeController {
      */
     @PostMapping("/verifyCheckCode")
     public AjaxResult checkCheckCode(
-            @RequestParam Long userId,
+            @RequestParam(required = false) Long userId,
             @RequestParam String target,
             @RequestParam String checkCode,
             @RequestParam String type

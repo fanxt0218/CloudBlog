@@ -285,7 +285,7 @@
         LEFT JOIN
             user_info ui
             ON p.author_id = ui.user_id
-        <if test="tagId != null">
+        <if test="tagId != null and tagId != 0">
             INNER JOIN post_tag pt ON p.id = pt.post_id AND pt.tag_id = #{tagId}
         </if>
         WHERE p.status = 2 and p.post_type = #{postType} and p.type = 0

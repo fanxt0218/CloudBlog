@@ -49,11 +49,22 @@ public class JwtTool {
         if (token == null) {
             throw new UnauthorizedException("未登录");
         }
-        log.info("用户token{}:", token);
+        // 2.去除Bearer前缀（如果存在）
+        String cleanToken = token.trim();
+        if (cleanToken.toLowerCase().startsWith("bearer ")) {
+            cleanToken = cleanToken.substring(7).trim();
+        }
+        // 3.基本格式验证 - JWT通常包含3个部分，用点分隔
+        String[] parts = cleanToken.split("\\.");
+        if (parts.length != 3) {
+            log.error("token格式不正确，期望3个部分但得到{}个部分: {}", parts.length, cleanToken);
+            throw new UnauthorizedException("无效的token格式");
+        }
+        log.info("解析用户token: {}", cleanToken);
         // 2.校验并解析jwt
         JWT jwt;
         try {
-            jwt = JWT.of(token).setSigner(jwtSigner);
+            jwt = JWT.of(cleanToken).setSigner(jwtSigner);
         } catch (Exception e) {
             log.error("无效的token", e);
             throw new UnauthorizedException("无效的token", e.getCause(), 401);

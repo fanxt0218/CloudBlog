@@ -10,6 +10,7 @@ import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.pojo.Vo.LoginVo;
 import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.CheckCodeUtil;
 import com.cloudblog.common.utils.GenerateUserInfo;
 import com.cloudblog.common.utils.JwtTool;
 import com.cloudblog.common.utils.PasswordUtil;
@@ -186,6 +187,30 @@ public class UserServiceImpl implements UserService {
     @Override
     public Long getUsersCount() {
         return userMapper.selectCount(null);
+    }
+
+    @Override
+    public AjaxResult checkcodeLogin(String target, String checkCode, String type) {
+        boolean b = CheckCodeUtil.checkCheckCode(target, checkCode, type);
+        if (b) {
+            // 查询用户信息
+            User user = userMapper.getUser(type, target);
+            if (user == null) {
+                return AjaxResult.warn("用户不存在");
+            }
+            // 更新登录时间
+            user.setLastLoginTime(LocalDateTime.now());
+            userMapper.update(user, new LambdaUpdateWrapper<User>().eq(User::getId, user.getId()));
+            // 完善鉴权，返回token
+            String token = jwtTool.createToken(user.getId(), tokenTTL);
+            LoginVo loginVo = LoginVo.builder()
+                    .userId(user.getId())
+                    .token(token)
+                    .build();
+            return AjaxResult.success("登录成功", loginVo);
+        } else {
+            return AjaxResult.warn("验证码错误");
+        }
     }
 
 

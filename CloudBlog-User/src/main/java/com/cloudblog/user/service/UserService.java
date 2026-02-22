@@ -59,4 +59,6 @@ public interface UserService {
      * @return
      */
     Long getUsersCount();
+
+    AjaxResult checkcodeLogin(String target, String checkCode, String type);
 }
