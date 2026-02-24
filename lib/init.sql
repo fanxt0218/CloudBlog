@@ -10,7 +10,7 @@ create table user (
     phone varchar(32) comment '手机号',
     email varchar(64) comment '邮箱',
     password varchar(255) comment '用户密码',
-    status tinyint default 0 comment '用户状态,0:正常 1：失效',
+    status tinyint default 0 comment '用户状态,0:正常 1：锁定 2：删除 3：失效',
     last_login_time datetime comment '最后登录时间',
     permission_id int comment '权限id',
     create_time datetime comment '创建时间',
@@ -437,3 +437,24 @@ CREATE TABLE user_search_history (
     INDEX idx_keyword (keyword),
     INDEX idx_time (create_time)
 ) COMMENT='用户搜索历史表';
+
+drop table if exists work_order;
+create table work_order (
+    id bigint primary key auto_increment comment '主键',
+    order_id char(32) comment '工单id',
+    user_id bigint comment '用户id',
+    target_id bigint comment '目标id',
+    target_type tinyint comment '目标类型,0:文章 1:动态 2:评论 3:账号 4:建议',
+    order_type tinyint comment '工单类型,枚举类型',
+    reason varchar(255) comment '理由/备注',
+    file_path varchar(255) comment '附件',
+    status tinyint default 0 comment '状态,0:待处理 1:处理中 2:处理完成',
+    create_time datetime comment '创建时间',
+    update_time datetime comment '更新时间',
+
+    index idx_report_id (order_id),
+    index idx_content_id (target_id),
+    index idx_type (target_type),
+    index idx_order_type (order_type),
+    index idx_status (status)
+) comment '工单表';
