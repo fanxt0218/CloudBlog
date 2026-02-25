@@ -1,5 +1,7 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.VipService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ public class VipController {
     /**
      * 开通会员
      */
+    @AutoAddExp(ExpSource.USER_OPEN_VIP)
     @PostMapping("/openVip")
     public AjaxResult openVip(@RequestParam Long userId) {
         return vipService.openVip(userId);

@@ -10,10 +10,7 @@ import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.pojo.Vo.LoginVo;
 import com.cloudblog.common.pojo.Vo.UserRegisterVo;
 import com.cloudblog.common.result.AjaxResult;
-import com.cloudblog.common.utils.CheckCodeUtil;
-import com.cloudblog.common.utils.GenerateUserInfo;
-import com.cloudblog.common.utils.JwtTool;
-import com.cloudblog.common.utils.PasswordUtil;
+import com.cloudblog.common.utils.*;
 import com.cloudblog.content.service.FavoritesService;
 import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
@@ -98,10 +95,11 @@ public class UserServiceImpl implements UserService {
         // 初始化默认收藏夹
         favoritesService.initDefaultFavorites(user.getId());
 
-        // TODO 完善鉴权，返回token
+        // 完善鉴权，返回token
+        String token = jwtTool.createToken(user.getId(), tokenTTL);
         UserRegisterVo result = UserRegisterVo.builder()
                 .id(user.getId())
-                .token("")
+                .token(token)
                 .build();
         return AjaxResult.success("注册成功", result);
     }
@@ -150,7 +148,7 @@ public class UserServiceImpl implements UserService {
         user.setId(userId);
         user.setStatus(UserStatus.DISABLED.getValue());
         userMapper.updateById(user);
-        // TODO 弹出登录
+        // 弹出登录,前端+redis实现
         return AjaxResult.success("注销成功");
     }
 
@@ -210,6 +208,16 @@ public class UserServiceImpl implements UserService {
             return AjaxResult.success("登录成功", loginVo);
         } else {
             return AjaxResult.warn("验证码错误");
+        }
+    }
+
+    @Override
+    public AjaxResult checkLogin() {
+        Long userId = UserContext.getUser();
+        if (userId != null) {
+            return AjaxResult.success("已登录",true);
+        } else {
+            return AjaxResult.success("未登录",false);
         }
     }
 

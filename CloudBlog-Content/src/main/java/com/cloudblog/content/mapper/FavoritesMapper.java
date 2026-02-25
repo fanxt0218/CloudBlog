@@ -3,6 +3,7 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Collect;
 import com.cloudblog.common.pojo.DoMain.Favorites;
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -41,4 +42,19 @@ public interface FavoritesMapper extends BaseMapper<Favorites> {
      * @return
      */
     List<Integer> getTargetHasCollectedFavorites(@Param("userId") Long userId, @Param("postId") Long postId);
+
+    /**
+     * 获取用户兴趣标签
+     * @param userId
+     * @return
+     */
+    List<UserInterest> getUserInterestTags(Long userId);
+
+    /**
+     * 获取文章标签
+     *
+     * @param postId
+     * @return
+     */
+    List<Integer> getPostTagByPostId(Long postId);
 }

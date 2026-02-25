@@ -1,5 +1,7 @@
 package com.cloudblog.user.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.LoginPo;
 import com.cloudblog.common.pojo.Po.UserRegisterPo;
 import com.cloudblog.common.result.AjaxResult;
@@ -46,5 +48,12 @@ public class UserController {
         return userService.checkcodeLogin(target, checkCode, type);
     }
 
+    /**
+     * 检测用户登录状态
+     */
+    @PostMapping("/checkLogin")
+    public AjaxResult checkLogin() {
+        return userService.checkLogin();
+    }
 
 }

@@ -2,7 +2,10 @@ package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudblog.common.pojo.DoMain.Likes;
+import com.cloudblog.common.pojo.DoMain.UserInterest;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface LikeMapper extends BaseMapper<Likes> {
 
@@ -33,4 +36,11 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @return
      */
     Long calculateLikeCount(@Param("contentId") Long contentId, @Param("type") Integer type);
+
+    /**
+     * 获取用户兴趣
+     * @param userId
+     * @return
+     */
+    List<UserInterest> getUserInterests(Long userId);
 }

@@ -21,4 +21,19 @@
             and type = #{type}
             and status = 0
     </select>
+
+    <select id="getUserInterests" resultType="com.cloudblog.common.pojo.DoMain.UserInterest"
+            parameterType="java.lang.Long">
+        select
+            id,
+            user_id,
+            tag_id,
+            weight,
+            create_time,
+            update_time
+        from
+            user_interest
+        where
+            user_id = #{userId}
+    </select>
 </mapper>

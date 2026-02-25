@@ -35,4 +35,27 @@
             and post_id = #{postId}
             and status = 0
     </select>
+
+    <select id="getUserInterestTags" resultType="com.cloudblog.common.pojo.DoMain.UserInterest" parameterType="java.lang.Long">
+        select
+            id,
+            user_id,
+            tag_id,
+            weight,
+            create_time,
+            update_time
+        from
+            user_interest
+        where
+            user_id = #{userId}
+    </select>
+
+    <select id="getPostTagByPostId" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        select
+            tag_id
+        from
+            post_tag
+        where
+            post_id = #{postId}
+    </select>
 </mapper>

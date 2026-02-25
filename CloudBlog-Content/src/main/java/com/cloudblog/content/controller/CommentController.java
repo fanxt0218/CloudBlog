@@ -1,5 +1,7 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.CommentPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.CommentService;
@@ -29,6 +31,7 @@ public class CommentController {
     /**
      * 评论
      */
+    @AutoAddExp(ExpSource.USER_PUBLISH_COMMENT)
     @PostMapping("/comment")
     public AjaxResult comment(@RequestBody CommentPo po) {
         return commentService.comment(po);

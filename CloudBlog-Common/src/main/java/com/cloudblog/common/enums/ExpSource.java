@@ -14,7 +14,9 @@ public enum ExpSource {
 
     USER_PUBLISH_COMMENT(6, "发布评论", 1),
 
-    USER_BROWSE_POST(7, "浏览文章", 1);
+    USER_BROWSE_POST(7, "浏览文章", 1),
+
+    USER_OPEN_VIP(8, "开通会员", 100);
 
     private final int code;
 

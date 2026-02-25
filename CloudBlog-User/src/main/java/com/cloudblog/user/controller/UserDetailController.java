@@ -1,5 +1,7 @@
 package com.cloudblog.user.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.user.service.UserInfoService;
@@ -27,6 +29,7 @@ public class UserDetailController {
     /**
      * 修改用户信息详情(个人资料)
      */
+    @AutoAddExp(ExpSource.USER_UPDATE_INFO)
     @PostMapping("/updatePersonalInfo")
     public AjaxResult updatePersonalInfo(@RequestBody UpdatePersonalInfoPo po) {
         return userInfoService.updatePersonalInfo(po);

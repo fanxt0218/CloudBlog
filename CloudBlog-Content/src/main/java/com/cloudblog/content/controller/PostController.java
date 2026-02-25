@@ -1,5 +1,7 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.AddBrowseCountPo;
 import com.cloudblog.common.pojo.Po.PostPo;
 import com.cloudblog.common.pojo.Po.PublishPostPo;
@@ -33,6 +35,7 @@ public class PostController {
     /**
      * 增加浏览
      */
+    @AutoAddExp(ExpSource.USER_BROWSE_POST)
     @PostMapping("/addBrowseCount")
     public AjaxResult addBrowseCount(@RequestBody AddBrowseCountPo po) {
         return postService.addBrowseCount(po);
@@ -41,6 +44,7 @@ public class PostController {
     /**
      * 发布文章
      */
+    @AutoAddExp(ExpSource.USER_PUBLISH_POST)
     @PostMapping("/publish")
     public AjaxResult publish(@RequestBody PublishPostPo po) {
         return postService.publish(po);

@@ -19,4 +19,11 @@ public interface LevelService {
      * @return
      */
     AjaxResult getUserLevelInfo(Long userId);
+
+    /**
+     * 添加经验值
+     * @param userId
+     * @param exp
+     */
+    void addExp(Long userId, int exp);
 }

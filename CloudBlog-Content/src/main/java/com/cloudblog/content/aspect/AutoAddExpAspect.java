@@ -2,6 +2,7 @@ package com.cloudblog.content.aspect;
 
 import com.cloudblog.common.annotation.AutoAddExp;
 import com.cloudblog.common.enums.ExpSource;
+import com.cloudblog.common.utils.UserContext;
 import com.cloudblog.content.service.LevelService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -36,8 +37,12 @@ public class AutoAddExpAspect {
         if (exp < 0) {
             exp = source.getExp();
         }
-        // TODO 从token中获取用户ID
-
+        // 从token中获取用户ID
+        Long userId = UserContext.getUser();
+        log.info("用户ID: {},增加经验{}", userId, exp);
+        if (userId != null && userId > 0 && exp > 0) {
+            levelService.addExp(userId, exp);
+        }
     }
 
 }

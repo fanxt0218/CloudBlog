@@ -24,4 +24,9 @@ public class LevelServiceImpl implements LevelService {
     public AjaxResult getUserLevelInfo(Long userId) {
         return AjaxResult.success(levelMapper.getUserLevelInfo(userId));
     }
+
+    @Override
+    public synchronized void addExp(Long userId, int exp) {
+        levelMapper.addExp(userId, exp);
+    }
 }

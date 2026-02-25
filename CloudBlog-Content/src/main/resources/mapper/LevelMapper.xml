@@ -24,4 +24,12 @@
         ORDER BY l.exp_threshold DESC
             LIMIT 1
     </select>
+
+    <update id="addExp">
+        update
+        user_info
+        set exp = exp + #{exp}
+        where user_id = #{userId}
+    </update>
+
 </mapper>

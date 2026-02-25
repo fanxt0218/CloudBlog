@@ -1,5 +1,7 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.annotation.AutoAddExp;
+import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ShareService;
@@ -44,6 +46,7 @@ public class ShareController {
     /**
      * 发布动态
      */
+    @AutoAddExp(ExpSource.USER_PUBLISH_SHARE)
     @PostMapping("/publish")
     public AjaxResult publish(@RequestBody PublishSharePo po) {
         return shareService.publish(po);
