@@ -297,6 +297,7 @@ create table favorites (
     description varchar(255) comment '收藏夹描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    status tinyint default 0 comment '收藏夹状态,0:正常 1:删除',
 
     index idx_user_id (user_id)
 )comment '收藏夹表';

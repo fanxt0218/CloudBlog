@@ -39,15 +39,32 @@ public class AuthGlobalFilter implements Filter, Ordered {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
+        String requestURI = httpRequest.getRequestURI();
+        String method = httpRequest.getMethod();
+
+        log.info("请求URI: {}", requestURI);
+        log.info("请求方法: {}", method);
+
         //1.获取request
-        //2.判断是否需要拦截
-        if (IsExclude(httpRequest.getRequestURI())){
-            //放行
-            chain.doFilter(servletRequest, servletResponse);
-            return;
-        }
         //3.获取token
         String token = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        //2.判断是否需要拦截
+        if (IsExclude(httpRequest.getRequestURI())){
+            //尝试解析token
+            Long userId = null;
+            try {
+                userId = jwtTool.parseToken(token);
+            } catch (UnauthorizedException e) {
+                // 说明用户没有有效token，未登录
+                //放行
+                chain.doFilter(servletRequest, servletResponse);
+                return;
+            }
+            // 解析成功，表示登录，传递用户信息
+            String userInfo = userId.toString();
+            httpRequest.setAttribute("user-info", userInfo);
+        }
+
 
         //4.解析token
         Long userId = null;
@@ -65,6 +82,7 @@ public class AuthGlobalFilter implements Filter, Ordered {
         //5.传递用户信息
         String userInfo = userId.toString();
         httpRequest.setAttribute("user-info", userInfo);
+        log.info("过滤器用户ID: {},用户信息: {}", userId, userInfo);
         //6.放行
         chain.doFilter(servletRequest, servletResponse);
     }

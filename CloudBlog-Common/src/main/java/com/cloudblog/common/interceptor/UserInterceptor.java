@@ -11,6 +11,7 @@ public class UserInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String userInfo = (String) request.getAttribute("user-info");
+        System.out.println("拦截器userInfo: " + userInfo);
         if (StrUtil.isNotBlank(userInfo)) {
             UserContext.setUser(Long.valueOf(userInfo));
         }

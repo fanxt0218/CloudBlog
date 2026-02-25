@@ -61,4 +61,6 @@ public interface UserService {
     Long getUsersCount();
 
     AjaxResult checkcodeLogin(String target, String checkCode, String type);
+
+    AjaxResult checkLogin();
 }
