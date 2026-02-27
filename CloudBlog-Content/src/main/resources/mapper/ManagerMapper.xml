@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.ManagerMapper">
+
+    <resultMap id="ContentReviewResultMap" type="com.cloudblog.common.pojo.Vo.ContentReviewVo">
+        <id property="contentId" column="content_id"/>
+        <result property="title" column="title"/>
+        <result property="authorId" column="author_id"/>
+        <result property="authorName" column="author_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="cover" column="cover"/>
+    </resultMap>
+
+    <select id="getContentReviewList" resultType="com.cloudblog.common.pojo.Vo.ContentReviewVo">
+        SELECT
+            content_id,
+            title,
+            type,
+            author_id,
+            author_name,
+            create_time,
+            cover
+        FROM (
+        <if test="type == 0">
+            -- 查询文章表
+            SELECT
+            p.id as content_id,
+            p.title as title,
+            0 as type,
+            p.author_id as author_id,
+            ui.user_name as author_name,
+            p.create_time as create_time,
+            p.image as cover
+            FROM posts p
+            LEFT JOIN user_info ui ON p.author_id = ui.user_id
+            WHERE p.status = 1
+            <if test="title != null and title != ''">
+                AND p.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="startTime != null">
+                AND p.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND p.create_time &lt;= #{endTime}
+            </if>
+            <if test="author != null and author != ''">
+                AND ui.user_name LIKE CONCAT('%', #{author}, '%')
+            </if>
+        </if>
+
+        <if test="type == 1">
+            -- 查询分享表
+            SELECT
+                s.id as content_id,
+                s.brief as title,
+                1 as type,
+                s.author_id as author_id,
+                ui.user_name as author_name,
+                s.create_time as create_time,
+                s.image as cover
+            FROM share s
+            LEFT JOIN user_info ui ON s.author_id = ui.user_id
+            WHERE s.status = 1
+            <if test="title != null and title != ''">
+                AND s.brief LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="startTime != null">
+                AND s.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND s.create_time &lt;= #{endTime}
+            </if>
+            <if test="author != null and author != ''">
+                AND ui.user_name LIKE CONCAT('%', #{author}, '%')
+            </if>
+        </if>
+
+        <if test="type == null">
+            -- 查询所有待审核内容(文章和分享)
+            SELECT
+                p.id as content_id,
+                p.title as title,
+                0 as type,
+                p.author_id as author_id,
+                ui.user_name as author_name,
+                p.create_time as create_time,
+                p.image as cover
+            FROM posts p
+            LEFT JOIN user_info ui ON p.author_id = ui.user_id
+            WHERE p.status = 1
+            <if test="title != null and title != ''">
+                AND (p.title LIKE CONCAT('%', #{title}, '%'))
+            </if>
+            <if test="startTime != null">
+                AND p.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND p.create_time &lt;= #{endTime}
+            </if>
+            <if test="author != null and author != ''">
+                AND ui.user_name LIKE CONCAT('%', #{author}, '%')
+            </if>
+
+            UNION ALL
+
+            SELECT
+                s.id as content_id,
+                s.brief as title,
+                1 as type,
+                s.author_id as author_id,
+                ui.user_name as author_name,
+                s.create_time as create_time,
+                s.image as cover
+            FROM share s
+            LEFT JOIN user_info ui ON s.author_id = ui.user_id
+            WHERE s.status = 1
+            <if test="title != null and title != ''">
+                AND (s.brief LIKE CONCAT('%', #{title}, '%'))
+            </if>
+            <if test="startTime != null">
+                AND s.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND s.create_time &lt;= #{endTime}
+            </if>
+            <if test="author != null and author != ''">
+                AND ui.user_name LIKE CONCAT('%', #{author}, '%')
+            </if>
+        </if>
+        ) AS combined_results
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="getContentStatus" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select
+            ststus
+        from
+            <if test="type = 0">
+                posts
+            </if>
+        <if test="type = 1">
+            share
+        </if>
+        where
+            id = #{id}
+    </select>
+
+    <update id="contentReview">
+        update
+        <if test="type = 0">
+            posts
+        </if>
+        <if test="type = 1">
+            share
+        </if>
+        set
+            status = #{status}
+        where
+            id = #{id}
+    </update>
+
+    <select id="getContentAuthorInfo" resultType="com.cloudblog.common.pojo.DoMain.UserInfo">
+        select
+            user_id,
+            user_name,
+            sex,
+            image,
+            introduction,
+            region,
+            birth_date,
+            profession,
+            is_vip,
+            exp,
+            create_time,
+            update_time
+        from
+            user_info
+        where
+            user_id = (
+                select
+                    author_id
+                from
+                    <if test="type = 0">
+                        posts
+                    </if>
+                    <if test="type = 1">
+                        share
+                    </if>
+                where
+                    id = #{id}
+                )
+    </select>
+
+    <select id="getContentInfo" resultType="com.cloudblog.common.pojo.Dto.PostAndShareInfo">
+        SELECT
+            id,
+            author_id,
+            intro,
+            create_time,
+            image,
+            status
+        FROM (
+                 SELECT
+                     id,
+                     author_id,
+                     title as intro,
+                     create_time,
+                     image,
+                     status
+                 FROM posts
+                 WHERE id = #{id} AND #{type} = 0
+
+                 UNION ALL
+
+                 SELECT
+                     id,
+                     author_id,
+                     brief as intro,
+                     create_time,
+                     image,
+                     status
+                 FROM share
+                 WHERE id = #{id} AND #{type} = 1
+             ) AS content_result
+    </select>
+
+</mapper>
