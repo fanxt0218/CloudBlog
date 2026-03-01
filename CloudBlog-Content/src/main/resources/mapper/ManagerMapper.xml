@@ -147,10 +147,10 @@
 
     <update id="contentReview">
         update
-        <if test="type = 0">
+        <if test="type == 0">
             posts
         </if>
-        <if test="type = 1">
+        <if test="type == 1">
             share
         </if>
         set
@@ -180,10 +180,10 @@
                 select
                     author_id
                 from
-                    <if test="type = 0">
+                    <if test="type == 0">
                         posts
                     </if>
-                    <if test="type = 1">
+                    <if test="type == 1">
                         share
                     </if>
                 where

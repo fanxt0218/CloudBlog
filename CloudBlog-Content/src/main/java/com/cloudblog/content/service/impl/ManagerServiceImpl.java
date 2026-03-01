@@ -79,7 +79,7 @@ public class ManagerServiceImpl implements ManagerService {
                 notification.setSenderId(1L);  // 管理账号id
                 notification.setType(NotificationType.CHAT.getValue());
 //                notification.setObjectType(type);
-                notification.setObjectType(NotificationType.CHAT.getValue());
+                notification.setObjectType(ContentType.TEXT.ordinal());
                 notification.setObjectId(id);
                 StringBuilder content = new StringBuilder("您的");
                 if (type == ContentType.POST.ordinal()) {
@@ -90,10 +90,10 @@ public class ManagerServiceImpl implements ManagerService {
                 content.append("《").append(contentInfo.getIntro()).append("》");
                 content.append("审核未通过");
                 if (po.getReason() != null && !po.getReason().isEmpty()) {
-                    content.append("，原因：").append(po.getReason());
+                    content.append("，原因：").append(po.getReason()).append("。");
                 }
                 if (type == ContentType.POST.ordinal()) {
-                    content.append("文章已存入您的草稿箱，修改后可重新发布");
+                    content.append("\n文章已存入您的草稿箱，修改后可重新发布");
                 }
                 notification.setContent(content.toString());
                 notification.setCreateTime(LocalDateTime.now());

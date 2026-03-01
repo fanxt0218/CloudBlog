@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
         // 完善鉴权，返回token
         String token = jwtTool.createToken(user.getId(), tokenTTL);
         UserRegisterVo result = UserRegisterVo.builder()
-                .id(user.getId())
+                .userId(user.getId())
                 .token(token)
                 .build();
         return AjaxResult.success("注册成功", result);

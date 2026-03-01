@@ -328,7 +328,8 @@
     </select>
 
     <select id="getUserTotalCount" resultType="java.lang.Long">
-        select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
+--         select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
+        select count(*) from posts where author_id = #{userId} and status = 2
     </select>
 
     <select id="getFocusPostList" resultType="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo" resultMap="IndexFocusArticleVoResultMap">
@@ -492,8 +493,8 @@
         LEFT JOIN user_info ui ON p.author_id = ui.user_id
         LEFT JOIN user_focus uf ON p.author_id = uf.focus_user_id AND uf.user_id = #{loginUserId}
         WHERE p.author_id = #{userId} AND p.status = 2 AND (p.type = 0 OR p.type = 2)
-        <!-- 如果是type=0的文章，需要确保当前登录用户已经关注了作者 -->
-        AND (p.type = 2 OR (p.type = 0 AND uf.focus_user_id IS NOT NULL))
+        <!-- 如果是type2的文章，需要确保当前登录用户已经关注了作者 -->
+        AND (p.type = 0 OR (p.type = 2 AND uf.focus_user_id IS NOT NULL))
         <if test="lastId != null and lastCreateTime != null">
             AND (
             p.create_time &lt; #{lastCreateTime}

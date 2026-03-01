@@ -4,6 +4,7 @@ import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -21,8 +22,8 @@ public class ContentReviewController {
     @GetMapping("/list")
     public AjaxResult ContentReviewList(
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) LocalDateTime startTime,
-            @RequestParam(required = false) LocalDateTime endTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime,
             @RequestParam(required = false) Integer type,
             @RequestParam(required = false) String author,
             @RequestParam(required = false) Integer pageNum,
