@@ -106,4 +106,6 @@ public interface PostService {
     AjaxResult syncES() throws IOException, InterruptedException;
 
     AjaxResult search(String searchKey, String publishTime, String level, String sort, Integer isVipOnly, Integer size, String cursor) throws IOException;
+
+    AjaxResult delete(DeletePostPo po);
 }

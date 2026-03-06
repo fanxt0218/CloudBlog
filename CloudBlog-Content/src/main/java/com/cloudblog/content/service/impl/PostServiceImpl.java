@@ -788,6 +788,19 @@ public class PostServiceImpl implements PostService {
         return AjaxResult.success(res);
     }
 
+    @Override
+    public AjaxResult delete(DeletePostPo po) {
+        // 检查文章作者
+        if (!postMapper.selectById(po.getPostId()).getAuthorId().equals(po.getUserId())) {
+            return AjaxResult.error("您没有权限删除此文章");
+        }
+        int update = postMapper.update(new LambdaUpdateWrapper<>(Posts.class)
+                .eq(Posts::getId, po.getPostId())
+                .set(Posts::getStatus, PostStatus.DELETED.getCode())
+        );
+        return update > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
+    }
+
     /**
      * 发布文章（基于草稿）
      */

@@ -3,6 +3,7 @@ package com.cloudblog.content.controller;
 import com.cloudblog.common.annotation.AutoAddExp;
 import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.AddBrowseCountPo;
+import com.cloudblog.common.pojo.Po.DeletePostPo;
 import com.cloudblog.common.pojo.Po.PostPo;
 import com.cloudblog.common.pojo.Po.PublishPostPo;
 import com.cloudblog.common.result.AjaxResult;
@@ -80,6 +81,14 @@ public class PostController {
     @GetMapping("/getDraftList")
     public AjaxResult getDraftList(@RequestParam Long userId) {
         return postService.getUserDraftList(userId);
+    }
+
+    /**
+     * 删除文章
+     */
+    @PostMapping("/delete")
+    public AjaxResult delete(@RequestBody DeletePostPo po) {
+        return postService.delete(po);
     }
 
     /**
