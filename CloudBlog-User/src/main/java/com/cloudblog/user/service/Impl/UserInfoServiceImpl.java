@@ -12,6 +12,7 @@ import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.common.utils.UploadUtil;
+import com.cloudblog.common.utils.UserContext;
 import com.cloudblog.content.config.ContentStartupConfig;
 import com.cloudblog.content.mapper.BrowseMapper;
 import com.cloudblog.content.service.*;
@@ -87,6 +88,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         userHomePageVo.setRegion(userInfo.getRegion());
         userHomePageVo.setJoinTime(userInfo.getCreateTime());
         userHomePageVo.setIntroduction(userInfo.getIntroduction());
+        userHomePageVo.setExp(userInfo.getExp());
         userHomePageVo.setBlogAge(this.getUserBlogAge(userInfo.getCreateTime()));
         // 用户访问量
         Long browseCount = browseMapper.selectCount(new LambdaQueryWrapper<Browse>().eq(Browse::getUserId, userId));
@@ -213,8 +215,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public AjaxResult getUserPostList(Long userId, Long loginUserId, String cursor, Integer size, String sortBy, String tag) {
-
-        return loginUserId == null ?
+        // loginUserId为null时并且是已登录用户，表示用户查看自己主页内容
+        // 不为空时，表示用户查看其他用户主页内容
+        return (loginUserId == null && UserContext.getUser() != null) ?
                 postService.getUserPostList(userId, cursor, size, sortBy, tag)
                 :
                 postService.getOtherUserPostList(userId, loginUserId, cursor, size, sortBy, tag);

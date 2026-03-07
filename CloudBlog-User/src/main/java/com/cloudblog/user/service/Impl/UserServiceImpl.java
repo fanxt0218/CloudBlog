@@ -170,6 +170,10 @@ public class UserServiceImpl implements UserService {
         if (!PasswordUtil.checkPassword(po.getPassword(), user.getPassword())) {
             return AjaxResult.warn("密码错误");
         }
+        // 判断是否是管理员登录（管理端）
+        if (po.isAdmin() && !user.getPermissionId().equals(0)) {
+            return AjaxResult.warn("暂无权限,请联系管理员");
+        }
         // 更新登录时间
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.update(user, new LambdaUpdateWrapper<User>().eq(User::getId, user.getId()));

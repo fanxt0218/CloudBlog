@@ -180,7 +180,8 @@ public class PostServiceImpl implements PostService {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
-            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
+            log.error("获取用户文章列表失败:", e);
+            throw new CloudBlogException("获取用户文章列表失败:"+e.getMessage(), CommonError.INTERNAL_ERROR);
         }
     }
 
@@ -539,7 +540,8 @@ public class PostServiceImpl implements PostService {
 
             return AjaxResult.success(response);
         } catch (Exception e) {
-            throw new CloudBlogException("获取用户文章列表失败", CommonError.INTERNAL_ERROR);
+            log.error("获取用户文章列表失败:", e);
+            throw new CloudBlogException("获取用户文章列表失败:,"+e.getMessage(), CommonError.INTERNAL_ERROR);
         }
     }
 

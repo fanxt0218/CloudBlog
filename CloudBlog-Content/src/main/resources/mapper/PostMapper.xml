@@ -328,7 +328,6 @@
     </select>
 
     <select id="getUserTotalCount" resultType="java.lang.Long">
---         select count(*) from posts where author_id = #{userId} and post_type = #{type} and status = 2
         select count(*) from posts where author_id = #{userId} and status = 2
     </select>
 

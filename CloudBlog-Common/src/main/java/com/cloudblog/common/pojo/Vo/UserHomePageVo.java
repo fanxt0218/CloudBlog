@@ -27,6 +27,8 @@ public class UserHomePageVo {
 
     private Integer blogAge;
 
+    private Integer exp;
+
     private Integer level;
 
     private Long focusCount;

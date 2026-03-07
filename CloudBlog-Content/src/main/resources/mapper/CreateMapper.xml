@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudblog.content.mapper.CreateMapper">
+
+    <resultMap id="TrendResultMap" type="com.cloudblog.common.pojo.Vo.InteractionTrendVo$ContentTrend">
+        <id property="date" column="date"/>
+        <id property="count" column="count"/>
+    </resultMap>
+
+    <select id="getLikeTrend" resultType="com.cloudblog.common.pojo.Vo.InteractionTrendVo$ContentTrend" resultMap="TrendResultMap">
+        SELECT
+            DATE_FORMAT(l.create_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS count
+        FROM likes l
+            LEFT JOIN posts p ON l.type = 0 AND l.target_id = p.id
+            LEFT JOIN share s ON l.type = 1 AND l.target_id = s.id
+        WHERE l.create_time &gt;= #{po.startDate}
+          AND l.create_time &lt; DATE_ADD(#{po.endDate}, INTERVAL 1 DAY)
+          AND l.status = 0
+          AND (
+            (l.type = 0 AND p.author_id = #{po.userId} AND p.status = 2)
+           OR
+            (l.type = 1 AND s.author_id = #{po.userId} AND s.status = 2)
+            )
+        GROUP BY DATE_FORMAT(l.create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+    <select id="getCollectTrend" resultType="com.cloudblog.common.pojo.Vo.InteractionTrendVo$ContentTrend" resultMap="TrendResultMap">
+        SELECT
+            DATE_FORMAT(c.create_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS count
+        FROM collect c
+          left join posts p on c.post_id = p.id
+        WHERE c.create_time &gt;= #{po.startDate}
+          AND c.create_time &lt; DATE_ADD(#{po.endDate}, INTERVAL 1 DAY)
+          AND c.status = 0
+          AND p.author_id = #{po.userId}
+          AND p.status = 2
+        GROUP BY DATE_FORMAT(c.create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="getCommentTrend" resultType="com.cloudblog.common.pojo.Vo.InteractionTrendVo$ContentTrend" resultMap="TrendResultMap">
+        SELECT
+            DATE_FORMAT(c.create_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS count
+        FROM comments c
+            LEFT JOIN posts p ON c.type = 0 AND c.post_id = p.id
+            LEFT JOIN share s ON c.type = 1 AND c.post_id = s.id
+        WHERE c.create_time &gt;= #{po.startDate}
+          AND c.create_time &lt; DATE_ADD(#{po.endDate}, INTERVAL 1 DAY)
+          AND c.status = 0
+          AND (
+            (c.type = 0 AND p.author_id = #{po.userId} AND p.status = 2)
+           OR
+            (c.type = 1 AND s.author_id = #{po.userId} AND s.status = 2)
+            )
+        GROUP BY DATE_FORMAT(c.create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="getFanTrend" resultType="com.cloudblog.common.pojo.Vo.InteractionTrendVo$ContentTrend" resultMap="TrendResultMap">
+        SELECT
+            date_seq.date AS date,
+            (
+                SELECT COUNT(*)
+                FROM user_focus
+                WHERE focus_user_id = #{po.userId}
+                AND DATE(create_time) &lt;= date_seq.date
+                ) AS count
+        FROM (
+            SELECT
+            DATE_FORMAT(DATE_ADD(#{po.startDate}, INTERVAL seq.day DAY), '%Y-%m-%d') AS date
+            FROM (
+            SELECT 0 AS day UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL
+            SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL
+            SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL
+            SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL
+            SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL
+            SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL
+            SELECT 24 UNION ALL SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL
+            SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31 UNION ALL
+            SELECT 32 UNION ALL SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL
+            SELECT 36 UNION ALL SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL
+            SELECT 40 UNION ALL SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL
+            SELECT 44 UNION ALL SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL
+            SELECT 48 UNION ALL SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL
+            SELECT 52 UNION ALL SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55 UNION ALL
+            SELECT 56 UNION ALL SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL
+            SELECT 60
+            ) seq
+            WHERE DATE_ADD(#{po.startDate}, INTERVAL seq.day DAY) &lt;= #{po.endDate}
+            ) date_seq
+        ORDER BY date_seq.date ASC
+    </select>
+
+    <select id="getContentList" resultType="com.cloudblog.common.pojo.Vo.UserCreatorCenterListVo">
+        SELECT
+        p.id AS id,
+        p.author_id as userId,
+        p.title AS title,
+        p.introduction AS introduction,
+        p.image AS image,
+        p.type AS type,
+        p.post_type AS post_type,
+        p.create_time AS create_time,
+        p.update_time AS update_time,
+        IFNULL(browse_count.browse_count, 0) AS browse_count,
+        IFNULL(like_count.like_count, 0) AS like_count,
+        IFNULL(collect_count.collect_count, 0) AS collect_count
+        FROM posts p
+        LEFT JOIN (
+        SELECT post_id, COUNT(*) AS browse_count
+        FROM browse
+        WHERE type = 0
+        GROUP BY post_id
+        ) browse_count ON p.id = browse_count.post_id
+        LEFT JOIN (
+        SELECT target_id AS post_id, COUNT(*) AS like_count
+        FROM likes
+        WHERE type = 0 AND status = 0
+        GROUP BY target_id
+        ) like_count ON p.id = like_count.post_id
+        LEFT JOIN (
+        SELECT post_id, COUNT(*) AS collect_count
+        FROM collect
+        WHERE status = 0
+        GROUP BY post_id
+        ) collect_count ON p.id = collect_count.post_id
+        WHERE p.author_id = #{userId} AND p.status = #{type}
+        ORDER BY p.create_time DESC, p.id DESC
+    </select>
+
+</mapper>

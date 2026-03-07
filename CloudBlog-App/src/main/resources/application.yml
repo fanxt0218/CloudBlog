@@ -69,6 +69,7 @@ cloudblog:
   auth:
     excludePaths:
       - /profile/**     # 静态资源
+      - /ws/**          # websocket
       - /user/**
       - /userInfo/detail/**
       - /userInfo/homePage/**
