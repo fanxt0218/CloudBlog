@@ -32,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -800,6 +802,19 @@ public class PostServiceImpl implements PostService {
                 .eq(Posts::getId, po.getPostId())
                 .set(Posts::getStatus, PostStatus.DELETED.getCode())
         );
+        // 同步删除 ES
+        exportTaskExecutor.execute(() -> {
+            try {
+                DeleteResponse delete = esClient.delete(
+                        new DeleteRequest(indexName, String.valueOf(po.getPostId())),
+                        RequestOptions.DEFAULT
+                );
+                log.info("ES同步删除结果：{}", delete.status());
+            } catch (IOException e) {
+                log.error("ES同步删除失败：{}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
         return update > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
     }
 

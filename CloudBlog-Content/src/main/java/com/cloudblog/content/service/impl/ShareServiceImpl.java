@@ -1,13 +1,16 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cloudblog.common.enums.ContentType;
+import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.Posts;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.Topic;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
+import com.cloudblog.common.pojo.Po.DeletePostPo;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
@@ -19,11 +22,15 @@ import com.cloudblog.content.service.LikeService;
 import com.cloudblog.content.service.ShareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -243,6 +250,20 @@ public class ShareServiceImpl implements ShareService {
             shareViewVo.setLike(handleLike(shareId, userId, ContentType.SHARE));
         }
         return AjaxResult.success(shareViewVo);
+    }
+
+    @Override
+    public AjaxResult delete(DeletePostPo po) {
+        // 检查文章作者
+        if (!shareMapper.selectById(po.getPostId()).getAuthorId().equals(po.getUserId())) {
+            return AjaxResult.error("您没有权限删除该动态");
+        }
+        int update = shareMapper.update(new LambdaUpdateWrapper<>(Share.class)
+                .eq(Share::getId, po.getPostId())
+                .set(Share::getStatus, PostStatus.DELETED.getCode())
+        );
+        return update > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
+
     }
 
     /**
