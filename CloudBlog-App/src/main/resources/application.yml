@@ -84,7 +84,9 @@ cloudblog:
       - /search/**
       - /content/share/**
       - /content/vip/getUserVipInfo
-
+  default:
+    avatar: ${blog.default.avatar}
+    password: ${blog.default.password}
 logging:
   level:
     com.cloudblog.user.mapper: debug

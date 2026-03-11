@@ -3,11 +3,16 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cloudblog.common.pojo.DoMain.Tag;
+import com.cloudblog.common.pojo.DoMain.TagClass;
+import com.cloudblog.common.pojo.DoMain.Topic;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
+import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Vo.ContentReviewVo;
 import com.cloudblog.common.pojo.Vo.IndexShareVo;
+import com.cloudblog.common.pojo.Vo.UserDetailVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -75,4 +80,59 @@ public interface ManagerMapper {
      * @return
      */
     IPage<IndexShareVo> searchShareList(Page<IndexShareVo> page, @Param("po") ContentListManagePo po);
+
+    /**
+     * 获取标签分类信息
+     * @param classId
+     * @return
+     */
+    TagClass getTagClassInfo(Integer classId);
+
+    /**
+     * 获取标签信息
+     * @param tag
+     * @return
+     */
+    void editTag(@Param("tag") Tag tag);
+
+    /**
+     *  获取标签信息
+     * @param classId
+     * @return
+     */
+    List<Tag> getTagByTagClass(Integer classId);
+
+    /**
+     * 编辑标签分类信息
+     * @param tagClass
+     * @return
+     */
+    void editTagClass(@Param("tagClass") TagClass tagClass);
+
+    /**
+     * 标签
+     * @param topic
+     */
+    void editTopic(@Param("topic") Topic topic);
+
+    /**
+     * 获取用户列表
+     * @param po
+     * @return
+     */
+    IPage<UserDetailVo> getUserList(Page<UserDetailVo> page, @Param("po") UserListPo po);
+
+    /**
+     * 重置密码
+     * @param targetId
+     * @param defaultHashPass
+     */
+    void resetPassword(@Param("targetId") Long targetId, @Param("defaultHashPass") String defaultHashPass);
+
+    /**
+     * 删除用户
+     * @param targetId
+     * @param status
+     */
+    void updateUserStatus(@Param("targetId") Long targetId, @Param("status") Integer status);
 }

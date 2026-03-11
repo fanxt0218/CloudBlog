@@ -120,6 +120,7 @@
             id,
             topic_name
         from topic
+        where status = 0
     </select>
 
     <select id="getFocusShareList" resultType="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo" resultMap="IndexFocusArticleVoResultMap">

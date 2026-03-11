@@ -21,4 +21,6 @@ public class TagClass {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    private Integer status;
 }

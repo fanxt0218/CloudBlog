@@ -100,6 +100,7 @@ create table tag (
     description varchar(64) comment '标签描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    status tinyint default 0 comment '标签状态,0:正常 1:删除',
 
     unique index uk_tag_name (tag_name)
 )comment '标签表';
@@ -137,6 +138,7 @@ create table tag_class (
     description varchar(255) comment '分类描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    status tinyint default 0 comment '分类状态,0:正常 1:删除',
 
     unique index uk_class_name (class_name)
 )comment '标签分类表';
@@ -373,6 +375,7 @@ create table topic (
     description varchar(255) comment '话题描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    status tinyint default 0 comment '状态，0:正常，1:删除',
 
     unique index uk_topic_name (topic_name)
 )comment '话题表';

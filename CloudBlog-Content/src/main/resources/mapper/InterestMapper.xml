@@ -24,6 +24,7 @@
             class_name,
             description
         from tag_class
+        where status = 0
     </select>
     <select id="getPostTagInfo" resultType="com.cloudblog.common.pojo.DoMain.Tag">
         select

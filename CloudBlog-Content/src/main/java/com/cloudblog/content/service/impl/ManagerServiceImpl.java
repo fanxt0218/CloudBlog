@@ -5,16 +5,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.NotificationType;
 import com.cloudblog.common.enums.PostStatus;
-import com.cloudblog.common.pojo.DoMain.Notification;
-import com.cloudblog.common.pojo.DoMain.UserInfo;
+import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
+import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Vo.ContentReviewVo;
 import com.cloudblog.common.pojo.Vo.IndexShareVo;
+import com.cloudblog.common.pojo.Vo.UserDetailVo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.content.mapper.ManagerMapper;
 import com.cloudblog.content.service.ManagerService;
 import com.cloudblog.content.service.NotificationService;
@@ -67,6 +69,8 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Value("${elasticsearch.server.index}")
     private String indexName;
+    @Value("${blog.default.password}")
+    private String defaultPassword;
 
     @Override
     public AjaxResult ContentReviewList(String title, LocalDateTime startTime, LocalDateTime endTime, Integer type, String author, Integer pageNum, Integer pageSize) {
@@ -147,6 +151,68 @@ public class ManagerServiceImpl implements ManagerService {
             pageRes = searchShareList(po);
         }
         return AjaxResult.success(pageRes);
+    }
+
+    @Override
+    public AjaxResult editTag(Tag tag) {
+        if (tag.getId() == null || tag.getClassId() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        // 查询分类是否存在
+        TagClass tagInfo = managerMapper.getTagClassInfo(tag.getClassId());
+        if (tagInfo == null) {
+            return AjaxResult.warn("分类不存在");
+        }
+        managerMapper.editTag(tag);
+        return AjaxResult.success("修改成功");
+    }
+
+    @Override
+    public AjaxResult editTagCategory(TagClass tagClass) {
+        if (tagClass.getId() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        // 删除标签分类
+        if (null != tagClass.getStatus() && tagClass.getStatus() == 1) {
+            // 查询该分类下是否还有标签
+            List<Tag> tagList = managerMapper.getTagByTagClass(tagClass.getId());
+            if (tagList != null && !tagList.isEmpty()) {
+                return AjaxResult.warn("该分类下有标签，请先删除标签");
+            }
+        }
+        managerMapper.editTagClass(tagClass);
+        return AjaxResult.success("修改成功");
+    }
+
+    @Override
+    public AjaxResult editTopic(Topic topic) {
+        if (topic.getId() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        managerMapper.editTopic(topic);
+        return AjaxResult.success("修改成功");
+    }
+
+    @Override
+    public AjaxResult getUserList(UserListPo po) {
+        int pageNum = po.getPageNum() == null || po.getPageNum() < 1 ? 1 : po.getPageNum();
+        int pageSize = po.getPageSize() == null || po.getPageSize() < 1 ? 10 : po.getPageSize();
+        Page<UserDetailVo> page = new Page<>(pageNum, pageSize);
+        IPage<UserDetailVo> list = managerMapper.getUserList(page, po);
+        return AjaxResult.success(list);
+    }
+
+    @Override
+    public AjaxResult resetPassword(Long targetId) {
+        String defaultHashPass = PasswordUtil.hashPassword(defaultPassword);
+        managerMapper.resetPassword(targetId, defaultHashPass);
+        return AjaxResult.success("重置成功");
+    }
+
+    @Override
+    public AjaxResult updateUserStatus(Long targetId, Integer status) {
+        managerMapper.updateUserStatus(targetId, status);
+        return AjaxResult.success("更新成功");
     }
 
     /**

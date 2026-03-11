@@ -42,7 +42,7 @@ public class InterestServiceImpl implements InterestService {
     public AjaxResult getTagList(Integer classId) {
         LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
         if (classId != null) {
-            queryWrapper.eq(Tag::getClassId, classId);
+            queryWrapper.eq(Tag::getClassId, classId).eq(Tag::getStatus, 0);
         } else {
             queryWrapper = null;
         }

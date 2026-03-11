@@ -278,4 +278,150 @@
         ORDER BY s.create_time DESC, s.id DESC
     </select>
 
+    <select id="getTagClassInfo" resultType="com.cloudblog.common.pojo.DoMain.TagClass"
+            parameterType="java.lang.Integer">
+        select
+            id,
+            class_name,
+            description,
+            create_time,
+            update_time
+        from
+            tag_class
+        where
+            id = #{id}
+            and status = 0
+    </select>
+
+    <update id="editTag" parameterType="com.cloudblog.common.pojo.DoMain.Tag">
+        update
+            tag
+        set
+            tag_name = #{tag.tagName},
+            class_id = #{tag.classId},
+            description = #{tag.description},
+            update_time = #{tag.updateTime}
+            <if test="tag.status != null">
+                ,status = #{tag.status}
+            </if>
+        where
+            id = #{tag.id}
+    </update>
+
+    <select id="getTagByTagClass" resultType="com.cloudblog.common.pojo.DoMain.Tag"
+            parameterType="java.lang.Integer">
+        select
+            id,
+            tag_name,
+            class_id,
+            description,
+            create_time,
+            update_time,
+            status
+        from
+            tag
+        where
+            class_id = #{classId}
+            and status = 0
+    </select>
+
+    <update id="editTagClass" parameterType="com.cloudblog.common.pojo.DoMain.TagClass">
+        update
+            tag_class
+        set
+            class_name = #{tagClass.className},
+            description = #{tagClass.description},
+            update_time = #{tagClass.updateTime}
+            <if test="tagClass.status != null">
+                ,status = #{tagClass.status}
+            </if>
+        where
+            id = #{tagClass.id}
+    </update>
+
+    <update id="editTopic" parameterType="com.cloudblog.common.pojo.DoMain.Topic">
+        update
+            topic
+        set
+            topic_name = #{topic.topicName},
+            image = #{topic.image},
+            description = #{topic.description},
+            update_time = #{topic.updateTime},
+        <if test="topic.status != null">
+            ,status = #{topic.status}
+        </if>
+        where
+        id = #{topic.id}
+    </update>
+
+    <select id="getUserList" resultType="com.cloudblog.common.pojo.Vo.UserDetailVo"
+            parameterType="com.cloudblog.common.pojo.Po.UserListPo">
+        select
+            ui.user_id AS user_id,
+            u.account as account,
+            ui.user_name AS user_name,
+            ui.sex as sex,
+            ui.image AS image,
+            u.phone as phone,
+            u.email as email,
+            u.status as status,
+            ui.introduction AS introduction,
+            ui.region AS region,
+            ui.birthday AS birthday,
+            ui.profession AS profession,
+            ui.is_vip AS vip,
+            u.last_login_time AS last_login_time,
+            u.create_time AS create_time,
+            ui.update_time AS update_time
+        from
+            user_info ui
+            right join
+            user u on ui.user_id = u.id
+        where
+            <if test="po.status != null">
+                u.status = #{po.status}
+            </if>
+            <if test="po.name != null">
+                AND ui.user_name LIKE CONCAT('%', #{po.name}, '%')
+            </if>
+            <if test="po.account != null">
+                AND u.account LIKE CONCAT('%', #{po.account}, '%')
+            </if>
+            <if test="po.email != null">
+                AND u.email LIKE CONCAT('%', #{po.email}, '%')
+            </if>
+            <if test="po.phone != null">
+                AND u.phone LIKE CONCAT('%', #{po.phone}, '%')
+            </if>
+            <if test="po.startTime != null">
+                AND
+                u.create_time &gt;= #{po.startTime}
+            </if>
+            <if test="po.endTime != null">
+                AND
+                u.create_time &lt; #{po.endTime}
+            </if>
+        ORDER BY
+            u.create_time DESC,
+            u.id DESC
+    </select>
+
+    <update id="resetPassword">
+        update
+            user
+        set
+            password = #{defaultHashPass}
+        where
+            id = #{targetId}
+    </update>
+
+    <update id="updateUserStatus">
+        update
+            user
+        set
+            status = #{status}
+        where
+            id = #{targetId}
+    </update>
+
 </mapper>
