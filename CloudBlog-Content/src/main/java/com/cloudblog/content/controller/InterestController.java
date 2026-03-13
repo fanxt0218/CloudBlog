@@ -19,16 +19,25 @@ public class InterestController {
      * 获取标签列表
      */
     @GetMapping("/tagList")
-    public AjaxResult getTagList(@RequestParam(required = false) Integer classId) {
-        return interestService.getTagList(classId);
+    public AjaxResult getTagList(
+            @RequestParam(required = false) Integer classId,
+            @RequestParam(required = false) String tagName,
+            @RequestParam(required = false) Integer pageNum,
+            @RequestParam(required = false) Integer pageSize
+            ) {
+        return interestService.getTagList(classId, tagName, pageNum, pageSize);
     }
 
     /**
      * 获取标签分类列表
      */
     @GetMapping("/tagClassList")
-    public AjaxResult getTagClassList() {
-        return interestService.getTagClassList();
+    public AjaxResult getTagClassList(
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) Integer pageNum,
+            @RequestParam(required = false) Integer pageSize
+    ) {
+        return interestService.getTagClassList(className, pageNum, pageSize);
     }
 
 }

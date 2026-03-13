@@ -135,4 +135,47 @@ public interface ManagerMapper {
      * @param status
      */
     void updateUserStatus(@Param("targetId") Long targetId, @Param("status") Integer status);
+
+    /**
+     * 获取标签信息
+     * @param tagName
+     * @return
+     */
+    List<Tag> getTagByTagName(String tagName);
+
+    /**
+     * 添加标签
+     * @param tag
+     */
+    void addTag(@Param("tag") Tag tag);
+
+    /**
+     * 添加标签分类
+     * @param className
+     */
+    List<TagClass> getTagClassByClassName(String className);
+
+    /**
+     * 添加标签分类
+     * @param tagclass
+     */
+    void addTagClass(@Param("tagClass") TagClass tagclass);
+
+    /**
+     * 添加标签分类
+     * @param topicName
+     */
+    List<Topic> getTopicByTopicName(String topicName);
+
+    /**
+     * 添加标签分类
+     * @param topic
+     */
+    void addTopic(@Param("topic") Topic topic);
+
+    /**
+     * 编辑用户信息
+     * @param userInfo
+     */
+    void editUser(@Param("userInfo") UserInfo userInfo);
 }

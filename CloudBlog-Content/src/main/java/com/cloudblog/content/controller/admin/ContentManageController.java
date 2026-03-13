@@ -63,4 +63,28 @@ public class ContentManageController {
         return managerService.editTopic(topic);
     }
 
+    /**
+     * 添加标签
+     */
+    @PostMapping("/addTag")
+    public AjaxResult addTag(@RequestBody Tag tag) {
+        return managerService.addTag(tag);
+    }
+
+    /**
+     * 添加标签分类
+     */
+    @PostMapping("/addTagCategory")
+    public AjaxResult addTagCategory(@RequestBody TagClass tagclass) {
+        return managerService.addTagCategory(tagclass);
+    }
+
+    /**
+     * 添加话题
+     */
+    @PostMapping("/addTopic")
+    public AjaxResult addTopic(@RequestBody Topic topic) {
+        return managerService.addTopic(topic);
+    }
+
 }

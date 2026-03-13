@@ -2,6 +2,8 @@ package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.PostStatus;
 import com.cloudblog.common.pojo.DoMain.Posts;
@@ -167,8 +169,17 @@ public class ShareServiceImpl implements ShareService {
     }
 
     @Override
-    public AjaxResult getTopicList() {
-        return AjaxResult.success(shareMapper.getTopicList());
+    public AjaxResult getTopicList(String title, Integer pageNum, Integer pageSize) {
+        boolean isSearch = pageNum != null || pageSize != null;
+        pageNum = (pageNum == null || pageNum <= 0) ? 1 : pageNum;
+        pageSize = (pageSize == null || pageSize <= 0) ? 10 : pageSize;
+        Page<IndexTopicVo> page = new Page<>(pageNum, pageSize);
+        IPage<IndexTopicVo> topicList = shareMapper.getTopicList(page, title);
+        if (isSearch) {
+            return AjaxResult.success(topicList);
+        } else {
+            return AjaxResult.success(topicList.getRecords());
+        }
     }
 
     @Override
@@ -182,7 +193,7 @@ public class ShareServiceImpl implements ShareService {
         if (ContentStartupConfig.Topic_List != null && !ContentStartupConfig.Topic_List.isEmpty()) {
             return AjaxResult.success(ContentStartupConfig.Topic_List);
         }
-        List<IndexTopicVo> topicList = (List<IndexTopicVo>) this.getTopicList().get("data");
+        List<IndexTopicVo> topicList = (List<IndexTopicVo>) this.getTopicList(null, null, null).get("data");
 
         List<PublishPageTopicListVo> publishPageTopicListVos = new ArrayList<>();
         // 循环计算填充属性

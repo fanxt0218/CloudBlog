@@ -215,6 +215,66 @@ public class ManagerServiceImpl implements ManagerService {
         return AjaxResult.success("更新成功");
     }
 
+    @Override
+    public AjaxResult addTag(Tag tag) {
+        if (tag.getTagName() == null || tag.getTagName().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (tag.getClassId() == null){
+            return AjaxResult.warn("参数错误");
+        }
+        // 检查标签名称
+        List<Tag> tagList = managerMapper.getTagByTagName(tag.getTagName());
+        if (tagList != null && !tagList.isEmpty()) {
+            return AjaxResult.warn("标签名称已存在");
+        }
+        // 检查标签分类
+        TagClass tagClass = managerMapper.getTagClassInfo(tag.getClassId());
+        if (tagClass == null) {
+            return AjaxResult.warn("标签分类不存在");
+        }
+        managerMapper.addTag(tag);
+        return AjaxResult.success("添加成功");
+    }
+
+    @Override
+    public AjaxResult addTagCategory(TagClass tagclass) {
+        if (tagclass.getClassName() == null || tagclass.getClassName().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        List<TagClass> tagClassList = managerMapper.getTagClassByClassName(tagclass.getClassName());
+        if (tagClassList != null && !tagClassList.isEmpty()) {
+            return AjaxResult.warn("标签分类已存在");
+        }
+        managerMapper.addTagClass(tagclass);
+        return AjaxResult.success("添加成功");
+    }
+
+    @Override
+    public AjaxResult addTopic(Topic topic) {
+        if (topic.getTopicName() == null || topic.getTopicName().isEmpty() || topic.getImage().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        List<Topic> topicList = managerMapper.getTopicByTopicName(topic.getTopicName());
+        if (topicList != null && !topicList.isEmpty()) {
+            return AjaxResult.warn("标签分类已存在");
+        }
+        managerMapper.addTopic(topic);
+        return AjaxResult.success("添加成功");
+    }
+
+    @Override
+    public AjaxResult editUser(UserInfo userInfo) {
+        if (userInfo.getUserId() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (userInfo.getUserName() == null || userInfo.getUserName().isEmpty()) {
+            return AjaxResult.warn("用户名不能为空");
+        }
+        managerMapper.editUser(userInfo);
+        return AjaxResult.success("修改成功");
+    }
+
     /**
      * 搜索文章列表
      */

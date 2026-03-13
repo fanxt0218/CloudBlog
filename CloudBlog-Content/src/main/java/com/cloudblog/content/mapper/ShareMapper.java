@@ -1,6 +1,8 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
@@ -52,7 +54,7 @@ public interface ShareMapper extends BaseMapper<Share> {
             @Param("topicId") Integer topicId
     );
 
-    List<IndexTopicVo> getTopicList();
+    IPage<IndexTopicVo> getTopicList(Page<IndexTopicVo> page, @Param("name") String name);
 
     /**
      * 获取关注动态列表

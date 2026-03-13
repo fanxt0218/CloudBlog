@@ -28,6 +28,11 @@
     <resultMap id="IndexTopicVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexTopicVo">
         <id property="id" column="id"/>
         <result property="topicName" column="topic_name"/>
+        <result property="image" column="image"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="status" column="status"/>
+        <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <resultMap id="IndexFocusArticleVoResultMap" type="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo">
@@ -118,9 +123,17 @@
     <select id="getTopicList" resultType="com.cloudblog.common.pojo.Vo.IndexTopicVo" resultMap="IndexTopicVoResultMap">
         select
             id,
-            topic_name
+            topic_name,
+            image,
+            description,
+            create_time,
+            update_time,
+            status
         from topic
         where status = 0
+        <if test="name != null and name != ''">
+            and topic_name like concat('%', #{name}, '%')
+        </if>
     </select>
 
     <select id="getFocusShareList" resultType="com.cloudblog.common.pojo.Vo.IndexFocusArticleVo" resultMap="IndexFocusArticleVoResultMap">

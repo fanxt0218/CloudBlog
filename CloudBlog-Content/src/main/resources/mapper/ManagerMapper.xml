@@ -346,7 +346,7 @@
             topic_name = #{topic.topicName},
             image = #{topic.image},
             description = #{topic.description},
-            update_time = #{topic.updateTime},
+            update_time = #{topic.updateTime}
         <if test="topic.status != null">
             ,status = #{topic.status}
         </if>
@@ -358,7 +358,7 @@
             parameterType="com.cloudblog.common.pojo.Po.UserListPo">
         select
             ui.user_id AS user_id,
-            u.account as account,
+            u.user_account as account,
             ui.user_name AS user_name,
             ui.sex as sex,
             ui.image AS image,
@@ -367,7 +367,7 @@
             u.status as status,
             ui.introduction AS introduction,
             ui.region AS region,
-            ui.birthday AS birthday,
+            ui.birth_date AS birthday,
             ui.profession AS profession,
             ui.is_vip AS vip,
             u.last_login_time AS last_login_time,
@@ -377,20 +377,20 @@
             user_info ui
             right join
             user u on ui.user_id = u.id
-        where
+        <where>
             <if test="po.status != null">
                 u.status = #{po.status}
             </if>
-            <if test="po.name != null">
+            <if test="po.name != null and po.name != ''">
                 AND ui.user_name LIKE CONCAT('%', #{po.name}, '%')
             </if>
-            <if test="po.account != null">
-                AND u.account LIKE CONCAT('%', #{po.account}, '%')
+            <if test="po.account != null and po.account != ''">
+                AND u.user_account LIKE CONCAT('%', #{po.account}, '%')
             </if>
-            <if test="po.email != null">
+            <if test="po.email != null and po.email != ''">
                 AND u.email LIKE CONCAT('%', #{po.email}, '%')
             </if>
-            <if test="po.phone != null">
+            <if test="po.phone != null and po.phone != ''">
                 AND u.phone LIKE CONCAT('%', #{po.phone}, '%')
             </if>
             <if test="po.startTime != null">
@@ -401,6 +401,7 @@
                 AND
                 u.create_time &lt; #{po.endTime}
             </if>
+        </where>
         ORDER BY
             u.create_time DESC,
             u.id DESC
@@ -422,6 +423,105 @@
             status = #{status}
         where
             id = #{targetId}
+    </update>
+
+    <select id="getTagByTagName" resultType="com.cloudblog.common.pojo.DoMain.Tag"
+            parameterType="java.lang.String">
+        select
+            id,
+            tag_name,
+            class_id,
+            description,
+            create_time,
+            update_time,
+            status
+        from
+            tag
+        where
+            tag_name = #{tagName}
+            and status = 0
+    </select>
+
+    <insert id="addTag" parameterType="com.cloudblog.common.pojo.DoMain.Tag">
+        insert into
+        tag(tag_name, class_id, description, create_time)
+        values(#{tag.tagName}, #{tag.classId}, #{tag.description}, now())
+    </insert>
+
+    <select id="getTagClassByClassName" resultType="com.cloudblog.common.pojo.DoMain.TagClass"
+            parameterType="java.lang.String">
+        select
+            id,
+            class_name,
+            description,
+            create_time,
+            update_time,
+            status
+        from
+            tag_class
+        where
+            class_name = #{className}
+            and status = 0
+    </select>
+
+    <insert id="addTagClass" parameterType="com.cloudblog.common.pojo.DoMain.TagClass">
+        insert into
+        tag_class(class_name, description, create_time)
+        values(#{tagClass.className}, #{tagClass.description}, now())
+    </insert>
+
+    <select id="getTopicByTopicName" resultType="com.cloudblog.common.pojo.DoMain.Topic"
+            parameterType="java.lang.String">
+        select
+            id,
+            topic_name,
+            image,
+            description,
+            create_time,
+            update_time,
+            status
+        from
+            topic
+        where
+            topic_name = #{topicName}
+            and status = 0
+    </select>
+
+    <insert id="addTopic" parameterType="com.cloudblog.common.pojo.DoMain.Topic">
+        insert into
+        topic(topic_name, image, description, create_time)
+        values(#{topic.topicName}, #{topic.image}, #{topic.description}, now())
+    </insert>
+
+    <update id="editUser" parameterType="com.cloudblog.common.pojo.DoMain.UserInfo">
+        update
+            user_info
+        <set>
+            <if test="userInfo.userName != null and userInfo.userName != ''">
+                user_name = #{userInfo.userName},
+            </if>
+            <if test="userInfo.sex != null">
+                sex = #{userInfo.sex},
+            </if>
+            <if test="userInfo.image != null and userInfo.image != ''">
+                image = #{userInfo.image},
+            </if>
+            <if test="userInfo.introduction != null and userInfo.introduction != ''">
+                introduction = #{userInfo.introduction},
+            </if>
+            <if test="userInfo.region != null and userInfo.region != ''">
+                region = #{userInfo.region},
+            </if>
+            <if test="userInfo.birthDate != null">
+                birth_date = #{userInfo.birthDate},
+            </if>
+            <if test="userInfo.profession != null and userInfo.profession != ''">
+                profession = #{userInfo.profession},
+            </if>
+            update_time = now()
+        </set>
+        where
+            user_id = #{userInfo.userId}
     </update>
 
 </mapper>

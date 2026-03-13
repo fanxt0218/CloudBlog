@@ -10,4 +10,6 @@ public class TagClassVo {
     private String className;
 
     private String description;
+
+    private Integer status;
 }

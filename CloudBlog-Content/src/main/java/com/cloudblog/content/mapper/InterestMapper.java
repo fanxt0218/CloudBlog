@@ -1,6 +1,8 @@
 package com.cloudblog.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Po.AddInterestPo;
@@ -29,7 +31,7 @@ public interface InterestMapper extends BaseMapper<Tag> {
      * 获取标签分类列表
      * @return
      */
-    List<TagClassVo> getTagClassList();
+    IPage<TagClassVo> getTagClassList(Page<TagClassVo> page, @Param("className") String className);
 
     /**
      * 移除用户兴趣
@@ -56,4 +58,12 @@ public interface InterestMapper extends BaseMapper<Tag> {
      * @return
      */
     List<Tag> getPostTagInfo(Long postId);
+
+    /**
+     * 获取标签列表
+     * @param tagName
+     * @param classId
+     * @return
+     */
+    IPage<Tag> getTagList(Page<Tag> page, @Param("tagName") String tagName, @Param("classId") Integer classId);
 }

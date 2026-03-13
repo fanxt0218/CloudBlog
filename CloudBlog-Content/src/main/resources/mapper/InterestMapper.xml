@@ -6,6 +6,7 @@
         <id property="id" column="id"/>
         <result property="className" column="class_name"/>
         <result property="description" column="description"/>
+        <result property="status" column="status"/>
     </resultMap>
 
     <select id="getUserInterest" resultType="com.cloudblog.common.pojo.DoMain.Tag">
@@ -22,9 +23,13 @@
         select
             id,
             class_name,
-            description
+            description,
+            status
         from tag_class
         where status = 0
+        <if test="className != null and className != ''">
+            and class_name like concat('%', #{className}, '%')
+        </if>
     </select>
     <select id="getPostTagInfo" resultType="com.cloudblog.common.pojo.DoMain.Tag">
         select
@@ -65,4 +70,30 @@
             (#{postId}, #{tagId}, now())
         </foreach>
     </insert>
+
+    <select id="getTagList" resultType="com.cloudblog.common.pojo.DoMain.Tag">
+        select
+            t.id as id,
+            t.tag_name as tag_name,
+            t.class_id as class_id,
+            tc.class_name as class_name,
+            t.description as description,
+            t.create_time as create_time,
+            t.update_time as update_time,
+            t.status as status
+        from
+            tag t
+            left join
+            tag_class tc
+            on t.class_id = tc.id
+        where
+            t.status = 0
+        <if test="tagName != null and tagName != ''">
+            and t.tag_name like concat('%', #{tagName}, '%')
+        </if>
+        <if test="classId != null">
+            and t.class_id = #{classId}
+        </if>
+    </select>
+
 </mapper>

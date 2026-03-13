@@ -32,8 +32,12 @@ public class ShareController {
      * 获取话题列表
      */
     @GetMapping("/getTopicList")
-    public AjaxResult getTopicList() {
-        return shareService.getTopicList();
+    public AjaxResult getTopicList(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer pageNum,
+            @RequestParam(required = false) Integer pageSize
+    ) {
+        return shareService.getTopicList(name, pageNum, pageSize);
     }
 
     /**

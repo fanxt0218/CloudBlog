@@ -1,5 +1,6 @@
 package com.cloudblog.content.controller.admin;
 
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ManagerService;
@@ -38,5 +39,13 @@ public class UserManageController {
             @RequestParam Integer status
             ) {
         return managerService.updateUserStatus(targetId, status);
+    }
+
+    /**
+     * 修改用户
+     */
+    @PostMapping("/edit")
+    public AjaxResult editUser(@RequestBody UserInfo userInfo) {
+        return managerService.editUser(userInfo);
     }
 }

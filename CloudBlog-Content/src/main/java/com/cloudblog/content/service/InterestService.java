@@ -23,9 +23,9 @@ public interface InterestService {
      */
     void upgradeUserInterest(List<UserInterest> interests);
 
-    AjaxResult getTagList(Integer classId);
+    AjaxResult getTagList(Integer classId, String tagName, Integer pageNum, Integer pageSize);
 
-    AjaxResult getTagClassList();
+    AjaxResult getTagClassList(String tagClassName, Integer pageNum, Integer pageSize);
 
     /**
      * 移除用户兴趣

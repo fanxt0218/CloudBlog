@@ -1,10 +1,14 @@
 package com.cloudblog.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Po.AddInterestPo;
 import com.cloudblog.common.pojo.Po.RemoveInterestPo;
+import com.cloudblog.common.pojo.Vo.IndexTopicVo;
+import com.cloudblog.common.pojo.Vo.TagClassVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.InterestMapper;
 import com.cloudblog.content.service.InterestService;
@@ -39,20 +43,38 @@ public class InterestServiceImpl implements InterestService {
     }
 
     @Override
-    public AjaxResult getTagList(Integer classId) {
+    public AjaxResult getTagList(Integer classId, String tagName, Integer pageNum, Integer pageSize) {
+        boolean isSearch = pageNum != null || pageSize != null;
         LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
-        if (classId != null) {
-            queryWrapper.eq(Tag::getClassId, classId).eq(Tag::getStatus, 0);
+        if (!isSearch) {
+            if (classId != null) {
+                queryWrapper.eq(Tag::getClassId, classId).eq(Tag::getStatus, 0);
+            } else {
+                queryWrapper = null;
+            }
+            List<Tag> tags = interestMapper.selectList(queryWrapper);
+            return AjaxResult.success(tags);
         } else {
-            queryWrapper = null;
+            pageNum = (pageNum == null || pageNum <= 0) ? 1 : pageNum;
+            pageSize = (pageSize == null || pageSize <= 0) ? 10 : pageSize;
+            Page<Tag> page = new Page<>(pageNum, pageSize);
+            IPage<Tag> list = interestMapper.getTagList(page, tagName, classId);
+            return AjaxResult.success(list);
         }
-        List<Tag> tags = interestMapper.selectList(queryWrapper);
-        return AjaxResult.success(tags);
     }
 
     @Override
-    public AjaxResult getTagClassList() {
-        return AjaxResult.success(interestMapper.getTagClassList());
+    public AjaxResult getTagClassList(String className, Integer pageNum, Integer pageSize) {
+        boolean isSearch = pageNum != null || pageSize != null;
+        pageNum = (pageNum == null || pageNum <= 0) ? 1 : pageNum;
+        pageSize = (pageSize == null || pageSize <= 0) ? 10 : pageSize;
+        Page<TagClassVo> page = new Page<>(pageNum, pageSize);
+        interestMapper.getTagClassList(page, className);
+        if (isSearch) {
+            return AjaxResult.success(page);
+        } else {
+            return AjaxResult.success(page.getRecords());
+        }
     }
 
     @Override

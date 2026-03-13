@@ -18,5 +18,5 @@ blog:
     password: cloudblog
     tokenTTL: 30m
   default:
-    avatar: *
+    avatar: 123
     password: fan123

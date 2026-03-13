@@ -4,6 +4,7 @@ import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.TagClass;
 import com.cloudblog.common.pojo.DoMain.Topic;
+import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
 import com.cloudblog.common.pojo.Po.UserListPo;
@@ -31,4 +32,12 @@ public interface ManagerService {
     AjaxResult resetPassword(Long targetId);
 
     AjaxResult updateUserStatus(Long targetId, Integer status);
+
+    AjaxResult addTag(Tag tag);
+
+    AjaxResult addTagCategory(TagClass tagclass);
+
+    AjaxResult addTopic(Topic topic);
+
+    AjaxResult editUser(UserInfo userInfo);
 }

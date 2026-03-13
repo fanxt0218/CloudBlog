@@ -21,7 +21,7 @@ public interface ShareService {
 
     AjaxResult getIndexShareList(String cursor, Integer size, Integer topicId);
 
-    AjaxResult getTopicList();
+    AjaxResult getTopicList(String name, Integer pageNum, Integer pageSize);
 
     /**
      * 获取关注动态
