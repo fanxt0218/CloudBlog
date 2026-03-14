@@ -12,9 +12,11 @@ import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
 import com.cloudblog.common.pojo.Po.UserListPo;
+import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.pojo.Vo.ContentReviewVo;
 import com.cloudblog.common.pojo.Vo.IndexShareVo;
 import com.cloudblog.common.pojo.Vo.UserDetailVo;
+import com.cloudblog.common.pojo.Vo.WorkOrderVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.content.mapper.ManagerMapper;
@@ -273,6 +275,24 @@ public class ManagerServiceImpl implements ManagerService {
         }
         managerMapper.editUser(userInfo);
         return AjaxResult.success("修改成功");
+    }
+
+    @Override
+    public AjaxResult getWorkOrderList(WorkOrderListPo po) {
+        int pageNum = po.getPageNum() == null || po.getPageNum() < 1 ? 1 : po.getPageNum();
+        int pageSize = po.getPageSize() == null || po.getPageSize() < 1 ? 10 : po.getPageSize();
+        Page<WorkOrderVo> page = new Page<>(pageNum, pageSize);
+        IPage<WorkOrderVo> list = managerMapper.getWorkOrderList(page, po);
+        return AjaxResult.success(list);
+    }
+
+    @Override
+    public AjaxResult handleWorkOrder(WorkOrder workOrder) {
+        if (workOrder.getId() == null || workOrder.getStatus() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        managerMapper.handleWorkOrder(workOrder);
+        return AjaxResult.success("处理成功");
     }
 
     /**

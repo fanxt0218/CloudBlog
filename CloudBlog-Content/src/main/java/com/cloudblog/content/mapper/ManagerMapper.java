@@ -3,16 +3,15 @@ package com.cloudblog.content.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cloudblog.common.pojo.DoMain.Tag;
-import com.cloudblog.common.pojo.DoMain.TagClass;
-import com.cloudblog.common.pojo.DoMain.Topic;
-import com.cloudblog.common.pojo.DoMain.UserInfo;
+import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.UserListPo;
+import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.pojo.Vo.ContentReviewVo;
 import com.cloudblog.common.pojo.Vo.IndexShareVo;
 import com.cloudblog.common.pojo.Vo.UserDetailVo;
+import com.cloudblog.common.pojo.Vo.WorkOrderVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -178,4 +177,19 @@ public interface ManagerMapper {
      * @param userInfo
      */
     void editUser(@Param("userInfo") UserInfo userInfo);
+
+    /**
+     * 获取工单列表
+     * @param page
+     * @param po
+     * @return
+     */
+    IPage<WorkOrderVo> getWorkOrderList(Page<WorkOrderVo> page, @Param("po") WorkOrderListPo po);
+
+    /**
+     * 处理工单
+     * @param workOrder
+     */
+    void handleWorkOrder(@Param("workOrder") WorkOrder workOrder);
+
 }

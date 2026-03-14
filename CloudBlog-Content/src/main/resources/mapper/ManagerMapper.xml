@@ -524,4 +524,68 @@
             user_id = #{userInfo.userId}
     </update>
 
+    <select id="getWorkOrderList" resultType="com.cloudblog.common.pojo.Vo.WorkOrderVo">
+        select
+            wo.id,
+            wo.order_id,
+            wo.user_id,
+            ui.user_name,
+            wo.target_id,
+            wo.target_type,
+            wo.order_type,
+            wo.reason,
+            wo.file_path,
+            wo.status,
+            wo.create_time,
+            wo.update_time,
+            wo.handle_reason
+        from
+            work_order wo
+            inner join
+            user_info ui
+            on wo.user_id = ui.user_id
+        <where>
+        <if test="po.status != null">
+            wo.status = #{po.status}
+        </if>
+        <if test="po.orderId != null and po.orderId != ''">
+            AND wo.order_id like CONCAT('%', #{po.orderId}, '%')
+        </if>
+        <if test="po.userName != null and po.userName != ''">
+            AND ui.user_name like CONCAT('%', #{po.userName}, '%')
+        </if>
+        <if test="po.targetType != null">
+            AND wo.target_type = #{po.targetType}
+        </if>
+        <if test="po.orderType != null">
+            AND wo.order_type = #{po.orderType}
+        </if>
+        <if test="po.startTime != null">
+            AND
+            wo.create_time &gt;= #{po.startTime}
+        </if>
+        <if test="po.endTime != null">
+            AND
+            wo.create_time &lt;= #{po.endTime}
+        </if>
+        </where>
+        ORDER BY
+            wo.create_time DESC,
+            wo.id DESC
+    </select>
+
+    <update id="handleWorkOrder">
+        update
+            work_order
+        <set>
+            status = #{workOrder.status},
+            update_time = now()
+            <if test="workOrder.handleReason != null and workOrder.handleReason != ''">
+                ,handle_reason = #{workOrder.handleReason}
+            </if>
+        </set>
+        where
+            id = #{workOrder.id}
+    </update>
+
 </mapper>

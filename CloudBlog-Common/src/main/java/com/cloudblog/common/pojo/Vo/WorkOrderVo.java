@@ -1,23 +1,22 @@
-package com.cloudblog.common.pojo.DoMain;
+package com.cloudblog.common.pojo.Vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("work_order")
-public class WorkOrder {
+public class WorkOrderVo {
 
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String orderId;
 
     private Long userId;
+
+    private String userName;
 
     private Long targetId;
 
@@ -47,4 +46,5 @@ public class WorkOrder {
     private LocalDateTime updateTime;
 
     private String handleReason;
+
 }

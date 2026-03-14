@@ -16,6 +16,9 @@ public class WorkOrderController {
     @Autowired
     private WorkOrderService workOrderService;
 
+    /**
+     * 举报
+     */
     @PostMapping("/report")
     public AjaxResult report(@RequestBody ReportPo po) {
         return workOrderService.report(po);

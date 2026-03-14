@@ -1,13 +1,11 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.enums.ContentType;
-import com.cloudblog.common.pojo.DoMain.Tag;
-import com.cloudblog.common.pojo.DoMain.TagClass;
-import com.cloudblog.common.pojo.DoMain.Topic;
-import com.cloudblog.common.pojo.DoMain.UserInfo;
+import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
 import com.cloudblog.common.pojo.Po.UserListPo;
+import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.result.AjaxResult;
 
 import java.io.IOException;
@@ -40,4 +38,8 @@ public interface ManagerService {
     AjaxResult addTopic(Topic topic);
 
     AjaxResult editUser(UserInfo userInfo);
+
+    AjaxResult getWorkOrderList(WorkOrderListPo po);
+
+    AjaxResult handleWorkOrder(WorkOrder workOrder);
 }

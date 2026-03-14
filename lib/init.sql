@@ -217,6 +217,7 @@ create table category (
     description varchar(255) comment '分类描述',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
+    status tinyint default 0 comment '分类状态,0:正常 1:删除',
 
     unique index uk_category_name (category_name),
     index idx_user_id (user_id)
@@ -453,6 +454,7 @@ create table work_order (
     reason varchar(255) comment '理由/备注',
     file_path varchar(255) comment '附件',
     status tinyint default 0 comment '状态,0:待处理 1:处理中 2:处理完成',
+    handle_reason varchar(255) comment '处理结果',
     create_time datetime comment '创建时间',
     update_time datetime comment '更新时间',
 

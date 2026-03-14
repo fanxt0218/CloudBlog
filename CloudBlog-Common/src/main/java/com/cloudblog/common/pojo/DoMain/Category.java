@@ -25,4 +25,6 @@ public class Category {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    private Integer status;
 }
