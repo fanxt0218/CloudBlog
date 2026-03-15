@@ -16,6 +16,8 @@ import com.cloudblog.user.mapper.UserInfoMapper;
 import com.cloudblog.user.mapper.UserMapper;
 import com.cloudblog.user.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,11 @@ public class UserServiceImpl implements UserService {
     private UserInfoMapper userInfoMapper;
     @Autowired
     private FavoritesService favoritesService;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+    @Autowired
+    private RedisTokenBlacklistUtil redisTokenBlacklistUtil;
 
     // 根据bean名称注入
     @Resource(name="commonJwtUtil")
@@ -149,6 +156,12 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.DISABLED.getValue());
         userMapper.updateById(user);
         // 弹出登录,前端+redis实现
+        String token = httpServletRequest.getHeader("Authorization");
+        // 将 token 加入黑名单，设置剩余有效期
+        if (token != null && !token.isEmpty()) {
+            redisTokenBlacklistUtil.addToBlacklist(token, tokenTTL);
+        }
+
         return AjaxResult.success("注销成功");
     }
 

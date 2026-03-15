@@ -5,6 +5,7 @@ import com.cloudblog.auth.config.AuthProperties;
 import com.cloudblog.auth.util.JwtTool;
 import com.cloudblog.common.exception.UnauthorizedException;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.RedisTokenBlacklistUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,8 @@ public class AuthGlobalFilter implements Filter, Ordered {
 
     private final JwtTool jwtTool;
 
+    private final RedisTokenBlacklistUtil redisTokenBlacklistUtil;
+
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     @Override
@@ -48,6 +51,17 @@ public class AuthGlobalFilter implements Filter, Ordered {
         //1.获取request
         //3.获取token
         String token = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
+
+        // 检查 token 是否在黑名单中
+        if (token != null && redisTokenBlacklistUtil.isBlacklisted(token)) {
+            log.info("Token 在黑名单中，拒绝访问：{}", requestURI);
+            httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+            httpResponse.setContentType("application/json;charset=utf-8");
+            AjaxResult result = AjaxResult.error(401, "Token 已失效，请重新登录");
+            httpResponse.getWriter().write(new ObjectMapper().writeValueAsString(result));
+            return;
+        }
+
         //2.判断是否需要拦截
         if (IsExclude(httpRequest.getRequestURI())){
             //尝试解析token

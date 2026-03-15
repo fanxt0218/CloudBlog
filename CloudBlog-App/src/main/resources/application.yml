@@ -45,6 +45,20 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  data:
+    redis:
+      host: ${blog.redis.host}
+      port: ${blog.redis.port}
+      password: ${blog.redis.password}
+      database: ${blog.redis.database}
+      timeout: ${blog.redis.timeout}
+      lettuce:
+        pool:
+          max-active: ${blog.redis.lettuce.pool.max-active}
+          max-idle: ${blog.redis.lettuce.pool.max-idle}
+          min-idle: ${blog.redis.lettuce.pool.min-idle}
+          max-wait: ${blog.redis.lettuce.pool.max-wait}
+
 
 elasticsearch:
   server:
