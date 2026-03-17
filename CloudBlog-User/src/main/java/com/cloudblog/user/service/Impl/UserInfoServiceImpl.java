@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,6 +72,12 @@ public class UserInfoServiceImpl implements UserInfoService {
     private CategoryService categoryService;
     @Autowired
     private ShareService shareService;
+
+    @Autowired
+    @Lazy
+    private UserStartupConfig userStartupConfig;
+    @Autowired
+    private ContentStartupConfig contentStartupConfig;
 
     @Value("${file.resource.content.avatar}")
     private String avatarPath;
@@ -128,7 +135,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         // 评论数
         Integer commentCount = commentService.getUserCommentCount(userId);
         // 博客排名
-        Long blogRank = UserStartupConfig.USER_RANKING_MAP.get(userId);
+        Long blogRank = userStartupConfig.getUserRanking(userId);
+        if (blogRank == null) {
+            userStartupConfig.loadUserRanking();
+            blogRank = userStartupConfig.USER_RANKING_MAP.get(userId);
+        }
         // 创作历程
         List<UserAchievementVo.CreativeProcess> userCreativeProcess = getUserCreativeProcess(userId);
 
@@ -647,7 +658,11 @@ public class UserInfoServiceImpl implements UserInfoService {
      */
     public Integer getUserLevel(Integer exp) {
         AtomicReference<Integer> level = new AtomicReference<>(1);
-        TreeMap<Integer, Integer> levelMap = ContentStartupConfig.Level_MAP;
+        TreeMap<Integer, Integer> levelMap = contentStartupConfig.getLevelMap();
+        if (levelMap == null) {
+            contentStartupConfig.initLevelMap();
+            levelMap = contentStartupConfig.Level_MAP;
+        }
         AtomicBoolean isFound = new AtomicBoolean(false);
         levelMap.forEach((singleLevel, expThreshold) -> {
             if (isFound.get()) {

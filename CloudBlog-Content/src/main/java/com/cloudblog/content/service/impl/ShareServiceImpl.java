@@ -51,6 +51,10 @@ public class ShareServiceImpl implements ShareService {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    @Lazy
+    private ContentStartupConfig contentStartupConfig;
+
     @Override
     public AjaxResult getUserShareList(Long userId, String cursor, Integer size, String sortBy, String tag) {
         try {
@@ -189,20 +193,14 @@ public class ShareServiceImpl implements ShareService {
 
     @Override
     public AjaxResult getPublishPageTopicList() {
-        // 查询缓存（暂时实现）
-        if (ContentStartupConfig.Topic_List != null && !ContentStartupConfig.Topic_List.isEmpty()) {
-            return AjaxResult.success(ContentStartupConfig.Topic_List);
-        }
         List<IndexTopicVo> topicList = (List<IndexTopicVo>) this.getTopicList(null, null, null).get("data");
 
         List<PublishPageTopicListVo> publishPageTopicListVos = new ArrayList<>();
-        // 循环计算填充属性
         for (IndexTopicVo topic : topicList) {
             PublishPageTopicListVo publishPageTopicVo = shareMapper.getPublishPageTopicList(topic.getId());
             BeanUtils.copyProperties(topic, publishPageTopicVo);
             publishPageTopicListVos.add(publishPageTopicVo);
         }
-        ContentStartupConfig.Topic_List = new ArrayList<>(publishPageTopicListVos);
         return AjaxResult.success(publishPageTopicListVos);
     }
 

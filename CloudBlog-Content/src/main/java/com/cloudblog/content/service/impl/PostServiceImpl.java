@@ -97,6 +97,9 @@ public class PostServiceImpl implements PostService {
     @Qualifier("exportTaskExecutor")
     private ThreadPoolTaskExecutor exportTaskExecutor;
 
+    @Autowired
+    private ContentStartupConfig contentStartupConfig;
+
     @Value("${file.resource.content.defaultCover}")
     private String defaultCoverPath;
     @Value("${elasticsearch.server.index}")
@@ -967,7 +970,11 @@ public class PostServiceImpl implements PostService {
      */
     private Integer getUserLevel(Integer exp) {
         AtomicReference<Integer> level = new AtomicReference<>(1);
-        TreeMap<Integer, Integer> levelMap = ContentStartupConfig.Level_MAP;
+        TreeMap<Integer, Integer> levelMap = contentStartupConfig.getLevelMap();
+        if (levelMap == null) {
+            contentStartupConfig.initLevelMap();
+            levelMap = contentStartupConfig.Level_MAP;
+        }
         AtomicBoolean isFound = new AtomicBoolean(false);
         levelMap.forEach((singleLevel, expThreshold) -> {
             if (isFound.get()) {
