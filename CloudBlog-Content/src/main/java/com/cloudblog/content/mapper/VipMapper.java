@@ -5,6 +5,8 @@ import com.cloudblog.common.pojo.DoMain.UserVip;
 import com.cloudblog.common.pojo.Vo.UserVipInfoVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface VipMapper extends BaseMapper<UserVip> {
 
     /**
@@ -20,4 +22,21 @@ public interface VipMapper extends BaseMapper<UserVip> {
      * @param code
      */
     void updateUserVipStatus(@Param("userId") Long userId, @Param("code") Integer code);
+
+    /**
+     * 刷新会员记录
+     */
+    void refreshVipRecord();
+
+    /**
+     * 获取过期会员记录
+     * @return
+     */
+    List<Long> getOutOfDateVipRecord();
+
+    /**
+     * 刷新用户会员状态
+     * @param oodUsers
+     */
+    void refreshUserVipStatus(@Param("oodUsers") List<Long> oodUsers);
 }

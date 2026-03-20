@@ -1,4 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.content.mapper.WorkOrderMapper">
+
+    <select id="getWorkOrderList" resultType="com.cloudblog.common.pojo.Vo.WorkOrderVo">
+        select
+        wo.id,
+        wo.order_id,
+        wo.user_id,
+        ui.user_name,
+        wo.target_id,
+        wo.target_type,
+        wo.order_type,
+        wo.reason,
+        wo.file_path,
+        wo.status,
+        wo.create_time,
+        wo.update_time,
+        wo.handle_reason
+        from
+        work_order wo
+        inner join
+        user_info ui
+        on wo.user_id = ui.user_id
+        where
+            wo.user_id = #{userId}
+        ORDER BY
+        wo.create_time DESC,
+        wo.id DESC
+    </select>
 </mapper>

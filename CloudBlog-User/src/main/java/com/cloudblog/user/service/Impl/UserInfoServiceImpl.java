@@ -72,6 +72,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     private CategoryService categoryService;
     @Autowired
     private ShareService shareService;
+    @Autowired
+    private VipService vipService;
 
     @Autowired
     @Lazy
@@ -436,6 +438,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userService.getUsersCount();
     }
 
+    @Override
+    public void checkUserVipInfo() {
+        vipService.checkUserVipInfo();
+    }
+
     /**
      * 获取首页用户列表(综合排名)
      */
@@ -659,9 +666,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     public Integer getUserLevel(Integer exp) {
         AtomicReference<Integer> level = new AtomicReference<>(1);
         TreeMap<Integer, Integer> levelMap = contentStartupConfig.getLevelMap();
-        if (levelMap == null) {
-            contentStartupConfig.initLevelMap();
-            levelMap = contentStartupConfig.Level_MAP;
+        if (levelMap == null || levelMap.isEmpty()) {
+            return 1;
         }
         AtomicBoolean isFound = new AtomicBoolean(false);
         levelMap.forEach((singleLevel, expThreshold) -> {

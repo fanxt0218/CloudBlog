@@ -4,14 +4,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Po.WorkOrderListPo;
-import com.cloudblog.common.pojo.Vo.ContentReviewVo;
-import com.cloudblog.common.pojo.Vo.IndexShareVo;
-import com.cloudblog.common.pojo.Vo.UserDetailVo;
-import com.cloudblog.common.pojo.Vo.WorkOrderVo;
+import com.cloudblog.common.pojo.Vo.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -192,4 +190,42 @@ public interface ManagerMapper {
      */
     void handleWorkOrder(@Param("workOrder") WorkOrder workOrder);
 
+    /**
+     * 获取文章总数
+     * @return
+     */
+    Long getTotalPostsCount();
+
+    /**
+     * 获取分享总数
+     * @return
+     */
+    Long getTotalSharesCount();
+
+    /**
+     * 获取用户总数
+     * @return
+     */
+    Long getTotalUserCount();
+
+    /**
+     * 获取热门 TOP10 文章 (综合评分：浏览*0.1 + 点赞*0.3 + 收藏*0.2 + 评论*0.4)
+     * @param limit 返回数量
+     * @return
+     */
+    List<HotArticleVo> getHotArticleTop10(@Param("limit") Integer limit);
+
+    /**
+     * 获取文章信息
+     * @param id
+     * @return
+     */
+    Posts getPost(Long id);
+
+    /**
+     * 获取文章信息
+     * @param id
+     * @return
+     */
+    ESPost getESPostInfo(Long id);
 }

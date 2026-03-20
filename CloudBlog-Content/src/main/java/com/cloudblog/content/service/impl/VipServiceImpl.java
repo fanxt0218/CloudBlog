@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class VipServiceImpl implements VipService {
@@ -56,5 +57,18 @@ public class VipServiceImpl implements VipService {
         vipMapper.updateUserVipStatus(userId, VipStatus.OPENED.getCode());
         // TODO 后续考虑同步用户会员状态与会员信息
         return AjaxResult.success("开通会员成功");
+    }
+
+    @Transactional
+    @Override
+    public void checkUserVipInfo() {
+        // 先查找所有过期会员记录
+        List<Long> oodUsers = vipMapper.getOutOfDateVipRecord();
+        // 处理所有无效会员信息记录
+        vipMapper.refreshVipRecord();
+        // 更新用户会员状态
+        if (!oodUsers.isEmpty()) {
+            vipMapper.refreshUserVipStatus(oodUsers);
+        }
     }
 }

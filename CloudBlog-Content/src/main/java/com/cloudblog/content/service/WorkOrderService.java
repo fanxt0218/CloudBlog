@@ -6,4 +6,6 @@ import com.cloudblog.common.result.AjaxResult;
 public interface WorkOrderService {
 
     AjaxResult report(ReportPo po);
+
+    AjaxResult query(Long userId, Integer pageNum, Integer pageSize);
 }

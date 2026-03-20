@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@Order(1)
+@Order(2)
 public class UserStartupConfig implements ApplicationRunner {
 
     public final HashMap<Long, Long> USER_RANKING_MAP = new HashMap<>();
@@ -40,11 +40,13 @@ public class UserStartupConfig implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         log.info("加载用户排名信息");
         loadUserRanking();
+        log.info("刷新用户会员信息");
+        checkUserVipInfo();
     }
 
     public void loadUserRanking() {
         Long usersCount = userInfoService.getUsersCount();
-        AjaxResult indexUserList = userInfoService.getIndexUserList(null, Math.toIntExact(usersCount), null);
+        AjaxResult indexUserList = userInfoService.getIndexUserList(null, Math.toIntExact(usersCount), 0);
         PageResponse<IndexUserListVo> data = (PageResponse<IndexUserListVo>) indexUserList.get("data");
         data.getContent().forEach(user -> {
             USER_RANKING_MAP.put(user.getUserId(), user.getRankNum());
@@ -83,5 +85,12 @@ public class UserStartupConfig implements ApplicationRunner {
         }
 
         return null;
+    }
+
+    /**
+     * 检查用户会员信息
+     */
+    public void checkUserVipInfo() {
+        userInfoService.checkUserVipInfo();
     }
 }

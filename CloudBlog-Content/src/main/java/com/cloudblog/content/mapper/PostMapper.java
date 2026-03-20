@@ -223,4 +223,11 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @return
      */
     IPage<ESPost> selectAllPostWithContent(Page<ESPost> page);
+
+    /**
+     * 获取文章信息
+     * @param id
+     * @return
+     */
+    ESPost getESPostInfo(Long id);
 }

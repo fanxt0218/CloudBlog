@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.enums.NotificationType;
 import com.cloudblog.common.enums.PostStatus;
+import com.cloudblog.common.exception.CloudBlogException;
+import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
@@ -13,23 +15,28 @@ import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
 import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Po.WorkOrderListPo;
-import com.cloudblog.common.pojo.Vo.ContentReviewVo;
-import com.cloudblog.common.pojo.Vo.IndexShareVo;
-import com.cloudblog.common.pojo.Vo.UserDetailVo;
-import com.cloudblog.common.pojo.Vo.WorkOrderVo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
+import com.cloudblog.common.utils.RedisUtil;
 import com.cloudblog.content.mapper.ManagerMapper;
 import com.cloudblog.content.service.ManagerService;
 import com.cloudblog.content.service.NotificationService;
+import com.cloudblog.content.socket.WebSocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.TotalHits;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -54,6 +61,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.cloudblog.content.socket.WebSocket.webSocketMap;
+
 @Slf4j
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -68,6 +77,8 @@ public class ManagerServiceImpl implements ManagerService {
     private RestHighLevelClient esClient;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Value("${elasticsearch.server.index}")
     private String indexName;
@@ -104,9 +115,15 @@ public class ManagerServiceImpl implements ManagerService {
         // 处理内容
         try {
             managerMapper.contentReview(type, id, po.getOpinion());
+            if (type.equals(ContentType.POST.ordinal())) {
+                // 调整ES
+//                updatePostField(id,"status",po.getOpinion());
+                ESPost post = managerMapper.getESPostInfo(id);
+                updatePost(List.of(post));
+            }
         } catch (Exception e) {
             log.error("处理内容失败");
-            return AjaxResult.error("处理内容失败");
+            CloudBlogException.cast(Arrays.toString(e.getStackTrace()), CommonError.INTERNAL_ERROR);
         }
 
         if (!Objects.equals(po.getOpinion(), PostStatus.PUBLISHED.getCode())) {
@@ -295,6 +312,91 @@ public class ManagerServiceImpl implements ManagerService {
         return AjaxResult.success("处理成功");
     }
 
+    @Override
+    public AjaxResult getRedisValue(String key) {
+        return AjaxResult.success(redisUtil.get(key));
+    }
+
+    @Override
+    public AjaxResult refreshCache(List<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            redisUtil.clearAll();
+            return AjaxResult.success();
+        }
+        for (String key : keys) {
+            redisUtil.clear(key);
+        }
+        return AjaxResult.success();
+    }
+
+    @Override
+    public AjaxResult getIndexDefine() {
+        try {
+            // 从项目根目录的 lib 文件夹读取索引配置文件
+            String projectRoot = System.getProperty("user.dir");
+            String indexPath = projectRoot + java.io.File.separator + "lib" + java.io.File.separator + "posts_index.json";
+
+            java.io.File file = new java.io.File(indexPath);
+            if (!file.exists()) {
+                log.error("索引配置文件不存在：{}", indexPath);
+                return null;
+            }
+
+            // 读取文件内容
+            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+            String indexDefine = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+
+            log.info("成功读取 ES 索引配置文件，路径：{}", indexPath);
+            return AjaxResult.success(indexDefine);
+        } catch (Exception e) {
+            log.error("读取 ES 索引配置文件失败", e);
+            return AjaxResult.error("读取 ES 索引配置文件失败");
+        }
+    }
+
+    @Override
+    public AjaxResult getTotalArticleCount() {
+        Long totalPostsCount = managerMapper.getTotalPostsCount();
+        Long totalShareCount = managerMapper.getTotalSharesCount();
+
+        return AjaxResult.success(totalPostsCount + totalShareCount);
+    }
+
+    @Override
+    public AjaxResult getDataBoardUser() {
+        // 获取用户总数
+        Long totalUserCount = managerMapper.getTotalUserCount();
+        // 获取在线用户数
+        int onlineUserCount = webSocketMap.size();
+        DataBoardUserVo dataBoardUserVo = new DataBoardUserVo();
+        dataBoardUserVo.setTotalUser(totalUserCount);
+        dataBoardUserVo.setOnlineUser(onlineUserCount);
+        return AjaxResult.success(dataBoardUserVo);
+    }
+
+    @Override
+    public AjaxResult getHotArticle(Integer limit) {
+        // 设置默认值，如果 limit 为空或超出范围
+        if (limit == null || limit <= 0) {
+            limit = 10;
+        }
+        // 限制最大返回数量，避免性能问题
+        if (limit > 100) {
+            limit = 100;
+        }
+
+        List<HotArticleVo> hotArticleList = managerMapper.getHotArticleTop10(limit);
+
+        // 处理空数据情况
+        if (hotArticleList == null || hotArticleList.isEmpty()) {
+            log.info("暂无热门文章数据");
+            return AjaxResult.success(new ArrayList<>());
+        }
+
+        log.info("查询到 {} 篇热门文章", hotArticleList.size());
+        return AjaxResult.success(hotArticleList);
+    }
+
     /**
      * 搜索文章列表
      */
@@ -479,5 +581,61 @@ public class ManagerServiceImpl implements ManagerService {
         pageRes.setCurrentPage(pageNum);
         pageRes.setPageSize(pageSize);
         return pageRes;
+    }
+
+    public void updatePost(List<ESPost> posts) throws IOException {
+        if (posts == null || posts.isEmpty()) {
+            log.warn("ES 更新列表为空，跳过更新");
+            return;
+        }
+
+        try {
+            // 检查 ES 客户端连接
+            if (esClient == null) {
+                log.error("ES 客户端未初始化");
+                throw new RuntimeException("ES 客户端未初始化");
+            }
+
+            for (ESPost post : posts) {
+                if (post.getId() == null) {
+                    log.warn("文章 ID 为空，跳过该条记录：{}", post);
+                    continue;
+                }
+
+                IndexRequest request = new IndexRequest("posts_index")
+                        .id(post.getId().toString())
+                        .source(objectMapper.writeValueAsString(post), XContentType.JSON);
+
+                // 获取响应并检查结果
+                IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
+                log.info("ES 更新成功 - ID: {}, Result: {}", post.getId(), response.getResult());
+            }
+
+            // 强制刷新索引，确保数据立即可见
+            RefreshRequest refreshRequest = new RefreshRequest("posts_index");
+            esClient.indices().refresh(refreshRequest, RequestOptions.DEFAULT);
+            log.info("ES 索引已刷新");
+
+        } catch (IOException e) {
+            log.error("ES 更新失败", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("ES 更新过程中发生未知异常", e);
+            throw new RuntimeException("ES 更新失败：" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 局部更新 ES 文章的某个字段
+     * @param postId 文章 ID
+     * @param fieldName 要更新的字段名
+     * @param value 新的字段值
+     */
+    public void updatePostField(Long postId, String fieldName, Object value) throws IOException {
+        UpdateRequest updateRequest = new UpdateRequest("posts_index", postId.toString())
+                .doc(fieldName, value);  // 只更新这个字段
+
+        UpdateResponse response = esClient.update(updateRequest, RequestOptions.DEFAULT);
+        log.info("ES 字段更新成功 - ID: {}, 字段：{}, Result: {}", postId, fieldName, response.getResult());
     }
 }

@@ -24,4 +24,43 @@
         where
             user_id = #{userId} and status = 0
     </select>
+
+    <select id="getOutOfDateVipRecord" resultType="java.lang.Long">
+        select
+            user_id
+        from
+            user_vip
+        where
+            expires_time &lt; now()
+        and
+            status = 0
+    </select>
+
+    <update id="refreshVipRecord">
+        update
+            user_vip
+        set
+            status = 1,
+            update_time = now()
+        where
+            expires_time &lt; now()
+    </update>
+
+    <update id="refreshUserVipStatus">
+        UPDATE user_info
+        SET is_vip = 0,
+            update_time = NOW()
+        WHERE user_id IN
+        <foreach collection="oodUsers" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        AND NOT EXISTS (
+            SELECT 1
+            FROM user_vip
+            WHERE user_vip.user_id = user_info.user_id
+            AND expires_time &gt; NOW()
+            AND status = 0
+        )
+    </update>
+
 </mapper>

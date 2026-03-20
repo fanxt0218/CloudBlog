@@ -55,4 +55,6 @@ public interface UserInfoService {
      * @return
      */
     Long getUsersCount();
+
+    void checkUserVipInfo();
 }

@@ -2,6 +2,7 @@ package com.cloudblog.common.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -29,7 +30,17 @@ public class RedisConfig {
         // 使用 Jackson 序列化器
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance);
+
+        // 启用默认类型处理（支持多态序列化）
+        mapper.activateDefaultTyping(
+                com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator.builder()
+                        .allowIfBaseType(Object.class)
+                        .build(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
+        // 配置忽略未知属性
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         mapper.registerModule(new JavaTimeModule());
 

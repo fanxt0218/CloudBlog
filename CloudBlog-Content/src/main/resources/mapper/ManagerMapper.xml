@@ -11,6 +11,21 @@
         <result property="cover" column="cover"/>
     </resultMap>
 
+    <resultMap id="HotArticleResultMap" type="com.cloudblog.common.pojo.Vo.HotArticleVo">
+        <id property="articleId" column="article_id"/>
+        <result property="title" column="title"/>
+        <result property="introduction" column="introduction"/>
+        <result property="image" column="image"/>
+        <result property="authorId" column="author_id"/>
+        <result property="authorName" column="author_name"/>
+        <result property="browseCount" column="browse_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="collectCount" column="collect_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="totalScore" column="total_score"/>
+    </resultMap>
+
+
     <select id="getContentReviewList" resultType="com.cloudblog.common.pojo.Vo.ContentReviewVo">
         SELECT
             content_id,
@@ -587,5 +602,161 @@
         where
             id = #{workOrder.id}
     </update>
+
+    <select id="getTotalPostsCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            posts
+        where
+            status != 3
+    </select>
+
+    <select id="getTotalSharesCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            share
+        where
+            status != 3
+    </select>
+
+    <select id="getTotalUserCount" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            user
+        where
+            status != 2
+    </select>
+
+    <select id="getHotArticleTop10" resultMap="HotArticleResultMap">
+        SELECT
+            p.id AS article_id,
+            p.title AS title,
+            p.introduction AS introduction,
+            ui.image AS image,
+            p.author_id AS author_id,
+            ui.user_name AS author_name,
+            IFNULL(bc.browse_count, 0) AS browse_count,
+            IFNULL(lc.like_count, 0) AS like_count,
+            IFNULL(cc.collect_count, 0) AS collect_count,
+            IFNULL(cm.comment_count, 0) AS comment_count,
+            (
+                IFNULL(bc.browse_count, 0) * 0.1 +
+                IFNULL(lc.like_count, 0) * 0.3 +
+                IFNULL(cc.collect_count, 0) * 0.2 +
+                IFNULL(cm.comment_count, 0) * 0.4
+                ) AS total_score
+        FROM posts p
+                 LEFT JOIN (
+            SELECT post_id, COUNT(*) AS browse_count
+            FROM browse
+            WHERE type = 0
+            GROUP BY post_id
+        ) bc ON p.id = bc.post_id
+                 LEFT JOIN (
+            SELECT target_id AS post_id, COUNT(*) AS like_count
+            FROM likes
+            WHERE type = 0 AND status = 0
+            GROUP BY target_id
+        ) lc ON p.id = lc.post_id
+                 LEFT JOIN (
+            SELECT post_id, COUNT(*) AS collect_count
+            FROM collect
+            WHERE status = 0
+            GROUP BY post_id
+        ) cc ON p.id = cc.post_id
+                 LEFT JOIN (
+            SELECT post_id, COUNT(*) AS comment_count
+            FROM comments
+            WHERE type = 0 AND status = 0 AND parent_id = 0
+            GROUP BY post_id
+        ) cm ON p.id = cm.post_id
+                 LEFT JOIN user_info ui ON p.author_id = ui.user_id
+        WHERE p.status = 2
+          AND p.type = 0
+          AND p.post_type = 0
+        ORDER BY total_score DESC, p.create_time DESC
+            LIMIT #{limit}
+    </select>
+
+    <select id="getPost" resultType="com.cloudblog.common.pojo.DoMain.Posts" parameterType="java.lang.Long">
+        select
+            id,
+            author_id,
+            title,
+            introduction,
+            image,
+            status,
+            content_id,
+            type,
+            post_type,
+            is_vip,
+            category_id,
+            create_time,
+            update_time
+        from
+            posts
+        where
+            id = #{id}
+    </select>
+
+    <select id="getESPostInfo" resultType="com.cloudblog.common.pojo.Dto.ESPost">
+        select
+            p.id as id,
+            p.author_id as author_id,
+            ui.user_name as author_name,
+            ui.exp as exp,
+            p.title as title,
+            p.introduction as introduction,
+            pc.content as content,
+            p.status as status,
+            p.type as type,
+            p.post_type as post_type,
+            p.is_vip as is_vip,
+            p.category_id as category_id,
+            p.create_time as create_time,
+            p.update_time as update_time,
+            IFNULL(browse_count.browse_count, 0) AS view_count,
+            IFNULL(like_count.like_count, 0) AS like_count,
+            IFNULL(collect_count.collect_count, 0) AS collect_count,
+            COALESCE(comment_count.comment_count, 0) as comment_count
+        from
+            posts p
+                left join
+            posts_content pc
+            on p.content_id = pc.id
+                left join
+            user_info ui
+            on p.author_id = ui.user_id
+                LEFT JOIN
+            (
+                SELECT post_id, COUNT(*) AS browse_count
+                FROM browse
+                WHERE type = 0
+                GROUP BY post_id
+            ) browse_count ON p.id = browse_count.post_id
+                LEFT JOIN (
+                SELECT target_id AS post_id, COUNT(*) AS like_count
+                FROM likes
+                WHERE type = 0 AND status = 0
+                GROUP BY target_id
+            ) like_count ON p.id = like_count.post_id
+                LEFT JOIN (
+                SELECT post_id, COUNT(*) AS collect_count
+                FROM collect
+                WHERE status = 0
+                GROUP BY post_id
+            ) collect_count ON p.id = collect_count.post_id
+                LEFT JOIN (
+                SELECT post_id AS post_id, COUNT(*) AS comment_count
+                FROM comments
+                WHERE type = 0 AND status = 0
+                GROUP BY post_id
+            ) comment_count ON p.id = comment_count.post_id
+        where
+            p.id = #{id}
+    </select>
 
 </mapper>

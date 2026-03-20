@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/ws/chat/{userId}")
 public class WebSocket {
 
-    private static final ConcurrentHashMap<Long, Session> webSocketMap = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Long, Session> webSocketMap = new ConcurrentHashMap<>();
 
     @OnOpen
     public void onOpen(Session session, @PathParam("userId") Long userId) {

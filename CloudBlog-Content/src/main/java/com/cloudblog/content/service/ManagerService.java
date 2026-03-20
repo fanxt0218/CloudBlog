@@ -10,6 +10,7 @@ import com.cloudblog.common.result.AjaxResult;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface ManagerService {
 
@@ -42,4 +43,16 @@ public interface ManagerService {
     AjaxResult getWorkOrderList(WorkOrderListPo po);
 
     AjaxResult handleWorkOrder(WorkOrder workOrder);
+
+    AjaxResult getRedisValue(String key);
+
+    AjaxResult refreshCache(List<String> keys);
+
+    AjaxResult getIndexDefine();
+
+    AjaxResult getTotalArticleCount();
+
+    AjaxResult getDataBoardUser();
+
+    AjaxResult getHotArticle(Integer limit);
 }

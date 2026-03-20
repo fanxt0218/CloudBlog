@@ -19,7 +19,7 @@ import java.util.*;
 
 @Slf4j
 @Component
-@Order(2)
+@Order(1)
 public class ContentStartupConfig  implements ApplicationRunner {
 
     // 等级列表
@@ -69,11 +69,32 @@ public class ContentStartupConfig  implements ApplicationRunner {
 
     public TreeMap<Integer, Integer> getLevelMap() {
         // 从缓存中查询整个等级列表
-        Object levelMap = redisTemplate.opsForValue().get(CONTENT_LEVEL_KEY + ":list");
-        if (levelMap != null) {
-            return (TreeMap<Integer, Integer>) levelMap;
+        Object levelMapObj = redisTemplate.opsForValue().get(CONTENT_LEVEL_KEY + ":map");
+        if (levelMapObj != null) {
+            if (levelMapObj instanceof TreeMap) {
+                TreeMap<?, ?> rawMap = (TreeMap<?, ?>) levelMapObj;
+                // 进行类型转换
+                TreeMap<Integer, Integer> convertedMap = new TreeMap<>();
+                rawMap.forEach((key, value) -> {
+                    Integer intKey = key instanceof Number ? ((Number) key).intValue() : Integer.parseInt(key.toString());
+                    Integer intValue = value instanceof Number ? ((Number) value).intValue() : Integer.parseInt(value.toString());
+                    convertedMap.put(intKey, intValue);
+                });
+                return convertedMap;
+            } else if (levelMapObj instanceof Map) {
+                // 如果是普通 Map
+                Map<?, ?> rawMap = (Map<?, ?>) levelMapObj;
+                TreeMap<Integer, Integer> convertedMap = new TreeMap<>();
+                rawMap.forEach((key, value) -> {
+                    Integer intKey = key instanceof Number ? ((Number) key).intValue() : Integer.parseInt(key.toString());
+                    Integer intValue = value instanceof Number ? ((Number) value).intValue() : Integer.parseInt(value.toString());
+                    convertedMap.put(intKey, intValue);
+                });
+                return convertedMap;
+            }
         }
-        return null;
+        // 如果 Redis 缓存为空，返回内存中的 Level_MAP
+        return Level_MAP;
     }
 
     /**

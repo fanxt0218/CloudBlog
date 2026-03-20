@@ -7,4 +7,6 @@ public interface VipService {
     AjaxResult getUserVipInfo(Long userId);
 
     AjaxResult openVip(Long userId);
+
+    void checkUserVipInfo();
 }

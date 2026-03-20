@@ -4,10 +4,7 @@ import com.cloudblog.common.pojo.Po.ReportPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.WorkOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/workOrder")
@@ -22,5 +19,17 @@ public class WorkOrderController {
     @PostMapping("/report")
     public AjaxResult report(@RequestBody ReportPo po) {
         return workOrderService.report(po);
+    }
+
+    /**
+     * 查询个人工单
+     */
+    @GetMapping("/query")
+    public AjaxResult query(
+            @RequestParam Long userId,
+            @RequestParam(required = false) Integer pageNum,
+            @RequestParam(required = false) Integer pageSize
+    ) {
+        return workOrderService.query(userId, pageNum, pageSize);
     }
 }

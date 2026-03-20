@@ -464,3 +464,39 @@ create table work_order (
     index idx_order_type (order_type),
     index idx_status (status)
 ) comment '工单表';
+
+-- 网站内容配置表
+drop table if exists site_content;
+create table site_content (
+    id bigint primary key auto_increment comment '主键 ID',
+    -- 核心字段：内容类型和标识
+    content_type varchar(50) not null comment '内容类型，如：BANNER、ADVERTISEMENT、DEFAULT_AVATAR 等',
+    content_key varchar(100) not null comment '内容标识键，用于唯一标识某个位置或用途',
+    -- 内容字段：支持多种格式
+    content_value text comment '内容值，可以是 URL、JSON、HTML 等',
+    content_format varchar(20) default 'TEXT' comment '内容格式：TEXT-文本、URL-链接、IMAGE-图片、VIDEO-视频、JSON-结构化数据、HTML-富文本',
+    -- 分类和分组管理
+    category varchar(50) comment '所属分类，如：HOME-首页、USER-用户、SYSTEM-系统等',
+    group_name varchar(50) comment '分组名称，用于将相关内容归类',
+    -- 元数据信息
+    title varchar(100) comment '内容标题/名称',
+    description varchar(255) comment '内容描述',
+    sort_order int default 0 comment '排序顺序',
+    -- 扩展属性 (JSON 格式存储额外配置)
+    attributes json comment '扩展属性，存储额外的配置信息',
+    -- 状态控制
+    status tinyint default 1 comment '状态：0-禁用 1-启用',
+    is_public tinyint default 1 comment '是否公开：0-不公开 1-公开',
+    -- 审计字段
+    created_by bigint comment '创建人 ID',
+    updated_by bigint comment '更新人 ID',
+    create_time datetime default current_timestamp comment '创建时间',
+    update_time datetime default current_timestamp on update current_timestamp comment '更新时间',
+
+    -- 索引优化
+    unique index uk_type_key (content_type, content_key),
+    index idx_category (category),
+    index idx_group (group_name),
+    index idx_status (status),
+    index idx_type (content_type)
+) comment '网站内容配置表';

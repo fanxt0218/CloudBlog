@@ -30,11 +30,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.TotalHits;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -364,11 +366,11 @@ public class PostServiceImpl implements PostService {
             // 插入文章标签表
             interestService.addPostTag(po.getTagIds(), posts.getId());
             // TODO 加经验值
-            // 同步ES
-            ESPost esPost = new ESPost();
-            BeanUtils.copyProperties(posts, esPost);
-            esPost.setContent(po.getContent());
-            updatePost(List.of(esPost));
+            // 同步ES 创建文章时不同步es
+//            ESPost esPost = new ESPost();
+//            BeanUtils.copyProperties(posts, esPost);
+//            esPost.setContent(po.getContent());
+//            updatePost(List.of(esPost));
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
             throw new CloudBlogException("文章发布失败: "+e.getMessage(), CommonError.INTERNAL_ERROR);
@@ -849,12 +851,12 @@ public class PostServiceImpl implements PostService {
             posts.setCategoryId(po.getCategoryId());
             posts.setCreateTime(LocalDateTime.now());
             postMapper.update(posts, new LambdaUpdateWrapper<Posts>().eq(Posts::getId, draft.getId()));
+            posts.setId(draft.getId());
             // 插入文章标签表
             interestService.addPostTag(po.getTagIds(), po.getPostId());
             // 同步 ES
-            ESPost esPost = new ESPost();
-            BeanUtils.copyProperties(posts, esPost);
-            esPost.setContent(po.getContent());
+            // 获取文章信息
+            ESPost esPost = postMapper.getESPostInfo(posts.getId());
             updatePost(List.of(esPost));
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
@@ -888,10 +890,10 @@ public class PostServiceImpl implements PostService {
             errMsg = "文章标签不能为空";
             goOn = false;
         }
-        if (goOn && po.getCategoryId() == null) {
-            errMsg = "文章分类不能为空";
-            goOn = false;
-        }
+//        if (goOn && po.getCategoryId() == null) {
+//            errMsg = "文章分类不能为空";
+//            goOn = false;
+//        }
         if (goOn && po.getType() == null) {
             errMsg = "可见范围不能为空";
             goOn = false;
@@ -954,12 +956,44 @@ public class PostServiceImpl implements PostService {
      * 更新ES文章
      */
     public void updatePost(List<ESPost> posts) throws IOException {
-        for (ESPost post : posts) {
-            IndexRequest request = new IndexRequest("posts_index")
-                    .id(post.getId().toString())   // 用数据库ID做ES文档ID
-                    .source(objectMapper.writeValueAsString(post), XContentType.JSON);
+        if (posts == null || posts.isEmpty()) {
+            log.warn("ES 更新列表为空，跳过更新");
+            return;
+        }
 
-            esClient.index(request, RequestOptions.DEFAULT);
+        try {
+            // 检查 ES 客户端连接
+            if (esClient == null) {
+                log.error("ES 客户端未初始化");
+                throw new RuntimeException("ES 客户端未初始化");
+            }
+
+            for (ESPost post : posts) {
+                if (post.getId() == null) {
+                    log.warn("文章 ID 为空，跳过该条记录：{}", post);
+                    continue;
+                }
+
+                IndexRequest request = new IndexRequest("posts_index")
+                        .id(post.getId().toString())
+                        .source(objectMapper.writeValueAsString(post), XContentType.JSON);
+
+                // 获取响应并检查结果
+                IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
+                log.info("ES 更新成功 - ID: {}, Result: {}", post.getId(), response.getResult());
+            }
+
+            // 强制刷新索引，确保数据立即可见
+            RefreshRequest refreshRequest = new RefreshRequest("posts_index");
+            esClient.indices().refresh(refreshRequest, RequestOptions.DEFAULT);
+            log.info("ES 索引已刷新");
+
+        } catch (IOException e) {
+            log.error("ES 更新失败", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("ES 更新过程中发生未知异常", e);
+            throw new RuntimeException("ES 更新失败：" + e.getMessage(), e);
         }
     }
 
@@ -971,9 +1005,8 @@ public class PostServiceImpl implements PostService {
     private Integer getUserLevel(Integer exp) {
         AtomicReference<Integer> level = new AtomicReference<>(1);
         TreeMap<Integer, Integer> levelMap = contentStartupConfig.getLevelMap();
-        if (levelMap == null) {
-            contentStartupConfig.initLevelMap();
-            levelMap = contentStartupConfig.Level_MAP;
+        if (levelMap == null || levelMap.isEmpty()) {
+            return 1;
         }
         AtomicBoolean isFound = new AtomicBoolean(false);
         levelMap.forEach((singleLevel, expThreshold) -> {
