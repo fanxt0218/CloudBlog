@@ -8,8 +8,10 @@ import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.UserListPo;
+import com.cloudblog.common.pojo.Po.WebSiteComponentPo;
 import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.pojo.Vo.*;
+import com.cloudblog.common.result.AjaxResult;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -228,4 +230,37 @@ public interface ManagerMapper {
      * @return
      */
     ESPost getESPostInfo(Long id);
+
+    /**
+     * 获取网站组件定义
+     * @param po
+     * @return
+     */
+    List<SiteContent> getWebSiteComponentDefine(@Param("po") WebSiteComponentPo po, @Param("all") Boolean all);
+
+    /**
+     * 编辑网站组件定义
+     * @param siteContent
+     */
+    void editWebSiteComponent(@Param("siteContent") SiteContent siteContent);
+
+    /**
+     * 添加网站组件定义
+     * @param siteContent
+     */
+    void addComponent(@Param("siteContent") SiteContent siteContent);
+
+    /**
+     * 删除网站组件定义
+     * @param id
+     * @return
+     */
+    void deleteComponent(Long id);
+
+    /**
+     * 获取网站组件定义
+     * @param po
+     * @return
+     */
+    List<SiteContent> getWebSiteComponentDefineForUser(@Param("po") WebSiteComponentPo po);
 }

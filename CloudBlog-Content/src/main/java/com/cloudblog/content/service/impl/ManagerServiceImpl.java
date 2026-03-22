@@ -11,14 +11,12 @@ import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
-import com.cloudblog.common.pojo.Po.ContentListManagePo;
-import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
-import com.cloudblog.common.pojo.Po.UserListPo;
-import com.cloudblog.common.pojo.Po.WorkOrderListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.common.utils.PasswordUtil;
 import com.cloudblog.common.utils.RedisUtil;
+import com.cloudblog.common.utils.UploadUtil;
 import com.cloudblog.content.mapper.ManagerMapper;
 import com.cloudblog.content.service.ManagerService;
 import com.cloudblog.content.service.NotificationService;
@@ -55,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -395,6 +394,91 @@ public class ManagerServiceImpl implements ManagerService {
 
         log.info("查询到 {} 篇热门文章", hotArticleList.size());
         return AjaxResult.success(hotArticleList);
+    }
+
+    @Override
+    public AjaxResult getComponentDefine(WebSiteComponentPo po) {
+        List<SiteContent> siteContentList = managerMapper.getWebSiteComponentDefine(po ,false);
+        return AjaxResult.success(siteContentList);
+    }
+
+    @Override
+    public AjaxResult uploadWebSiteResource(String category, String contentType, MultipartFile file) {
+        // 查询资源前缀路径
+        List<SiteContent> componentDefine = managerMapper.getWebSiteComponentDefine(new WebSiteComponentPo(category, contentType), true);
+        if (componentDefine == null || componentDefine.isEmpty()) {
+            return AjaxResult.warn("未找到该组件定义");
+        }
+        String resourcePrefix = componentDefine.get(0).getGroupName();
+        // 上传文件
+        String filePath = UploadUtil.uploadFile(file, "/system" + resourcePrefix);
+        return AjaxResult.success("上传成功", filePath);
+    }
+
+    @Override
+    public AjaxResult editWebSiteComponent(EditWebSiteComponentPo po) {
+        if (po.getWebSiteComponentPo() == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        WebSiteComponentPo webSiteComponentPo = po.getWebSiteComponentPo();
+        if (webSiteComponentPo.getCategory() == null || webSiteComponentPo.getCategory().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (webSiteComponentPo.getContentType() == null || webSiteComponentPo.getContentType().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (po.getSiteContentList() != null && !po.getSiteContentList().isEmpty()) {
+            for (SiteContent siteContent : po.getSiteContentList()) {
+                managerMapper.editWebSiteComponent(siteContent);
+            }
+        }
+        return AjaxResult.success("修改完成");
+    }
+
+    @Override
+    public AjaxResult addComponent(SiteContent siteContent) {
+        if (siteContent == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (siteContent.getCategory() == null || siteContent.getCategory().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        if (siteContent.getContentType() == null || siteContent.getContentType().isEmpty()) {
+            return AjaxResult.warn("参数错误");
+        }
+        // 查询组件定义
+        List<SiteContent> componentDefine = managerMapper.getWebSiteComponentDefine(new WebSiteComponentPo(siteContent.getCategory(), siteContent.getContentType()), true);
+        if (componentDefine == null || componentDefine.isEmpty()) {
+            return AjaxResult.warn("未找到该组件定义");
+        }
+        siteContent.setGroupName(componentDefine.get(0).getGroupName());
+        siteContent.setContentKey(siteContent.getCategory() + "_" + siteContent.getContentType() + "_" + componentDefine.size());
+        siteContent.setStatus(1);
+        siteContent.setIsPublic(0);
+        siteContent.setCreateTime(LocalDateTime.now());
+        managerMapper.addComponent(siteContent);
+        return AjaxResult.success("添加完成");
+    }
+
+
+    @Override
+    public AjaxResult deleteComponent(Long id) {
+        try {
+            managerMapper.deleteComponent(id);
+        } catch (Exception e) {
+            log.error("删除组件失败", e);
+            throw new RuntimeException(e);
+        }
+        return AjaxResult.success();
+    }
+
+    @Override
+    public AjaxResult getComponentDefineForUser(WebSiteComponentPo po) {
+        if (po == null) {
+            return AjaxResult.warn("参数错误");
+        }
+        List<SiteContent> siteContentList = managerMapper.getWebSiteComponentDefineForUser(po);
+        return AjaxResult.success(siteContentList);
     }
 
     /**

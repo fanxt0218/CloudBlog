@@ -1,14 +1,22 @@
 package com.cloudblog.common.pojo.DoMain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
+@Slf4j
 @TableName("site_content")
 public class SiteContent {
 
@@ -70,7 +78,11 @@ public class SiteContent {
      * 扩展属性 (JSON 格式)
      * 例如：{"linkUrl":"xxx","target":"_blank","priority":1}
      */
-    private String attributes;
+    @TableField(exist = false)
+    private Map<String, Object> attributesMap; // Java 中操作用
+
+    @JsonRawValue
+    private String attributes; // 实际存入 DB 的 JSON 字符串
 
     /**
      * 状态：0-禁用 1-启用
@@ -97,4 +109,35 @@ public class SiteContent {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
+
+
+
+
+    // Getter：Map → JSON String
+    public void setAttributesMap(Map<String, Object> map) {
+        if (map == null || map.isEmpty()) {
+            this.attributes = "{}";
+        } else {
+            try {
+                this.attributes = new ObjectMapper().writeValueAsString(map);
+            } catch (JsonProcessingException e) {
+                log.error("序列化 attributes 失败", e);
+                this.attributes = "{}";
+            }
+        }
+    }
+
+    // Setter：JSON String → Map
+    public Map<String, Object> getAttributesMap() {
+        if (this.attributes == null || this.attributes.isBlank() || "{}".equals(this.attributes)) {
+            return new HashMap<>();
+        }
+        try {
+            return new ObjectMapper().readValue(this.attributes, Map.class);
+        } catch (Exception e) {
+            log.error("反序列化 attributes 失败", e);
+            return new HashMap<>();
+        }
+    }
 }

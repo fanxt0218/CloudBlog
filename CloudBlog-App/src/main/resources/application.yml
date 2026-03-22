@@ -98,6 +98,7 @@ cloudblog:
       - /search/**
       - /content/share/**
       - /content/vip/getUserVipInfo
+      - /admin/website/getComponentDefineForUser
   default:
     avatar: ${blog.default.avatar}
     password: ${blog.default.password}

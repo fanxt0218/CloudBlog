@@ -2,11 +2,9 @@ package com.cloudblog.content.service;
 
 import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.*;
-import com.cloudblog.common.pojo.Po.ContentListManagePo;
-import com.cloudblog.common.pojo.Po.ReviewOpinionPo;
-import com.cloudblog.common.pojo.Po.UserListPo;
-import com.cloudblog.common.pojo.Po.WorkOrderListPo;
+import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.result.AjaxResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -55,4 +53,16 @@ public interface ManagerService {
     AjaxResult getDataBoardUser();
 
     AjaxResult getHotArticle(Integer limit);
+
+    AjaxResult getComponentDefine(WebSiteComponentPo po);
+
+    AjaxResult uploadWebSiteResource(String category, String contentType, MultipartFile file);
+
+    AjaxResult editWebSiteComponent(EditWebSiteComponentPo po);
+
+    AjaxResult addComponent(SiteContent siteContent);
+
+    AjaxResult deleteComponent(Long id);
+
+    AjaxResult getComponentDefineForUser(WebSiteComponentPo po);
 }

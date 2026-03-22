@@ -25,7 +25,6 @@
         <result property="totalScore" column="total_score"/>
     </resultMap>
 
-
     <select id="getContentReviewList" resultType="com.cloudblog.common.pojo.Vo.ContentReviewVo">
         SELECT
             content_id,
@@ -758,5 +757,161 @@
         where
             p.id = #{id}
     </select>
+
+    <select id="getWebSiteComponentDefine" resultType="com.cloudblog.common.pojo.DoMain.SiteContent">
+        select
+            id,
+            content_type,
+            content_key,
+            content_value,
+            content_format,
+            category,
+            group_name,
+            title,
+            description,
+            sort_order,
+            attributes,
+            status,
+            is_public,
+            created_by,
+            updated_by,
+            create_time,
+            update_time
+        from
+            site_content
+        where
+            content_type = #{po.contentType}
+            and category = #{po.category}
+            <if test="all == false">
+                and status = 1
+            </if>
+        order by
+            sort_order asc,
+            update_time desc
+    </select>
+
+    <select id="getWebSiteComponentDefineForUser" resultType="com.cloudblog.common.pojo.DoMain.SiteContent"
+            parameterType="com.cloudblog.common.pojo.Po.WebSiteComponentPo">
+        select
+            id,
+            content_type,
+            content_key,
+            content_value,
+            content_format,
+            category,
+            group_name,
+            title,
+            description,
+            sort_order,
+            attributes,
+            status,
+            is_public,
+            created_by,
+            updated_by,
+            create_time,
+            update_time
+        from
+            site_content
+        where
+            content_type = #{po.contentType}
+            and category = #{po.category}
+            and status = 1
+            and is_public = 1
+        order by
+            sort_order asc,
+            update_time desc
+    </select>
+
+    <update id="editWebSiteComponent">
+        update
+            site_content
+        <set>
+            <if test="siteContent.contentValue != null and siteContent.contentValue != ''">
+                content_value = #{siteContent.contentValue},
+            </if>
+            <if test="siteContent.sortOrder != null">
+                sort_order = #{siteContent.sortOrder},
+            </if>
+            <if test="siteContent.isPublic != null">
+                is_public = #{siteContent.isPublic},
+            </if>
+            <if test="siteContent.attributes != null">
+                attributes = #{siteContent.attributes},
+            </if>
+            update_time = now()
+        </set>
+        where
+            id = #{siteContent.id}
+    </update>
+
+    <!-- 可复用的字段列表 -->
+    <sql id="webSiteComponentFields">
+        content_type,
+        content_key,
+        content_value,
+        content_format,
+        category,
+        group_name,
+        title,
+        description,
+        sort_order,
+        attributes,
+        status,
+        is_public,
+        created_by,
+        updated_by,
+        create_time,
+        update_time
+    </sql>
+
+    <!-- 可复用的值列表 -->
+    <sql id="webSiteComponentValues">
+        #{siteContent.contentType},
+        #{siteContent.contentKey},
+        #{siteContent.contentValue},
+        #{siteContent.contentFormat},
+        #{siteContent.category},
+        #{siteContent.groupName},
+        #{siteContent.title},
+        #{siteContent.description},
+        #{siteContent.sortOrder},
+        #{siteContent.attributes},
+        #{siteContent.status},
+        #{siteContent.isPublic},
+        #{siteContent.createdBy},
+        #{siteContent.updatedBy},
+        #{siteContent.createTime},
+        #{siteContent.updateTime}
+    </sql>
+
+    <insert id="addComponent">
+        INSERT INTO site_content (
+        <include refid="webSiteComponentFields"/>
+        ) VALUES (
+        <include refid="webSiteComponentValues"/>
+        )
+        ON DUPLICATE KEY UPDATE
+        update_time = NOW(),
+        <trim prefix="" suffix="" suffixOverrides=",">
+            <if test="siteContent.contentValue != null and siteContent.contentValue != ''">
+                content_value = VALUES(content_value),
+            </if>
+            <if test="siteContent.sortOrder != null">
+                sort_order = VALUES(sort_order),
+            </if>
+            <if test="siteContent.attributes != null and siteContent.attributes != ''">
+                attributes = VALUES(attributes)
+            </if>
+        </trim>
+    </insert>
+
+    <update id="deleteComponent" parameterType="java.lang.Long">
+        update
+            site_content
+        set
+            status = 0
+        where
+            id = #{id}
+    </update>
 
 </mapper>
