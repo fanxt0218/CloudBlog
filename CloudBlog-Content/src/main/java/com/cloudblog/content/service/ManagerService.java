@@ -65,4 +65,8 @@ public interface ManagerService {
     AjaxResult deleteComponent(Long id);
 
     AjaxResult getComponentDefineForUser(WebSiteComponentPo po);
+
+    AjaxResult getRagText();
+
+    AjaxResult editRagText(MultipartFile file);
 }

@@ -1,5 +1,6 @@
 package com.cloudblog.content.controller;
 
+import com.cloudblog.common.pojo.DoMain.WorkOrder;
 import com.cloudblog.common.pojo.Po.ReportPo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.WorkOrderService;
@@ -31,5 +32,13 @@ public class WorkOrderController {
             @RequestParam(required = false) Integer pageSize
     ) {
         return workOrderService.query(userId, pageNum, pageSize);
+    }
+
+    /**
+     * 提交工单
+     */
+    @PostMapping("/submit")
+    public AjaxResult submit(@RequestBody WorkOrder workOrder) {
+        return workOrderService.submit(workOrder);
     }
 }

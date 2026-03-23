@@ -28,4 +28,24 @@
         wo.create_time DESC,
         wo.id DESC
     </select>
+
+    <select id="getUserInfoByPhone" resultType="com.cloudblog.common.pojo.DoMain.User"
+            parameterType="java.lang.String">
+        select
+            id,
+            user_account,
+            phone,
+            email,
+            password,
+            status,
+            last_login_time,
+            permission_id,
+            create_time
+        from
+            user
+        where
+            phone = #{phone}
+            and
+            (status = 0 or status = 1)
+    </select>
 </mapper>

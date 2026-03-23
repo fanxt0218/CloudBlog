@@ -175,8 +175,17 @@ public class AIController {
      */
     @PostMapping("/summary")
     public AjaxResult summary(@RequestBody CreateSummaryPo po) {
-        String message = "这是一篇文章，根据其中的标题和内容进行总结，要求语义简洁明了，旨在帮助读者快速了解文章要点，风格口语化，避免markdown格式输出，字数严格控制在255字以内/\n" + po.getContent();
-        String prompt = new SummaryPrompt().addRule("你本次的工作是帮助用户进行文章摘要").getPrompt();
+        String rule = """
+                根据用户提供的文章内容，对标题和内容进行总结，风格口语化，避免markdown格式输出，字数严格控制在255字以内
+                要求:
+                -语义简洁明了
+                -避免多余的内容，例如自我介绍
+                -站在作者的角度去表达，旨在帮助读者快速了解文章要点
+                """;
+        String message = """
+                我正在编写一篇文章，帮我生成文章的摘要，下面是的文章内容：
+                """ + po.getContent();
+        String prompt = new SummaryPrompt().addRule(rule).getPrompt();
         String res = "";
         try {
             res = tempChat(message, prompt, null);

@@ -1,5 +1,6 @@
 package com.cloudblog.content.service;
 
+import com.cloudblog.common.pojo.DoMain.WorkOrder;
 import com.cloudblog.common.pojo.Po.ReportPo;
 import com.cloudblog.common.result.AjaxResult;
 
@@ -8,4 +9,6 @@ public interface WorkOrderService {
     AjaxResult report(ReportPo po);
 
     AjaxResult query(Long userId, Integer pageNum, Integer pageSize);
+
+    AjaxResult submit(WorkOrder workOrder);
 }

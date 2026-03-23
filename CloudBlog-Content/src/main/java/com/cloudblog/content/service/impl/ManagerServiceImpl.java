@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -81,7 +82,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Value("${elasticsearch.server.index}")
     private String indexName;
-    @Value("${blog.default.password}")
+    @Value("${cloudblog.default.password}")
     private String defaultPassword;
 
     @Override
@@ -479,6 +480,81 @@ public class ManagerServiceImpl implements ManagerService {
         }
         List<SiteContent> siteContentList = managerMapper.getWebSiteComponentDefineForUser(po);
         return AjaxResult.success(siteContentList);
+    }
+
+    @Override
+    public AjaxResult getRagText() {
+        try {
+            // 使用ClassLoader从resources目录加载文件
+            ClassLoader classLoader = getClass().getClassLoader();
+            java.net.URL resource = classLoader.getResource("rag/preload.txt");
+
+            if (resource == null) {
+                log.error("RAG配置文件未找到: rag/preload.txt");
+                return AjaxResult.error("RAG配置文件未找到");
+            }
+
+            java.nio.file.Path path = java.nio.file.Paths.get(resource.toURI());
+            String content = java.nio.file.Files.readString(path, java.nio.charset.StandardCharsets.UTF_8);
+
+            log.info("成功读取RAG预加载文本，大小: {} 字符", content.length());
+            return AjaxResult.success("查询成功", content.trim());
+        } catch (java.net.URISyntaxException e) {
+            log.error("解析RAG文件路径失败", e);
+            return AjaxResult.error("文件路径解析失败");
+        } catch (java.io.IOException e) {
+            log.error("读取RAG文件失败", e);
+            return AjaxResult.error("读取RAG文件失败");
+        } catch (Exception e) {
+            log.error("获取RAG文本时发生未知错误", e);
+            return AjaxResult.error("获取RAG文本失败");
+        }
+    }
+
+    @Override
+    public AjaxResult editRagText(MultipartFile file) {
+        // 判断文件格式
+        if (file == null || !file.getContentType().equals("text/plain")) {
+            return AjaxResult.warn("请上传有效的文本文件");
+        }
+
+        try {
+            // 获取项目根路径
+            String projectRoot = System.getProperty("user.dir");
+            String resourcesPath = projectRoot + "/CloudBlog-Common/src/main/resources/rag/preload.txt";
+            String targetPath = "classpath:/rag/preload.txt";
+
+            // 创建目标文件
+            java.nio.file.Path resourceFilePath = java.nio.file.Paths.get(resourcesPath);
+
+            // 确保目录存在
+            java.nio.file.Files.createDirectories(resourceFilePath.getParent());
+
+            // 读取上传的文件内容（保留原始格式）
+            String content = new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+
+            // 写入resources目录（用于永久保存）
+            java.nio.file.Files.write(resourceFilePath, content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            // 获取classpath路径并写入（用于运行时访问）
+            java.net.URL classpathUrl = getClass().getClassLoader().getResource("rag/preload.txt");
+            if (classpathUrl != null) {
+                java.nio.file.Path classpathFilePath = java.nio.file.Paths.get(classpathUrl.toURI());
+                java.nio.file.Files.write(classpathFilePath, content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+
+            log.info("成功更新RAG预加载文本，文件大小: {} 字符", content.length());
+            return AjaxResult.success("RAG文本更新成功");
+        } catch (java.net.URISyntaxException e) {
+            log.error("解析RAG文件路径失败", e);
+            return AjaxResult.error("文件路径解析失败");
+        } catch (java.io.IOException e) {
+            log.error("写入RAG文件失败", e);
+            return AjaxResult.error("写入RAG文件失败");
+        } catch (Exception e) {
+            log.error("更新RAG文本时发生未知错误", e);
+            return AjaxResult.error("更新RAG文本失败");
+        }
     }
 
     /**

@@ -99,6 +99,7 @@ cloudblog:
       - /content/share/**
       - /content/vip/getUserVipInfo
       - /admin/website/getComponentDefineForUser
+      - /workOrder/submit
   default:
     avatar: ${blog.default.avatar}
     password: ${blog.default.password}
