@@ -14,7 +14,11 @@ public enum SiteContentType {
 
     LOGIN_MANAGE_BG("管理端登录页背景", "login_manage_bg"),
 
-    VIEWPAGE_BG("浏览页背景", "viewpage_bg");
+    VIEWPAGE_BG("浏览页背景", "viewpage_bg"),
+
+    PERSONAL_BG("个人中心背景", "personal_bg"),
+
+    PROFILE_BG("用户主页背景", "profile_bg");
 
     private String name;
 
