@@ -69,4 +69,6 @@ public interface ManagerService {
     AjaxResult getRagText();
 
     AjaxResult editRagText(MultipartFile file);
+
+    AjaxResult getWorkOrderDetail(WorkOrder workOrder);
 }

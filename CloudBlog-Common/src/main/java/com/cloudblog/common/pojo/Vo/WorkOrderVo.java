@@ -18,6 +18,8 @@ public class WorkOrderVo {
 
     private String userName;
 
+    private String userAccount;
+
     private Long targetId;
 
     /**

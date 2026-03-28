@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
+import com.cloudblog.common.pojo.Dto.WorkOrderDetailInfo;
 import com.cloudblog.common.pojo.Po.ContentListManagePo;
 import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Po.WebSiteComponentPo;
@@ -263,4 +264,13 @@ public interface ManagerMapper {
      * @return
      */
     List<SiteContent> getWebSiteComponentDefineForUser(@Param("po") WebSiteComponentPo po);
+
+    /**
+     * 根据目标类型和目标 ID 获取工单详情信息
+     * @param targetType 目标类型 0:文章 1:动态 2:评论 3:账号
+     * @param targetId 目标 ID
+     * @return 工单详情信息
+     */
+    WorkOrderDetailInfo getWorkOrderDetailInfo(@Param("targetType") Integer targetType, @Param("targetId") Long targetId);
+
 }

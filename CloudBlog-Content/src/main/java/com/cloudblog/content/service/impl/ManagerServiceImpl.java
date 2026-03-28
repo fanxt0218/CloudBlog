@@ -11,6 +11,7 @@ import com.cloudblog.common.pojo.DoMain.*;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.PostAndShareInfo;
+import com.cloudblog.common.pojo.Dto.WorkOrderDetailInfo;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
@@ -554,6 +555,36 @@ public class ManagerServiceImpl implements ManagerService {
         } catch (Exception e) {
             log.error("更新RAG文本时发生未知错误", e);
             return AjaxResult.error("更新RAG文本失败");
+        }
+    }
+
+    @Override
+    public AjaxResult getWorkOrderDetail(WorkOrder workOrder) {
+        if (
+            workOrder == null ||
+            workOrder.getTargetType() == null ||
+            workOrder.getTargetId() == null
+        ) {
+            return AjaxResult.warn("缺少参数");
+        }
+        // 根据目标类型和目标id
+        try {
+            WorkOrderDetailInfo detailInfo = managerMapper.getWorkOrderDetailInfo(
+                    workOrder.getTargetType(),
+                    workOrder.getTargetId()
+            );
+
+            if (detailInfo == null) {
+                return AjaxResult.warn("未找到对应的工单详情信息");
+            }
+
+            detailInfo.setOrderId(workOrder.getOrderId());
+            detailInfo.setTargetId(workOrder.getTargetId());
+
+            return AjaxResult.success(detailInfo);
+        } catch (Exception e) {
+            log.error("获取工单详情失败", e);
+            return AjaxResult.error("获取工单详情失败：" + e.getMessage());
         }
     }
 

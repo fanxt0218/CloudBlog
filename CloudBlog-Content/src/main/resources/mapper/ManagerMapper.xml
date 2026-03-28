@@ -544,6 +544,7 @@
             wo.order_id,
             wo.user_id,
             ui.user_name,
+            u.user_account,
             wo.target_id,
             wo.target_type,
             wo.order_type,
@@ -558,6 +559,9 @@
             inner join
             user_info ui
             on wo.user_id = ui.user_id
+            inner join
+            user u
+            on wo.user_id = u.id
         <where>
         <if test="po.status != null">
             wo.status = #{po.status}
@@ -913,5 +917,49 @@
         where
             id = #{id}
     </update>
+
+    <select id="getWorkOrderDetailInfo" resultType="com.cloudblog.common.pojo.Dto.WorkOrderDetailInfo">
+        <choose>
+            <!-- 0:文章 -->
+            <when test="targetType == 0">
+                SELECT
+                p.title AS mainInfo,
+                p.status AS status,
+                p.create_time AS createTime
+                FROM posts p
+                WHERE p.id = #{targetId}
+            </when>
+            <!-- 1:动态 -->
+            <when test="targetType == 1">
+                SELECT
+                s.brief AS mainInfo,
+                s.status AS status,
+                s.create_time AS createTime
+                FROM share s
+                WHERE s.id = #{targetId}
+            </when>
+            <!-- 2:评论 -->
+            <when test="targetType == 2">
+                SELECT
+                cc.content AS mainInfo,
+                c.status AS status,
+                c.create_time AS createTime
+                FROM comments c
+                LEFT JOIN comment_content cc ON c.id = cc.comment_id
+                WHERE c.id = #{targetId}
+            </when>
+            <!-- 3:账号 -->
+            <when test="targetType == 3">
+                SELECT
+                CONCAT(ui.user_name, '（', u.user_account, '）') AS mainInfo,
+                u.status AS status,
+                u.create_time AS createTime
+                FROM user u
+                LEFT JOIN user_info ui ON u.id = ui.user_id
+                WHERE u.id = #{targetId}
+            </when>
+        </choose>
+    </select>
+
 
 </mapper>

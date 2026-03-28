@@ -29,6 +29,14 @@ public class WorkOrderManageController {
     }
 
     /**
+     * 获取工单详情
+     */
+    @PostMapping("/getWorkOrderDetail")
+    public AjaxResult getWorkOrderDetail(@RequestBody WorkOrder workOrder) {
+        return managerService.getWorkOrderDetail(workOrder);
+    }
+
+    /**
      * 处理工单
      */
     @PostMapping("/handleWorkOrder")
