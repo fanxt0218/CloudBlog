@@ -47,6 +47,8 @@ public class UserServiceImpl implements UserService {
 
     @Value("${cloudblog.jwt.tokenTTL}")
     private Duration tokenTTL;
+    @Value("${cloudblog.default.avatar}")
+    private String defaultAvatar;
 
 
     @Transactional
@@ -96,7 +98,7 @@ public class UserServiceImpl implements UserService {
         userInfo.setUserId(user.getId());
         userInfo.setUserName(userPo.getUserName());
         userInfo.setCreateTime(LocalDateTime.now());
-        userInfo.setImage("/profile/avatar/default/defaultAvatar.png");
+        userInfo.setImage(defaultAvatar);
         userInfoMapper.insert(userInfo);
 
         // 初始化默认收藏夹

@@ -28,7 +28,7 @@ spring:
       embedding:
         base-url: ${blog.openai.embedding.base-url}
         options:
-          model: mxbai-embed-large:335m
+          model: nomic-embed-text:v1.5
     chat:
       memory:
         repository:

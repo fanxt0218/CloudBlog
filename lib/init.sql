@@ -102,7 +102,7 @@ create table tag (
     update_time datetime comment '更新时间',
     status tinyint default 0 comment '标签状态,0:正常 1:删除',
 
-    unique index uk_tag_name (tag_name)
+    unique index uk_id_tag_name (id,tag_name)
 )comment '标签表';
 
 insert into tag (tag_name, description, create_time) values

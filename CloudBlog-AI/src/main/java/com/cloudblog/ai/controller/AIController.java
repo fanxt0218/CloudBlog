@@ -53,8 +53,8 @@ public class AIController {
     public AIController(ChatClient.Builder chatClient, VectorStore vectorStore, ChatMemory chatMemory) {
         this.chatClient = chatClient
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build()
-//                        QuestionAnswerAdvisor.builder(vectorStore).build()
+                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        QuestionAnswerAdvisor.builder(vectorStore).build()
                 )
                 .defaultSystem(SystemPromptGenerator.generateSystemPrompt()).build();
     }
