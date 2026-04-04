@@ -13,5 +13,5 @@ public class LoginPo {
 
     private String twicePassword;
 
-    private boolean isAdmin;
+    private boolean admin;
 }

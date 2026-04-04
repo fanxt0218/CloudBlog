@@ -34,4 +34,6 @@ public class UserHomePageVo {
     private Long focusCount;
 
     private Integer isVip;
+
+    private Integer permissionId;
 }

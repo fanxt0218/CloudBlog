@@ -91,6 +91,9 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         // 用户信息
         UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
+        if (userInfo == null) {
+            return AjaxResult.warn("用户不存在");
+        }
         UserHomePageVo userHomePageVo = new UserHomePageVo();
         userHomePageVo.setUserName(userInfo.getUserName());
         userHomePageVo.setImage(userInfo.getImage());
@@ -121,6 +124,8 @@ public class UserInfoServiceImpl implements UserInfoService {
         userHomePageVo.setFocusCount(focusCount);
         // 是否是VIP
         userHomePageVo.setIsVip(userInfo.getIsVip());
+        // 用户权限
+        userHomePageVo.setPermissionId(userService.getUser(userId).getPermissionId());
 
         return AjaxResult.success(userHomePageVo);
     }
