@@ -16,17 +16,23 @@ import com.cloudblog.content.mapper.CategoryMapper;
 import com.cloudblog.content.mapper.PostMapper;
 import com.cloudblog.content.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Value("${file.resource.path}")
+    private String resourcePath;
 
     @Override
     public AjaxResult getCategoryInfo(Long userId) {
@@ -99,6 +105,22 @@ public class CategoryServiceImpl implements CategoryService {
         if (po.getCategoryName() == null || po.getCategoryName().isBlank()) {
             return AjaxResult.error("分类名称不能为空");
         }
+
+        String imageUrl = po.getImage();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            String defaultPath = resourcePath + "/system/category/defaultCovers";
+            File covers = new File(defaultPath);
+            if (covers.exists() && covers.isDirectory()) {
+                File[] files = covers.listFiles();
+                if (files != null && files.length > 0) {
+                    Random random = new Random();
+                    File randomFile = files[random.nextInt(files.length)];
+                    imageUrl = "/profile/system/category/defaultCovers/" + randomFile.getName();
+                    po.setImage(imageUrl);
+                }
+            }
+        }
+
 
         Category category = new Category();
         category.setUserId(po.getUserId());

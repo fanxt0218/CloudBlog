@@ -219,7 +219,7 @@ create table category (
     update_time datetime comment '更新时间',
     status tinyint default 0 comment '分类状态,0:正常 1:删除',
 
-    unique index uk_category_name (category_name),
+#     unique index uk_category_name (category_name),
     index idx_user_id (user_id)
 )comment '分类表';
 
