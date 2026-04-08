@@ -52,7 +52,14 @@ public interface InterestMapper extends BaseMapper<Tag> {
      */
     void addPostTag(@Param("tagIds") List<Long> tagIds, @Param("postId") Long id);
 
-     /**
+    /**
+     * 删除文章标签
+     * @param tagIds
+     * @param postId
+     */
+    void removePostTag(@Param("tagIds") List<Long> tagIds, @Param("postId") Long postId);
+
+    /**
      * 获取文章标签信息
      * @param postId
      * @return

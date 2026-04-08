@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class InterestServiceImpl implements InterestService {
@@ -99,10 +100,38 @@ public class InterestServiceImpl implements InterestService {
 
     @Override
     public void addPostTag(List<Long> tagIds, Long id) {
-        // 查询原有标签进行过滤
-        List<Tag> tags = interestMapper.getPostTagInfo(id);
-        tagIds.removeAll(tags.stream().map(Tag::getId).map(Long::valueOf).toList());
-        interestMapper.addPostTag(tagIds, id);
+        if (tagIds == null) {
+            tagIds = List.of();
+        }
+
+        // 查询原有标签
+        List<Tag> existingTags = interestMapper.getPostTagInfo(id);
+        List<Long> existingTagIds = existingTags.stream()
+                .map(Tag::getId)
+                .filter(Objects::nonNull)
+                .map(Long::valueOf)
+                .toList();
+
+        // 计算需要新增的标签（在新列表中但不在原有列表中）
+        List<Long> toAdd = tagIds.stream()
+                .filter(tagId -> !existingTagIds.contains(tagId))
+                .toList();
+
+        // 计算需要删除的标签（在原有列表中但不在新列表中）
+        List<Long> finalTagIds = tagIds;
+        List<Long> toRemove = existingTagIds.stream()
+                .filter(tagId -> !finalTagIds.contains(tagId))
+                .toList();
+
+        // 执行新增操作
+        if (!toAdd.isEmpty()) {
+            interestMapper.addPostTag(toAdd, id);
+        }
+
+        // 执行删除操作
+        if (!toRemove.isEmpty()) {
+            interestMapper.removePostTag(toRemove, id);
+        }
     }
 
     @Override

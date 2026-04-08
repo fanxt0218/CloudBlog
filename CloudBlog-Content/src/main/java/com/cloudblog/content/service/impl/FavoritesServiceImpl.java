@@ -5,6 +5,7 @@ import com.cloudblog.common.pojo.DoMain.Collect;
 import com.cloudblog.common.pojo.DoMain.Favorites;
 import com.cloudblog.common.pojo.DoMain.UserInterest;
 import com.cloudblog.common.pojo.Po.CreateNewFavoritesPo;
+import com.cloudblog.common.pojo.Vo.FavoritesSimpleVo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.mapper.FavoritesMapper;
 import com.cloudblog.content.service.FavoritesService;
@@ -38,7 +39,12 @@ public class FavoritesServiceImpl implements FavoritesService {
         if (userId == null) {
             return AjaxResult.warn("用户ID不能为空");
         }
-        List<Favorites> favorites = favoritesMapper.selectList(new LambdaQueryWrapper<Favorites>().eq(Favorites::getUserId, userId));
+        List<FavoritesSimpleVo> favorites = favoritesMapper.getCollectList(userId);
+        favorites.forEach(singleFavorites -> {
+            singleFavorites.setCollectCount(
+                    favoritesMapper.getPostCountInFavorite(singleFavorites.getId())
+            );
+        });
         return AjaxResult.success(favorites);
     }
 
@@ -112,7 +118,7 @@ public class FavoritesServiceImpl implements FavoritesService {
         }
         // 检查现在有几个收藏夹
         // TODO 后面可能会有收藏夹状态，要根据状态过滤
-        int count = Math.toIntExact(favoritesMapper.selectCount(new LambdaQueryWrapper<Favorites>().eq(Favorites::getUserId, po.getUserId())));
+        int count = Math.toIntExact(favoritesMapper.selectCount(new LambdaQueryWrapper<Favorites>().eq(Favorites::getUserId, po.getUserId()).eq(Favorites::getStatus, 0)));
 
         if (count >= 5) {
             return AjaxResult.warn("最多只能拥有5个收藏夹");

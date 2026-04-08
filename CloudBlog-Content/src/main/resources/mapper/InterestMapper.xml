@@ -71,6 +71,15 @@
         </foreach>
     </insert>
 
+    <delete id="removePostTag">
+        delete from post_tag
+        where post_id = #{postId}
+        and tag_id in
+        <foreach item="tagId" collection="tagIds" open="(" close=")" separator=",">
+            #{tagId}
+        </foreach>
+    </delete>
+
     <select id="getTagList" resultType="com.cloudblog.common.pojo.DoMain.Tag">
         select
             t.id as id,
