@@ -7,10 +7,7 @@ import com.cloudblog.common.enums.ContentType;
 import com.cloudblog.common.pojo.DoMain.Share;
 import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
-import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
-import com.cloudblog.common.pojo.Vo.IndexTopicVo;
-import com.cloudblog.common.pojo.Vo.PublishPageTopicListVo;
-import com.cloudblog.common.pojo.Vo.UserShareVo;
+import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
 import org.apache.ibatis.annotations.Param;
 
@@ -47,7 +44,7 @@ public interface ShareMapper extends BaseMapper<Share> {
      * @param i
      * @return
      */
-    List<UserShareVo> getIndexPostList(
+    List<IndexShareVo> getIndexPostList(
             @Param("lastId") Long lastId,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i,

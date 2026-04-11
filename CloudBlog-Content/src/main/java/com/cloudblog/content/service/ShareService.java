@@ -1,6 +1,7 @@
 package com.cloudblog.content.service;
 
 import com.cloudblog.common.pojo.Po.DeletePostPo;
+import com.cloudblog.common.pojo.Po.EditSharePo;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.IndexFocusArticleVo;
 import com.cloudblog.common.result.AjaxResult;
@@ -40,4 +41,6 @@ public interface ShareService {
     AjaxResult getShare(Long shareId, Long userId);
 
     AjaxResult delete(DeletePostPo po);
+
+    AjaxResult edit(EditSharePo po);
 }

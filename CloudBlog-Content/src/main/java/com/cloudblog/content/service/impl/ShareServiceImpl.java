@@ -13,6 +13,7 @@ import com.cloudblog.common.pojo.DoMain.UserInfo;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.UserSimpleInfo;
 import com.cloudblog.common.pojo.Po.DeletePostPo;
+import com.cloudblog.common.pojo.Po.EditSharePo;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
@@ -141,10 +142,10 @@ public class ShareServiceImpl implements ShareService {
             }
 
             // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
-            List<UserShareVo> shares = shareMapper.getIndexPostList(lastId, lastCreateTime, size + 1, topicId);
+            List<IndexShareVo> shares = shareMapper.getIndexPostList(lastId, lastCreateTime, size + 1, topicId);
 
             // 构建PageResponse返回结果
-            PageResponse<UserShareVo> response = new PageResponse<>();
+            PageResponse<IndexShareVo> response = new PageResponse<>();
             response.setPageSize(size);
 
             // 判断是否还有更多数据
@@ -156,7 +157,7 @@ public class ShareServiceImpl implements ShareService {
                 // 移除多查的一个元素
                 response.setContent(shares.subList(0, size));
                 // 生成下一个游标
-                UserShareVo lastShare = shares.get(size - 1);
+                IndexShareVo lastShare = shares.get(size - 1);
                 Share share = new Share();
                 BeanUtils.copyProperties(lastShare, share);
                 String nextCursor = generateCursor(share);
@@ -273,6 +274,35 @@ public class ShareServiceImpl implements ShareService {
         );
         return update > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
 
+    }
+
+    @Override
+    public AjaxResult edit(EditSharePo po) {
+        if (po.getUserId() == null || po.getShareId() == null) {
+            return AjaxResult.error("参数错误");
+        }
+        try {
+            Share share = new Share();
+            share.setAuthorId(po.getUserId());
+            share.setContent(po.getContent());
+            share.setTopicId(po.getTopicId());
+            share.setCreateTime(LocalDateTime.now());
+            share.setStatus(1);
+            // 生成简略描述
+            String brief = generateBrief(share.getContent());
+            share.setBrief(brief);
+            //TODO 目前只支持上传一张图片
+            if (po.getImageUrls() != null && !po.getImageUrls().isEmpty()) {
+                share.setImage(po.getImageUrls().get(0));
+            }
+            if (po.getVideoUrls() != null && !po.getVideoUrls().isEmpty()) {
+                share.setVideo(po.getVideoUrls().get(0));
+            }
+            shareMapper.update(share, new LambdaUpdateWrapper<>(Share.class).eq(Share::getId, po.getShareId()));
+        } catch (Exception e) {
+            return AjaxResult.error("发布失败");
+        }
+        return AjaxResult.success("发布成功");
     }
 
     /**

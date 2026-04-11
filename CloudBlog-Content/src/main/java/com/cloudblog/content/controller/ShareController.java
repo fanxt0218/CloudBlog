@@ -3,6 +3,7 @@ package com.cloudblog.content.controller;
 import com.cloudblog.common.annotation.AutoAddExp;
 import com.cloudblog.common.enums.ExpSource;
 import com.cloudblog.common.pojo.Po.DeletePostPo;
+import com.cloudblog.common.pojo.Po.EditSharePo;
 import com.cloudblog.common.pojo.Po.PublishSharePo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ShareService;
@@ -71,5 +72,13 @@ public class ShareController {
     @PostMapping("/delete")
     public AjaxResult delete(@RequestBody DeletePostPo  po) {
         return shareService.delete(po);
+    }
+
+    /**
+     * 编辑动态
+     */
+    @PostMapping("/edit")
+    public AjaxResult edit(@RequestBody EditSharePo po) {
+        return shareService.edit(po);
     }
 }

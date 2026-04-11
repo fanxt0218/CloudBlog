@@ -10,6 +10,7 @@ import com.cloudblog.common.pojo.Dto.QRContent;
 import com.cloudblog.common.pojo.Po.CreateAssistPo;
 import com.cloudblog.common.pojo.Po.CreateSummaryPo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.HtmlUtil;
 import com.cloudblog.common.utils.prompt.CreateAssistPrompt;
 import com.cloudblog.common.utils.prompt.SummaryPrompt;
 import com.cloudblog.common.utils.prompt.SystemPromptGenerator;
@@ -50,13 +51,15 @@ public class AIController {
 
     private final ChatClient chatClient;
 
+    private final VectorStore vectorStore;
+
     public AIController(ChatClient.Builder chatClient, VectorStore vectorStore, ChatMemory chatMemory) {
         this.chatClient = chatClient
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                        QuestionAnswerAdvisor.builder(vectorStore).build()
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )
                 .defaultSystem(SystemPromptGenerator.generateSystemPrompt()).build();
+        this.vectorStore = vectorStore;
     }
 
     @PostMapping("/chat")
@@ -75,6 +78,7 @@ public class AIController {
         // 流式响应
         Flux<String> originStream = processImagePrompt(message, filePath)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .advisors(QuestionAnswerAdvisor.builder(vectorStore).build())
                 .stream()
                 .content();
 
@@ -184,7 +188,7 @@ public class AIController {
                 """;
         String message = """
                 我正在编写一篇文章，帮我生成文章的摘要，下面是的文章内容：
-                """ + po.getContent();
+                """ + HtmlUtil.removeHtmlTag(po.getContent());
         String prompt = new SummaryPrompt().addRule(rule).getPrompt();
         String res = "";
         try {
