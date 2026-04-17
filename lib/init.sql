@@ -500,3 +500,32 @@ create table site_content (
     index idx_status (status),
     index idx_type (content_type)
 ) comment '网站内容配置表';
+
+-- 下载资源表
+drop table if exists download_resource;
+create table download_resource (
+    id bigint primary key auto_increment comment '主键 ID',
+    resource_name varchar(100) not null comment '资源名称',
+    resource_url varchar(255) not null comment '资源下载链接',
+    resource_size varchar(20) comment '资源大小',
+    resource_type varchar(50) comment '资源类型，如：IMAGE-图片、VIDEO-视频、DOCUMENT-文档、ARCHIVE-压缩包等',
+    resource_format varchar(20) comment '资源格式，如：JPG-jpg格式、MP4-mp4格式、DOC-doc格式、RAR-rar格式等',
+    resource_description varchar(255) comment '资源描述',
+    resource_tags varchar(255) comment '资源标签，多个标签用逗号分隔',
+    resource_status tinyint default 1 comment '资源状态：0-禁用 1-启用',
+    resource_creator bigint comment '资源创建人 ID',
+    resource_update_time datetime default current_timestamp on update current_timestamp comment '资源更新时间',
+    resource_create_time datetime default current_timestamp comment '资源创建时间',
+    resource_is_public tinyint default 1 comment '资源是否公开：0-不公开 1-公开',
+    resource_bind_content_id bigint comment '资源绑定的内容 ID',
+    resource_bind_content_type varchar(50) comment '资源绑定的内容类型，如：POST-文章、COMMENT-评论、USER-用户等',
+    vip_resource tinyint default 0 comment '会员专享资源：0-普通资源 1-会员专享资源',
+
+    index idx_name (resource_name),
+    index idx_status (resource_status),
+    index idx_type (resource_type),
+    index idx_format (resource_format),
+    index idx_creator (resource_creator),
+    index idx_resource_tags (resource_tags),
+    index idx_bind_content_id (resource_bind_content_id)
+)

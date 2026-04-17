@@ -8,6 +8,7 @@ file:
     content:
       avatar: /avatar
       defaultCover: /system/create/defaultCover
+      resourcePath: /resource
 
 spring:
   profiles:
@@ -98,6 +99,7 @@ cloudblog:
       - /search/**
       - /content/share/**
       - /content/vip/getUserVipInfo
+      - /content/resource/**
       - /admin/website/getComponentDefineForUser
       - /workOrder/submit
   default:
