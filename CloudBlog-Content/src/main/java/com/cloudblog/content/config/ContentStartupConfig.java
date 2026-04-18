@@ -28,6 +28,9 @@ public class ContentStartupConfig  implements ApplicationRunner {
     // 话题信息
     public List<PublishPageTopicListVo> Topic_List = new ArrayList<>();
 
+    // 资源分类信息
+    public HashMap<String, List<String>> Resource_Category_List = new HashMap<>();
+
     private final LevelService levelService;
 
     private final ShareService shareService;
@@ -37,6 +40,7 @@ public class ContentStartupConfig  implements ApplicationRunner {
 
     private static final String CONTENT_LEVEL_KEY = "content:level";
     private static final String CONTENT_TOPIC_KEY = "content:topic";
+    private static final String CONTENT_RESOURCE_CATEGORY_KEY = "content:resource:category";
     private static final long DEFAULT_TTL_HOURS = 24;
 
     public ContentStartupConfig(LevelService levelService, ShareService shareService) {
@@ -50,6 +54,8 @@ public class ContentStartupConfig  implements ApplicationRunner {
         initLevelMap();
         log.info("加载话题信息");
         initTopicList();
+        log.info("加载资源分类信息");
+        initResourceCategoryList();
     }
 
     /**
@@ -131,5 +137,50 @@ public class ContentStartupConfig  implements ApplicationRunner {
             return (List<PublishPageTopicListVo>) topicList;
         }
         return null;
+    }
+
+    /**
+     * 初始化资源分类列表
+     */
+    public void initResourceCategoryList() {
+        try {
+            HashMap<String, List<String>> categories = new HashMap<>();
+            categories.put("前端", Arrays.asList("图像识别","图像处理","编解码","直播技术"));
+            categories.put("后端", Arrays.asList("Java","C++","C","C#","Python","Netty","PHP","Docker","Kotlin"));
+            categories.put("行业研究", Arrays.asList("数据集","行业报告"));
+            categories.put("移动开发", Arrays.asList("Android","HTML5","IOS","小程序"));
+            categories.put("操作系统", Arrays.asList("Linux","桌面系统","Windows Server","MacOS","OS","Ubuntu","Unix","RedHat","CentOS"));
+            categories.put("人工智能", Arrays.asList("机器学习","深度学习","搜索引擎","自然语言处理"));
+            categories.put("物联网", Arrays.asList("公共安全","智慧城市","智慧交通","智能家居"));
+            categories.put("信息化管理", Arrays.asList("管理软件","IT管理","项目管理","企业管理"));
+            categories.put("网络技术", Arrays.asList("网络基础","网络设备","网络软件","网络监控"));
+            categories.put("安全技术", Arrays.asList("网络安全","系统安全"));
+            categories.put("数据库", Arrays.asList("MySQL","Oracle","SQLServer","SQLite","PostgreSQL","DB2","Redis"));
+            categories.put("硬件开发", Arrays.asList("单片机","嵌入书","VB"));
+            categories.put("游戏开发", Arrays.asList("Unity3D","cocos2D"));
+            categories.put("考试认证", Arrays.asList("华为认证","软考","微软认证","思科认证"));
+            categories.put("音视频", Arrays.asList("图像识别","图像处理"));
+            categories.put("大数据", Arrays.asList("Hadoop","spark","Hive"));
+            categories.put("存储", Arrays.asList("Microsoft","HP","IBM","EMC"));
+            categories.put("云计算", Arrays.asList("平台管理","kubernetes","微服务"));
+            categories.put("区块链", Arrays.asList("比特币","以太坊","Dapp"));
+            categories.put("跨平台", Arrays.asList("ReactNative","CrossApp","APICloud"));
+            categories.put("半导体", Arrays.asList("集成电路"));
+            categories.put("其他", Arrays.asList("其他"));
+
+            redisTemplate.opsForValue().set(CONTENT_RESOURCE_CATEGORY_KEY, categories, Duration.ofHours(DEFAULT_TTL_HOURS));
+        } catch (Exception e) {
+            log.error("加载资源分类信息失败：{}", e.getMessage(), e);
+        }
+    }
+
+    public HashMap<String, List<String>> getResourceCategoryList() {
+        Object resourceCategoryList = redisTemplate.opsForValue().get(CONTENT_RESOURCE_CATEGORY_KEY);
+        if (resourceCategoryList != null) {
+            return (HashMap<String, List<String>>) resourceCategoryList;
+        } else {
+            initResourceCategoryList();
+            return (HashMap<String, List<String>>) redisTemplate.opsForValue().get(CONTENT_RESOURCE_CATEGORY_KEY);
+        }
     }
 }
