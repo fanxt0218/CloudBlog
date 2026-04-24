@@ -41,16 +41,18 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // 配置String类型的字符编码为UTF-8
-        StringHttpMessageConverter stringConverter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
-        stringConverter.setWriteAcceptCharset(false);
-        converters.add(stringConverter);
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        // 修改已有的 StringConverter
+        for (HttpMessageConverter<?> converter : converters) {
+            if (converter instanceof StringHttpMessageConverter stringConverter) {
+                stringConverter.setDefaultCharset(StandardCharsets.UTF_8);
+                stringConverter.setWriteAcceptCharset(false);
+            }
 
-        // 确保Jackson也使用UTF-8
-        MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-        jacksonConverter.setDefaultCharset(StandardCharsets.UTF_8);
-        converters.add(jacksonConverter);
+            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
+                jacksonConverter.setDefaultCharset(StandardCharsets.UTF_8);
+            }
+        }
     }
 
     @Override

@@ -1,4 +1,152 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cloudblog.content.mapper.ResourceMapper">
+
+    <select id="getResourceListWithInterest" resultType="com.cloudblog.common.pojo.Vo.IndexResourceVo">
+        SELECT
+            dr.id,
+            dr.resource_name,
+            dr.resource_url,
+            dr.resource_size,
+            dr.resource_type,
+            dr.resource_format,
+            dr.resource_description,
+            dr.resource_tags,
+            dr.resource_status,
+            dr.resource_creator,
+            ui.user_name as resource_creator_name,
+            ui.image as resource_creator_avatar,
+            dr.resource_update_time,
+            dr.resource_create_time,
+            dr.resource_is_public,
+            dr.resource_bind_content_id,
+            dr.resource_bind_content_type,
+            dr.vip_resource,
+            dr.download_count
+        FROM download_resource dr
+        INNER JOIN (
+        SELECT
+        dr_inner.id AS resource_id,
+        SUM(ui.weight) AS interest_score
+        FROM download_resource dr_inner
+        INNER JOIN user_interest ui ON FIND_IN_SET(CAST(ui.tag_id AS CHAR), dr_inner.resource_tags) > 0
+        WHERE ui.user_id = #{userId}
+        AND dr_inner.resource_status = 1
+        GROUP BY dr_inner.id
+        HAVING interest_score > 0
+        ) match_score ON dr.id = match_score.resource_id
+        inner join
+        user_info ui
+        on dr.resource_creator = ui.user_id
+        WHERE dr.resource_status = 1 and dr.resource_is_public = 1
+        <if test="categoryNames != null">
+            AND dr.resource_type in
+            <foreach item="categoryName" collection="categoryNames" separator="," open="(" close=")">
+                #{categoryName}
+            </foreach>
+        </if>
+        <if test="lastId != null and lastCreateTime != null">
+            AND (
+            dr.resource_create_time &lt; #{lastCreateTime}
+            OR (
+            dr.resource_create_time = #{lastCreateTime}
+            AND dr.id &lt; #{lastId}
+            )
+            )
+        </if>
+        ORDER BY match_score.interest_score DESC, dr.resource_create_time DESC, dr.id DESC
+        LIMIT #{size}
+    </select>
+
+    <select id="getResourceListWithNoInterest" resultType="com.cloudblog.common.pojo.Vo.IndexResourceVo">
+        SELECT
+            dr.id,
+            dr.resource_name,
+            dr.resource_url,
+            dr.resource_size,
+            dr.resource_type,
+            dr.resource_format,
+            dr.resource_description,
+            dr.resource_tags,
+            dr.resource_status,
+            dr.resource_creator,
+            ui.user_name as resource_creator_name,
+            ui.image as resource_creator_avatar,
+            dr.resource_update_time,
+            dr.resource_create_time,
+            dr.resource_is_public,
+            dr.resource_bind_content_id,
+            dr.resource_bind_content_type,
+            dr.vip_resource,
+            dr.download_count
+        FROM download_resource dr
+        left join
+        user_info ui
+        on df.resource_creator = ui.user_id
+        WHERE dr.resource_status = 1 and dr.resource_is_public = 1
+        <if test="tagName != null and tagName != ''">
+            AND FIND_IN_SET(#{tagName}, dr.resource_tags) > 0
+        </if>
+        <if test="lastId != null and lastCreateTime != null">
+            AND (
+            dr.resource_create_time &lt; #{lastCreateTime}
+            OR (
+            dr.resource_create_time = #{lastCreateTime}
+            AND dr.id &lt; #{lastId}
+            )
+            )
+        </if>
+        ORDER BY dr.resource_create_time DESC, dr.id DESC
+        LIMIT #{size}
+    </select>
+
+    <select id="queryResource" resultType="com.cloudblog.common.pojo.Vo.IndexResourceVo">
+        select
+            dr.id,
+            dr.resource_name,
+            dr.resource_url,
+            dr.resource_size,
+            dr.resource_type,
+            dr.resource_format,
+            dr.resource_description,
+            dr.resource_tags,
+            dr.resource_status,
+            dr.resource_creator,
+            ui.user_name as resource_creator_name,
+            ui.image as resource_creator_avatar,
+            dr.resource_update_time,
+            dr.resource_create_time,
+            dr.resource_is_public,
+            dr.resource_bind_content_id,
+            dr.resource_bind_content_type,
+            dr.vip_resource,
+            dr.download_count
+        from download_resource dr
+        left join user_info ui
+        on dr.resource_creator = ui.user_id
+        where dr.resource_status = 1 and dr.resource_is_public = 1
+        <if test="resourceName != null and resourceName != ''">
+            and dr.resource_name like concat('%', #{resourceName}, '%')
+        </if>
+        order by resource_create_time desc
+    </select>
+
+    <select id="getUserInfo" resultType="com.cloudblog.common.pojo.DoMain.UserInfo">
+        select
+            ui.id,
+            ui.user_id,
+            ui.user_name,
+            ui.sex,
+            ui.image,
+            ui.introduction,
+            ui.region,
+            ui.birth_date,
+            ui.profession,
+            ui.is_vip,
+            ui.exp,
+            ui.create_time,
+            ui.update_time
+        from user_info ui
+        where ui.user_id = #{userId}
+    </select>
 </mapper>

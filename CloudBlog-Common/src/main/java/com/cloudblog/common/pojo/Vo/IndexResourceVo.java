@@ -1,18 +1,15 @@
-package com.cloudblog.common.pojo.DoMain;
+package com.cloudblog.common.pojo.Vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("download_resource")
-public class DownloadResource {
+public class IndexResourceVo {
 
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String resourceName;
@@ -32,6 +29,10 @@ public class DownloadResource {
     private Integer resourceStatus;
 
     private Long resourceCreator;
+
+    private String resourceCreatorName;
+
+    private String resourceCategoryAvatar;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime resourceUpdateTime;

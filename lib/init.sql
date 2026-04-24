@@ -520,6 +520,7 @@ create table download_resource (
     resource_bind_content_id bigint comment '资源绑定的内容 ID',
     resource_bind_content_type varchar(50) comment '资源绑定的内容类型，如：POST-文章、COMMENT-评论、USER-用户等',
     vip_resource tinyint default 0 comment '会员专享资源：0-普通资源 1-会员专享资源',
+    download_count int default 0 comment '下载次数',
 
     index idx_name (resource_name),
     index idx_status (resource_status),

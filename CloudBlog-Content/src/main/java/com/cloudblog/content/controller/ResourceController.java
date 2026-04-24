@@ -6,6 +6,9 @@ import com.cloudblog.common.pojo.Po.UploadResourcePo;
 import com.cloudblog.common.result.AjaxResult;
 import com.cloudblog.content.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,5 +80,37 @@ public class ResourceController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String tag) {
         return resourceService.getIndexResource(po, cursor, size, sortBy, tag);
+    }
+
+    /**
+     * 搜索资源
+     */
+    @GetMapping("/searchResource")
+    public AjaxResult searchResource(@RequestParam String keyword) {
+        return resourceService.searchResource(keyword);
+    }
+
+    /**
+     * 下载资源（前置校验）
+     */
+    @GetMapping("/downloadResource")
+    public AjaxResult downloadResource(
+            @RequestParam Long userId,
+            @RequestParam Long resourceId
+            ) {
+        return resourceService.downloadResource(userId, resourceId);
+    }
+
+    /**
+     * 下载资源
+     */
+    @GetMapping("/download")
+    public ResponseEntity<InputStreamResource> downloadFile(
+            @RequestParam Long userId,
+            @RequestParam String url,
+            @RequestParam(required = false) String filename,
+            @RequestParam String token
+    ) {
+        return resourceService.download(userId, url, filename, token);
     }
 }
