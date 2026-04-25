@@ -24,6 +24,7 @@ public interface ResourceMapper extends BaseMapper<DownloadResource> {
             @Param("userId") Long userId,
             @Param("categoryNames") List<String> categoryNames,
             @Param("lastId") Long lastId,
+//            @Param("sortBy") String sortBy,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i);
 
@@ -37,7 +38,9 @@ public interface ResourceMapper extends BaseMapper<DownloadResource> {
      * @return
      */
     List<IndexResourceVo> getResourceListWithNoInterest(
-            @Param("userId") Long userId, Long lastId,
+            @Param("userId") Long userId,
+            @Param("lastId") Long lastId,
+            @Param("name") String name,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i,
             @Param("categoryNames") List<String> categoryNames);

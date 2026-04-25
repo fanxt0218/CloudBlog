@@ -7,5 +7,7 @@ public class GetIndexResourcePo {
 
     private Long userId;
 
+    private String name;
+
     private String tagName;
 }

@@ -30,4 +30,6 @@ public interface ResourceService {
     AjaxResult downloadResource(Long userId, Long resourceId);
 
     ResponseEntity<InputStreamResource> download(Long userId, String url, String filename, String token);
+
+    AjaxResult getSelectedResource();
 }

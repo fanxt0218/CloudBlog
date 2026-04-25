@@ -42,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -164,7 +165,7 @@ public class ResourceServiceImpl implements ResourceService {
             data = interestService.getInterestInfo(po.getUserId()).get("data");
         }
         // 无兴趣/选择了tag/未登录=默认推荐
-        if (data == null || po.getUserId() == null || po.getTagName() == null || "默认".equals(po.getTagName())) {
+        if (data == null || (po.getTagName() != null && !"全部".equals(po.getTagName())) || po.getName() != null) {
             withInterest = false;
         }
 
@@ -176,6 +177,8 @@ public class ResourceServiceImpl implements ResourceService {
             if (categories != null && !categories.isEmpty()) {
                 categoryNames.addAll(categories);
             }
+            // 将自己也加进去（可能选择的本身就是子分类）
+            categoryNames.add(po.getTagName());
         }
 
         // 执行查询
@@ -206,7 +209,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resources = resourceMapper.getResourceListWithInterest(po.getUserId(), categoryNames,  lastId, lastCreateTime, size + 1);
             }else {
                 // 默认推荐
-                resources = resourceMapper.getResourceListWithNoInterest(po.getUserId(), lastId, lastCreateTime, size + 1, categoryNames);
+                resources = resourceMapper.getResourceListWithNoInterest(po.getUserId(), lastId, po.getName(), lastCreateTime, size + 1, categoryNames);
             }
             // 构建PageResponse返回结果
             PageResponse<IndexResourceVo> response = new PageResponse<>();
@@ -298,6 +301,30 @@ public class ResourceServiceImpl implements ResourceService {
             resourceMapper.update(resource, new LambdaUpdateWrapper<DownloadResource>().eq(DownloadResource::getResourceUrl, url).set(DownloadResource::getDownloadCount, resource.getDownloadCount()));
         }
         return FileDownloadUtil.buildDownloadResponse(url, filename);
+    }
+
+    @Override
+    public AjaxResult getSelectedResource() {
+        List<DownloadResource> resources = resourceMapper.selectList(new LambdaQueryWrapper<DownloadResource>()
+                .eq(DownloadResource::getResourceStatus, 1)
+                .eq(DownloadResource::getResourceIsPublic, 1)
+                .orderByDesc(DownloadResource::getResourceCreateTime)
+                .last("limit 20")
+        );
+
+        if (resources == null || resources.isEmpty()) {
+            return AjaxResult.success(new ArrayList<>());
+        }
+
+        // 随机取出六(最多)条
+        Random random = new Random();
+        int count = Math.min(6, resources.size());
+        ArrayList<DownloadResource> lastResource = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            DownloadResource remove = resources.remove(random.nextInt(resources.size()));
+            lastResource.add(remove);
+        }
+        return AjaxResult.success(lastResource);
     }
 
     /**

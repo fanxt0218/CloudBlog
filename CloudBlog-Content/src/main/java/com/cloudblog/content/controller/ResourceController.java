@@ -72,7 +72,7 @@ public class ResourceController {
     /**
      * 首页资源
      */
-    @GetMapping("/getIndexResource")
+    @PostMapping("/getIndexResource")
     public AjaxResult getIndexResource(
             @RequestBody GetIndexResourcePo po,
             @RequestParam(required = false) String cursor,
@@ -112,5 +112,13 @@ public class ResourceController {
             @RequestParam String token
     ) {
         return resourceService.download(userId, url, filename, token);
+    }
+
+    /**
+     * 获取精选资源
+     */
+    @GetMapping("/getSelectedResource")
+    public AjaxResult getSelectedResource() {
+        return resourceService.getSelectedResource();
     }
 }
