@@ -961,5 +961,17 @@
         </choose>
     </select>
 
+    <select id="getWorkOrderDetailByOrderId" resultType="com.cloudblog.common.pojo.Dto.WorkOrderDetailInfo"
+            parameterType="java.lang.String">
+        select
+            order_id AS orderId,
+            target_type AS targetType,
+            target_id AS targetId,
+            main_info AS mainInfo,
+            detail,
+            status,
+            create_time AS createTime
+    </select>
+
 
 </mapper>

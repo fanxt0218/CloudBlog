@@ -23,6 +23,7 @@ public interface ResourceMapper extends BaseMapper<DownloadResource> {
     List<IndexResourceVo> getResourceListWithInterest(
             @Param("userId") Long userId,
             @Param("categoryNames") List<String> categoryNames,
+            @Param("vip") Integer vip,
             @Param("lastId") Long lastId,
 //            @Param("sortBy") String sortBy,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
@@ -43,7 +44,9 @@ public interface ResourceMapper extends BaseMapper<DownloadResource> {
             @Param("name") String name,
             @Param("lastCreateTime") LocalDateTime lastCreateTime,
             @Param("size") int i,
-            @Param("categoryNames") List<String> categoryNames);
+            @Param("categoryNames") List<String> categoryNames,
+            @Param("vip") Integer vip
+            );
 
     /**
      * 搜索资源

@@ -10,4 +10,6 @@ public class GetIndexResourcePo {
     private String name;
 
     private String tagName;
+
+    private Integer vip;
 }

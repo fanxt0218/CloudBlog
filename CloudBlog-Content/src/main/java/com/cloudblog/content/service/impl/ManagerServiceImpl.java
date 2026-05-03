@@ -565,7 +565,9 @@ public class ManagerServiceImpl implements ManagerService {
             workOrder.getTargetType() == null ||
             workOrder.getTargetId() == null
         ) {
-            return AjaxResult.warn("缺少参数");
+            if(null != workOrder && null == workOrder.getOrderId()) {
+                return AjaxResult.warn("缺少参数");
+            }
         }
         // 根据目标类型和目标id
         try {
@@ -575,6 +577,7 @@ public class ManagerServiceImpl implements ManagerService {
             );
 
             if (detailInfo == null) {
+//                detailInfo = managerMapper.getWorkOrderDetailByOrderId(workOrder.getOrderId());
                 return AjaxResult.warn("未找到对应的工单详情信息");
             }
 

@@ -3,7 +3,7 @@ package com.cloudblog.common.enums;
 public enum WorkOrderType {
 
     CONTENT_REPORT(0, "内容举报"),
-    USER_REPORT(1, "BUG"),
+    BUG(1, "BUG"),
     SUGGEST(2, "建议"),
     FORGET_PASSWORD(3, "忘记密码");
 

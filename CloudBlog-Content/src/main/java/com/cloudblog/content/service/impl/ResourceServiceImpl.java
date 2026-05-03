@@ -206,10 +206,10 @@ public class ResourceServiceImpl implements ResourceService {
             if (withInterest){
                 // 使用Mapper执行查询，多查一条记录用于判断是否还有更多数据
                 // 兴趣推荐
-                resources = resourceMapper.getResourceListWithInterest(po.getUserId(), categoryNames,  lastId, lastCreateTime, size + 1);
+                resources = resourceMapper.getResourceListWithInterest(po.getUserId(), categoryNames, po.getVip(),  lastId, lastCreateTime, size + 1);
             }else {
                 // 默认推荐
-                resources = resourceMapper.getResourceListWithNoInterest(po.getUserId(), lastId, po.getName(), lastCreateTime, size + 1, categoryNames);
+                resources = resourceMapper.getResourceListWithNoInterest(po.getUserId(), lastId, po.getName(), lastCreateTime, size + 1, categoryNames, po.getVip());
             }
             // 构建PageResponse返回结果
             PageResponse<IndexResourceVo> response = new PageResponse<>();
@@ -296,6 +296,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
         // 更新下载次数
         synchronized (url + ":" + userId) {
+            redisTemplate.delete(url + ":" + userId);
             DownloadResource resource = resourceMapper.selectOne(new LambdaQueryWrapper<DownloadResource>().eq(DownloadResource::getResourceUrl, url));
             resource.setDownloadCount(resource.getDownloadCount() + 1);
             resourceMapper.update(resource, new LambdaUpdateWrapper<DownloadResource>().eq(DownloadResource::getResourceUrl, url).set(DownloadResource::getDownloadCount, resource.getDownloadCount()));
@@ -325,6 +326,23 @@ public class ResourceServiceImpl implements ResourceService {
             lastResource.add(remove);
         }
         return AjaxResult.success(lastResource);
+    }
+
+    @Override
+    public AjaxResult getDetail(Long resourceId) {
+        DownloadResource downloadResource = resourceMapper.selectOne(new LambdaQueryWrapper<DownloadResource>()
+                .eq(DownloadResource::getId, resourceId)
+                .eq(DownloadResource::getResourceStatus, 1)
+                .eq(DownloadResource::getResourceIsPublic, 1)
+        );
+        IndexResourceVo indexResourceVo = new IndexResourceVo();
+        BeanUtils.copyProperties(downloadResource, indexResourceVo);
+
+        // 关联用户
+        UserInfo userInfo = resourceMapper.getUserInfo(downloadResource.getResourceCreator());
+        indexResourceVo.setResourceCreatorName(userInfo.getUserName());
+        indexResourceVo.setResourceCategoryAvatar(userInfo.getImage());
+        return AjaxResult.success(indexResourceVo);
     }
 
     /**

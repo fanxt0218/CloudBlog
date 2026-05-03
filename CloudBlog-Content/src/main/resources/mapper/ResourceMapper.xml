@@ -43,6 +43,9 @@
                 #{categoryName}
             </foreach>
         </if>
+        <if test="vip != null and vip != '' and vip == 1">
+            AND dr.vip_resource = 1
+        </if>
         <if test="lastId != null and lastCreateTime != null">
             AND (
             dr.resource_create_time &lt; #{lastCreateTime}
@@ -97,6 +100,9 @@
         </if>
         <if test="name != null and name != ''">
             AND dr.resource_name like concat('%', #{name}, '%')
+        </if>
+        <if test="vip != null and vip != '' and vip == 1">
+            AND dr.vip_resource = 1
         </if>
         <if test="lastId != null and lastCreateTime != null">
             AND (

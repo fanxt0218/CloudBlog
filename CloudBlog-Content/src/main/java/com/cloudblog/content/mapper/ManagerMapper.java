@@ -273,4 +273,10 @@ public interface ManagerMapper {
      */
     WorkOrderDetailInfo getWorkOrderDetailInfo(@Param("targetType") Integer targetType, @Param("targetId") Long targetId);
 
+    /**
+     * 根据工单 ID 获取工单详情信息
+     * @param orderId 工单 ID
+     * @return 工单详情信息
+     */
+    WorkOrderDetailInfo getWorkOrderDetailByOrderId(String orderId);
 }

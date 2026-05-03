@@ -25,6 +25,7 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.content.Media;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -40,6 +41,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -75,10 +78,16 @@ public class AIController {
         // 追加器
         StringBuilder AssistantMessageCollector = new StringBuilder();
 
+        // 切换deepseek平台时控制思考模式
+//        OpenAiChatOptions openAiChatOptions = new OpenAiChatOptions();
+//        openAiChatOptions.setExtraBody(Map.of("thinking",Map.of("type", "disabled")));
+
+
         // 流式响应
         Flux<String> originStream = processImagePrompt(message, filePath)  // 处理多模态输入
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .advisors(QuestionAnswerAdvisor.builder(vectorStore).build())
+//                .options(openAiChatOptions)
                 .stream()
                 .content();
 

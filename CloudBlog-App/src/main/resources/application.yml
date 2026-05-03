@@ -24,8 +24,9 @@ spring:
       base-url: ${blog.openai.base-url}
       chat:
         options:
-          model: gemini-3-flash-preview
+          model: gpt-oss:120b-cloud
       #          model: deepseek-v3.1:671b
+      #          gemini-3-flash-preview
       embedding:
         base-url: ${blog.openai.embedding.base-url}
         options:

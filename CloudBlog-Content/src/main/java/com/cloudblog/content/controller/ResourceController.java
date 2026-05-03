@@ -121,4 +121,12 @@ public class ResourceController {
     public AjaxResult getSelectedResource() {
         return resourceService.getSelectedResource();
     }
+
+    /**
+     * 获取资源详情
+     */
+    @GetMapping("/getDetail")
+    public AjaxResult getDetail(@RequestParam Long resourceId) {
+        return resourceService.getDetail(resourceId);
+    }
 }
