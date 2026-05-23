@@ -973,5 +973,60 @@
             create_time AS createTime
     </select>
 
+    <select id="getSensitiveWords" resultType="com.cloudblog.common.pojo.DoMain.PostForbiddenWords">
+        select
+            id,
+            word,
+            description,
+            status,
+            create_time AS createTime
+        from
+            post_forbidden_words
+    </select>
+    <select id="getSensitiveWordByWord" resultType="com.cloudblog.common.pojo.DoMain.PostForbiddenWords"
+            parameterType="java.lang.String">
+        select
+            id,
+            word,
+            description,
+            status,
+            create_time
+        from
+            post_forbidden_words
+        where
+            word = #{word}
+    </select>
+
+    <insert id="addSensitiveWord" parameterType="com.cloudblog.common.pojo.DoMain.PostForbiddenWords" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            post_forbidden_words (
+            word,
+            description
+            )
+        values (
+            #{word.word},
+            #{word.description}
+        )
+    </insert>
+
+    <update id="editSensitiveWord" parameterType="com.cloudblog.common.pojo.DoMain.PostForbiddenWords">
+        update
+            post_forbidden_words
+        set
+            word = #{word.word},
+            description = #{word.description},
+            status = #{word.status},
+            update_time = NOW()
+        where
+            id = #{word.id}
+    </update>
+
+    <delete id="delSensitiveWord" parameterType="java.lang.Long">
+        delete
+        from
+            post_forbidden_words
+        where
+            id = #{id}
+    </delete>
 
 </mapper>

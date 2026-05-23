@@ -71,4 +71,12 @@ public interface ManagerService {
     AjaxResult editRagText(MultipartFile file);
 
     AjaxResult getWorkOrderDetail(WorkOrder workOrder);
+
+    AjaxResult getSensitiveWords();
+
+    AjaxResult addSensitiveWord(PostForbiddenWords word);
+
+    AjaxResult editSensitiveWord(PostForbiddenWords word);
+
+    AjaxResult delSensitiveWord(Long id);
 }

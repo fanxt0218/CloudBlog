@@ -591,6 +591,46 @@ public class ManagerServiceImpl implements ManagerService {
         }
     }
 
+    @Override
+    public AjaxResult getSensitiveWords() {
+        List<PostForbiddenWords> sensitiveWords = managerMapper.getSensitiveWords();
+        return AjaxResult.success(sensitiveWords);
+    }
+
+    @Override
+    public AjaxResult addSensitiveWord(PostForbiddenWords word) {
+        if (word == null || word.getWord() == null || word.getWord().isEmpty()) {
+            return AjaxResult.warn("敏感词不能为空");
+        }
+        // 检查是否已存在
+        PostForbiddenWords existingWord = managerMapper.getSensitiveWordByWord(word.getWord());
+        if (existingWord != null) {
+            return AjaxResult.warn("该敏感词已存在");
+        }
+        return managerMapper.addSensitiveWord(word) > 0 ? AjaxResult.success("添加成功") : AjaxResult.error("添加失败");
+    }
+
+    @Override
+    public AjaxResult editSensitiveWord(PostForbiddenWords word) {
+        if (word == null || word.getId() == null) {
+            return AjaxResult.warn("缺少参数");
+        }
+        if (word.getWord() == null || word.getWord().isEmpty()) {
+            return AjaxResult.warn("敏感词不能为空");
+        }
+        // 检查是否已存在
+        PostForbiddenWords existingWord = managerMapper.getSensitiveWordByWord(word.getWord());
+        if (existingWord != null && !existingWord.getId().equals(word.getId())) {
+            return AjaxResult.warn("该敏感词已存在");
+        }
+        return managerMapper.editSensitiveWord(word) > 0 ? AjaxResult.success("修改成功") : AjaxResult.error("修改失败");
+    }
+
+    @Override
+    public AjaxResult delSensitiveWord(Long id) {
+        return managerMapper.delSensitiveWord(id) > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
+    }
+
     /**
      * 搜索文章列表
      */

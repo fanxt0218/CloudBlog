@@ -1,6 +1,7 @@
 package com.cloudblog.content.controller.admin;
 
 import com.cloudblog.common.enums.ContentType;
+import com.cloudblog.common.pojo.DoMain.PostForbiddenWords;
 import com.cloudblog.common.pojo.DoMain.Tag;
 import com.cloudblog.common.pojo.DoMain.TagClass;
 import com.cloudblog.common.pojo.DoMain.Topic;
@@ -87,4 +88,35 @@ public class ContentManageController {
         return managerService.addTopic(topic);
     }
 
+    /**
+     * 敏感词查询
+     */
+    @PostMapping("/getSensitiveWords")
+    public AjaxResult getSensitiveWords() {
+        return managerService.getSensitiveWords();
+    }
+
+    /**
+     * 新增敏感词
+     */
+    @PostMapping("/addSensitiveWord")
+    public AjaxResult addSensitiveWord(@RequestBody PostForbiddenWords word) {
+        return managerService.addSensitiveWord(word);
+    }
+
+    /**
+     * 修改敏感词
+     */
+    @PostMapping("/editSensitiveWord")
+    public AjaxResult editSensitiveWord(@RequestBody PostForbiddenWords word) {
+        return managerService.editSensitiveWord(word);
+    }
+
+    /**
+     * 删除敏感词
+     */
+    @PostMapping("/deleteSensitiveWord")
+    public AjaxResult deleteSensitiveWord(@RequestParam Long id) {
+        return managerService.delSensitiveWord(id);
+    }
 }

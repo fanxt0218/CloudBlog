@@ -1,6 +1,5 @@
 package com.cloudblog.content.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.*;
@@ -12,7 +11,6 @@ import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Po.WebSiteComponentPo;
 import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.pojo.Vo.*;
-import com.cloudblog.common.result.AjaxResult;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -279,4 +277,39 @@ public interface ManagerMapper {
      * @return 工单详情信息
      */
     WorkOrderDetailInfo getWorkOrderDetailByOrderId(String orderId);
+
+    /**
+     * 获取敏感词列表
+     *
+     * @return
+     */
+    List<PostForbiddenWords> getSensitiveWords();
+
+    /**
+     * 添加敏感词
+     *
+     * @param word
+     */
+    PostForbiddenWords getSensitiveWordByWord(String word);
+
+    /**
+     * 添加敏感词
+     *
+     * @param word
+     */
+    int addSensitiveWord(@Param("word") PostForbiddenWords word);
+
+    /**
+     * 编辑敏感词
+     *
+     * @param word
+     */
+    int editSensitiveWord(@Param("word") PostForbiddenWords word);
+
+    /**
+     * 删除敏感词
+     *
+     * @param id
+     */
+    int delSensitiveWord(Long id);
 }

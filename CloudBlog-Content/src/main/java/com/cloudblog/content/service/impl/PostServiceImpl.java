@@ -1,5 +1,6 @@
 package com.cloudblog.content.service.impl;
 
+import cn.hutool.json.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -12,12 +13,14 @@ import com.cloudblog.common.enums.PostType;
 import com.cloudblog.common.exception.CloudBlogException;
 import com.cloudblog.common.exception.CommonError;
 import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.CheckReport;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PageResponse;
 import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Po.*;
 import com.cloudblog.common.pojo.Vo.*;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.ContentComplianceChecker;
 import com.cloudblog.common.utils.ESUtil;
 import com.cloudblog.common.utils.HtmlUtil;
 import com.cloudblog.content.config.ContentStartupConfig;
@@ -98,6 +101,9 @@ public class PostServiceImpl implements PostService {
     @Autowired
     @Qualifier("exportTaskExecutor")
     private ThreadPoolTaskExecutor exportTaskExecutor;
+    @Autowired
+    private ContentComplianceChecker complianceChecker;
+
 
     @Autowired
     private ContentStartupConfig contentStartupConfig;
@@ -371,6 +377,8 @@ public class PostServiceImpl implements PostService {
 //            BeanUtils.copyProperties(posts, esPost);
 //            esPost.setContent(po.getContent());
 //            updatePost(List.of(esPost));
+            // 自动执行合规性检测
+            this.checkCompliance(po);
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
             throw new CloudBlogException("文章发布失败: "+e.getMessage(), CommonError.INTERNAL_ERROR);
@@ -858,6 +866,8 @@ public class PostServiceImpl implements PostService {
             // 获取文章信息
             ESPost esPost = postMapper.getESPostInfo(posts.getId());
             updatePost(List.of(esPost));
+            // 检测合规性
+            this.checkCompliance(po);
         } catch (Exception e) {
             log.error("文章发布失败：{}", e.getMessage());
             throw new RuntimeException(e);
@@ -1020,5 +1030,38 @@ public class PostServiceImpl implements PostService {
             level.set(singleLevel);
         });
         return level.get();
+    }
+
+    /**
+     * 检测文章合规性
+     */
+    public void checkCompliance(PublishPostPo po) {
+        exportTaskExecutor.execute(() -> {
+            try {
+                // 构建检测报告
+                CheckReport checkReport = new CheckReport();
+                checkReport.setCheckId(po.getPostId().toString() + System.currentTimeMillis());// 当前时间字符串+文章id
+                checkReport.setPostId(po.getPostId());
+                checkReport.setPostName(po.getTitle());
+                List<CheckReport.CheckItem> checkItems = new ArrayList<>();
+
+                log.info("开始对文章进行合规性（敏感词）检测 - 文章ID: {}", po.getPostId());
+                ContentComplianceChecker.ComplianceResult result = complianceChecker.checkCompliance(HtmlUtil.removeHtmlTag(po.getContent()));
+                if (!result.isCompliant()) {
+                    log.warn("文章检测到违规内容 - 文章ID: {}, 违规词数量: {}, 违规词: {}",
+                            po.getPostId(), result.getViolationCount(), result.getFoundWords());
+                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: "+result.getViolationCount() + "违规词: "+result.getFoundWords()));
+                } else {
+                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: " + 0 + "违规词: "+ "无"));
+                }
+                // TODO 添加其他合规性检测逻辑
+
+                checkReport.setCheckItems(checkItems);
+                // 插入检测记录表
+                postMapper.insertCheckReport(null, checkReport.getPostId(), objectMapper.writeValueAsString(checkReport));
+            } catch (Exception e) {
+                log.error("合规性检测失败 - 文章ID: {}, 错误: {}", po.getPostId(), e.getMessage());
+            }
+        });
     }
 }

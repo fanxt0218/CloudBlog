@@ -529,4 +529,29 @@ create table download_resource (
     index idx_creator (resource_creator),
     index idx_resource_tags (resource_tags),
     index idx_bind_content_id (resource_bind_content_id)
-)
+);
+
+-- 文章违禁词表
+drop table if exists post_forbidden_words;
+create table post_forbidden_words (
+    id bigint primary key auto_increment comment '主键 ID',
+    word varchar(50) not null comment '违禁词',
+    description varchar(255) comment '描述',
+    status tinyint default 1 comment '状态：0-禁用 1-启用',
+    create_time datetime default current_timestamp comment '创建时间',
+    update_time datetime default current_timestamp on update current_timestamp comment '更新时间',
+
+    unique index uk_word (word)
+) comment '文章违禁词表';
+
+-- 文章检测记录表
+drop table if exists post_detection_record;
+create table post_detection_record (
+    id bigint primary key auto_increment comment '主键 ID',
+    post_id bigint not null comment '文章 ID',
+    detection_type varchar(50) comment '检测类型',
+    detection_result varchar(255) comment '检测结果',
+    create_time datetime default current_timestamp comment '创建时间',
+
+    index idx_post_id (post_id)
+) comment '文章检测记录表';

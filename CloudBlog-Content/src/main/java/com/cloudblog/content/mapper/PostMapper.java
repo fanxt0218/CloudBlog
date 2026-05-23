@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudblog.common.pojo.DoMain.*;
+import com.cloudblog.common.pojo.Dto.CheckReport;
 import com.cloudblog.common.pojo.Dto.ESPost;
 import com.cloudblog.common.pojo.Dto.PostDataInfo;
 import com.cloudblog.common.pojo.Vo.*;
@@ -230,4 +231,11 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @return
      */
     ESPost getESPostInfo(Long id);
+
+    /**
+     * 添加文章检测记录
+     * @param type
+     * @param checkReport
+     */
+    void insertCheckReport(@Param("type") String type, @Param("postId") Long postId, @Param("checkReport") String checkReport);
 }
