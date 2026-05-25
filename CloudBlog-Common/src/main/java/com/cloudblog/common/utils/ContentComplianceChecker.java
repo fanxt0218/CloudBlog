@@ -1,9 +1,12 @@
 package com.cloudblog.common.utils;
 
 
+import com.cloudblog.common.mapper.ErrorMapper;
+import com.cloudblog.common.pojo.DoMain.PostForbiddenWords;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -16,6 +19,10 @@ public class ContentComplianceChecker {
     private static final char END_FLAG = '\u0000';
     private static final Map<Character, Object> sensitiveWordMap = new HashMap<>();
     private static volatile boolean initialized = false;
+
+    // 借用这个mapper
+    @Autowired
+    private ErrorMapper errorMapper;
 
     @PostConstruct
     public void init() {
@@ -130,14 +137,8 @@ public class ContentComplianceChecker {
         // 示例：从数据库加载
         // words = sensitiveWordMapper.selectEnabledWords();
 
-        // 临时测试数据
-        words.add("违法");
-        words.add("暴力");
-        words.add("色情");
-        words.add("赌博");
-        words.add("毒品");
-        words.add("诈骗");
-        words.add("恐怖");
+        // 取出word字段
+        words = errorMapper.getSensitiveWords().stream().map(PostForbiddenWords::getWord).toList();
 
         return words;
     }

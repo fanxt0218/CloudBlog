@@ -631,6 +631,11 @@ public class ManagerServiceImpl implements ManagerService {
         return managerMapper.delSensitiveWord(id) > 0 ? AjaxResult.success("删除成功") : AjaxResult.error("删除失败");
     }
 
+    @Override
+    public AjaxResult getCheckComplianceResult(Long id) {
+        return AjaxResult.success(managerMapper.getCheckComplianceResult(id));
+    }
+
     /**
      * 搜索文章列表
      */

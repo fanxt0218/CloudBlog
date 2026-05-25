@@ -79,4 +79,6 @@ public interface ManagerService {
     AjaxResult editSensitiveWord(PostForbiddenWords word);
 
     AjaxResult delSensitiveWord(Long id);
+
+    AjaxResult getCheckComplianceResult(Long id);
 }

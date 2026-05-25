@@ -6,4 +6,16 @@
         insert into err_log (err_type, err_msg, err_stack, create_time)
         values (#{simpleName}, #{message}, #{stackTrace}, now())
     </insert>
+
+    <select id="getSensitiveWords" resultType="com.cloudblog.common.pojo.DoMain.PostForbiddenWords">
+        select
+            id,
+            word,
+            description,
+            status,
+            update_time,
+            create_time
+        from post_forbidden_words
+        where status = 1
+    </select>
 </mapper>

@@ -631,8 +631,8 @@
 
     <insert id="insertCheckReport">
         insert into
-        post_detection_record(post_id, detection_type, detection_result)
-        values (#{postId}, '自动检测', #{checkReport})
+        post_detection_record(post_id, pass_status, detection_type, detection_result)
+        values (#{postId}, #{passStatus},  '自动检测', #{checkReport})
     </insert>
 
 </mapper>

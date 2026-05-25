@@ -551,6 +551,7 @@ create table post_detection_record (
     post_id bigint not null comment '文章 ID',
     detection_type varchar(50) comment '检测类型',
     detection_result varchar(255) comment '检测结果',
+    pass_status tinyint default 1 comment '审核状态：0-未通过 1-通过',
     create_time datetime default current_timestamp comment '创建时间',
 
     index idx_post_id (post_id)

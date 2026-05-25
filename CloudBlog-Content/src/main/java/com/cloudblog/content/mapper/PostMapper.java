@@ -237,5 +237,5 @@ public interface PostMapper extends BaseMapper<Posts> {
      * @param type
      * @param checkReport
      */
-    void insertCheckReport(@Param("type") String type, @Param("postId") Long postId, @Param("checkReport") String checkReport);
+    void insertCheckReport(@Param("type") String type, @Param("postId") Long postId, @Param("passStatus") Integer passStatus, @Param("checkReport") String checkReport);
 }

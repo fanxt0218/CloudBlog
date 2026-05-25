@@ -11,6 +11,7 @@ import com.cloudblog.common.pojo.Po.UserListPo;
 import com.cloudblog.common.pojo.Po.WebSiteComponentPo;
 import com.cloudblog.common.pojo.Po.WorkOrderListPo;
 import com.cloudblog.common.pojo.Vo.*;
+import com.cloudblog.common.result.AjaxResult;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -312,4 +313,12 @@ public interface ManagerMapper {
      * @param id
      */
     int delSensitiveWord(Long id);
+
+    /**
+     * 获取检测合规性结果
+     *
+     * @param id
+     * @return
+     */
+    PostDetectionRecord getCheckComplianceResult(Long id);
 }

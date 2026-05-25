@@ -1029,4 +1029,21 @@
             id = #{id}
     </delete>
 
+    <select id="getCheckComplianceResult" resultType="com.cloudblog.common.pojo.DoMain.PostDetectionRecord">
+        select
+            id,
+            post_id,
+            detection_type,
+            detection_result,
+            pass_status,
+            create_time
+        from
+            post_detection_record
+        where
+            post_id = #{id}
+        order by
+            id desc
+        limit 1
+    </select>
+
 </mapper>

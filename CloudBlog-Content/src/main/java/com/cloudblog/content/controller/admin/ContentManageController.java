@@ -91,7 +91,7 @@ public class ContentManageController {
     /**
      * 敏感词查询
      */
-    @PostMapping("/getSensitiveWords")
+        @GetMapping("/getSensitiveWords")
     public AjaxResult getSensitiveWords() {
         return managerService.getSensitiveWords();
     }
@@ -118,5 +118,13 @@ public class ContentManageController {
     @PostMapping("/deleteSensitiveWord")
     public AjaxResult deleteSensitiveWord(@RequestParam Long id) {
         return managerService.delSensitiveWord(id);
+    }
+
+    /**
+     * 获取检测结果
+     */
+    @GetMapping("/getCheckCompliance")
+    public AjaxResult getCheckComplianceResult(@RequestParam Long id) {
+        return managerService.getCheckComplianceResult(id);
     }
 }

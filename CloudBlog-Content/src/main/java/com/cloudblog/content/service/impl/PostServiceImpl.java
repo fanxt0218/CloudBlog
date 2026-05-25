@@ -369,6 +369,7 @@ public class PostServiceImpl implements PostService {
             posts.setCreateTime(LocalDateTime.now());
             postMapper.insert(posts);
             postId = posts.getId();
+            po.setPostId(postId);
             // 插入文章标签表
             interestService.addPostTag(po.getTagIds(), posts.getId());
             // TODO 加经验值
@@ -1039,10 +1040,12 @@ public class PostServiceImpl implements PostService {
         exportTaskExecutor.execute(() -> {
             try {
                 // 构建检测报告
+                int passStatus = 1;
                 CheckReport checkReport = new CheckReport();
                 checkReport.setCheckId(po.getPostId().toString() + System.currentTimeMillis());// 当前时间字符串+文章id
                 checkReport.setPostId(po.getPostId());
                 checkReport.setPostName(po.getTitle());
+                checkReport.setCheckTime(LocalDateTime.now());
                 List<CheckReport.CheckItem> checkItems = new ArrayList<>();
 
                 log.info("开始对文章进行合规性（敏感词）检测 - 文章ID: {}", po.getPostId());
@@ -1050,15 +1053,16 @@ public class PostServiceImpl implements PostService {
                 if (!result.isCompliant()) {
                     log.warn("文章检测到违规内容 - 文章ID: {}, 违规词数量: {}, 违规词: {}",
                             po.getPostId(), result.getViolationCount(), result.getFoundWords());
-                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: "+result.getViolationCount() + "违规词: "+result.getFoundWords()));
+                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: "+result.getViolationCount() + "\n违规词: "+result.getFoundWords()));
+                    passStatus = 0;
                 } else {
-                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: " + 0 + "违规词: "+ "无"));
+                    checkItems.add(new CheckReport.CheckItem("敏感词检测", "违规词数量: " + 0 + "\n违规词: "+ "无"));
                 }
                 // TODO 添加其他合规性检测逻辑
 
                 checkReport.setCheckItems(checkItems);
                 // 插入检测记录表
-                postMapper.insertCheckReport(null, checkReport.getPostId(), objectMapper.writeValueAsString(checkReport));
+                postMapper.insertCheckReport(null, checkReport.getPostId(), passStatus, objectMapper.writeValueAsString(checkReport));
             } catch (Exception e) {
                 log.error("合规性检测失败 - 文章ID: {}, 错误: {}", po.getPostId(), e.getMessage());
             }

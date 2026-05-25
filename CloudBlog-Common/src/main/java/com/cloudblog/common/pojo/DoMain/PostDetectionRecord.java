@@ -7,25 +7,20 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 @Data
-@TableName("post_forbidden_words")
-public class PostForbiddenWords {
+@TableName("post_detection_record")
+public class PostDetectionRecord {
 
-    /**
-     * 主键
-     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String word;
+    private Long postId;
 
-    private String description;
+    private String detectionType;
 
-    private String status;
+    private String detectionResult;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private String updateTime;
+    private Integer passStatus;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String createTime;
-
 }
