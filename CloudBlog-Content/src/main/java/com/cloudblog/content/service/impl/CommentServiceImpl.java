@@ -16,6 +16,7 @@ import com.cloudblog.common.pojo.Po.CommentPo;
 import com.cloudblog.common.pojo.Vo.CommentListVo;
 import com.cloudblog.common.pojo.Vo.UserChatDetailVo;
 import com.cloudblog.common.result.AjaxResult;
+import com.cloudblog.common.utils.ContentComplianceChecker;
 import com.cloudblog.content.mapper.CommentMapper;
 import com.cloudblog.content.service.CommentService;
 import com.cloudblog.content.service.NotificationService;
@@ -41,6 +42,8 @@ public class CommentServiceImpl implements CommentService {
     private NotificationService notificationService;
     @Autowired
     private WebSocket webSocket;
+    @Autowired
+    private ContentComplianceChecker complianceChecker;
 
     @Override
     public Long calculateCommentCount(Long contentId, Integer type) {
@@ -78,6 +81,11 @@ public class CommentServiceImpl implements CommentService {
         Assert.notNull(po.getContentId(), "内容id不能为空");
         Assert.notNull(po.getUserId(), "用户id不能为空");
         Assert.notNull(po.getType(), "评论类型不能为空");
+        // 检测评论内容是否合规
+        ContentComplianceChecker.ComplianceResult complianceResult = complianceChecker.checkCompliance(po.getContent());
+        if (!complianceResult.isCompliant()) {
+            return AjaxResult.warn("内容违规");
+        }
         Comments comments = new Comments();
         comments.setPostId(po.getContentId());
         comments.setUserId(po.getUserId());
